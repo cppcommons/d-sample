@@ -1,5 +1,5 @@
 {
-    "name": "000-misc",
+    "name": "program",
     "targetType": "executable",
     "dependencies": {
         "d2sqlite3": "~master"
@@ -7,8 +7,8 @@
     "subConfigurations": {
         "d2sqlite3": "without-lib"
     },
-    "sourcePaths":["src"],
-    "importPaths":["src", "../lib"],
+    "sourcePaths":["."],
+    "importPaths":[".", "../lib"],
     "configurations": [
         {
             "name": "default",
