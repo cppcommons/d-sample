@@ -1,5 +1,5 @@
 {
-    "name": "001-sqlite",
+    "name": "002-pegged",
     "targetType": "executable",
     "dependencies": {
         "d2sqlite3": "~master"
