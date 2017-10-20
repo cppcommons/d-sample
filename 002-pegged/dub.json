@@ -8,18 +8,18 @@
         "d2sqlite3": "without-lib"
     },
     "sourcePaths":["src"],
-    "importPaths":["src", "lib"],
+    "importPaths":["src", "../lib"],
     "configurations": [
         {
             "name": "default",
-            "sourceFiles":["sqlite-win-32bit-3200100-dm32.lib", "pegged-dm32.lib"],
+            "sourceFiles":["../lib/sqlite-win-32bit-3200100-dm32.lib", "../lib/pegged-dm32.lib"],
             "versions": [
                 "COMPILER_DM32"
             ]
         },
         {
             "name": "x86_mscoff",
-            "sourceFiles":["sqlite-win-32bit-3200100-ms32.lib", "pegged-ms32.lib"],
+            "sourceFiles":["../lib/sqlite-win-32bit-3200100-ms32.lib", "../lib/pegged-ms32.lib"],
             "versions": [
                 "COMPILER_MS32"
             ]
