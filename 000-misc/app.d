@@ -17,6 +17,25 @@ wchar[] toString(wchar* s)
 
 void main()
 {
+    version (COMPILER_DM32)
+    {
+        import std.stdio : stdout, writeln;
+
+        writeln("DM32");
+
+    }
+    else version (COMPILER_MS32)
+    {
+        import std.stdio : stdout, writeln;
+
+        writeln("MS32");
+
+    }
+    else
+    {
+        writeln("UNKNOWN COMPILER");
+    }
+
     {
         import std.file : getcwd;
         import std.stdio : stdout, writeln;
