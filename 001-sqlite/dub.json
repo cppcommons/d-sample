@@ -1,5 +1,5 @@
 {
-    "name": "002-pegged",
+    "name": "program",
     "targetType": "executable",
     "dependencies": {
         "d2sqlite3": "~master"
