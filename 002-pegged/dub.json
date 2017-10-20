@@ -1,0 +1,28 @@
+{
+    "name": "001-sqlite",
+    "targetType": "executable",
+    "dependencies": {
+        "d2sqlite3": "~master"
+    },
+    "subConfigurations": {
+        "d2sqlite3": "without-lib"
+    },
+    "sourcePaths":["src"],
+    "importPaths":["src", "lib"],
+    "configurations": [
+        {
+            "name": "default",
+            "sourceFiles":["sqlite-win-32bit-3200100-dm32.lib", "pegged-dm32.lib"],
+            "versions": [
+                "COMPILER_DM32"
+            ]
+        },
+        {
+            "name": "x86_mscoff",
+            "sourceFiles":["sqlite-win-32bit-3200100-ms32.lib", "pegged-ms32.lib"],
+            "versions": [
+                "COMPILER_MS32"
+            ]
+        }
+    ]
+}
