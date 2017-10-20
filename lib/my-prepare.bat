@@ -13,3 +13,7 @@ endlocal
 
 C:\D\dmd2\windows\bin\dmd -w -m32       -wi -O -release -noboundscheck -lib -ofpegged-dm32.lib pegged/peg.d pegged/grammar.d pegged/parser.d pegged/introspection.d pegged/dynamic/grammar.d pegged/dynamic/peg.d
 C:\D\dmd2\windows\bin\dmd -w -m32mscoff -wi -O -release -noboundscheck -lib -ofpegged-ms32.lib pegged/peg.d pegged/grammar.d pegged/parser.d pegged/introspection.d pegged/dynamic/grammar.d pegged/dynamic/peg.d
+
+C:\D\implib winhttp-dm32.lib C:\Windows\SysWOW64\winhttp.dll
+
+pause
