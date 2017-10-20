@@ -1,0 +1,12 @@
+LIBRARY   WINHTTP  
+EXPORTS
+_WinHttpQueryDataAvailable@8 = WinHttpQueryDataAvailable
+_WinHttpReadData@16 = WinHttpReadData
+_WinHttpOpen@20 = WinHttpOpen
+_WinHttpSendRequest@28 = WinHttpSendRequest
+_WinHttpQueryHeaders@24 = WinHttpQueryHeaders
+_WinHttpCloseHandle@4 = WinHttpCloseHandle
+_WinHttpOpenRequest@28 = WinHttpOpenRequest
+_WinHttpReceiveResponse@8 = WinHttpReceiveResponse
+_WinHttpConnect@16 = WinHttpConnect
+_WinHttpCrackUrl@16 = WinHttpCrackUrl
