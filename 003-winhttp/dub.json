@@ -1,0 +1,33 @@
+{
+    "name": "program",
+    "targetType": "executable",
+    "dependencies": {
+        "d2sqlite3": "~master"
+    },
+    "subConfigurations": {
+        "d2sqlite3": "without-lib"
+    },
+    "sourcePaths":["."],
+    "importPaths":[".", "../lib"],
+    "configurations": [
+        {
+            "name": "default",
+            "targetName": "prog-dm32",
+            "sourceFiles":["../lib/sqlite-win-32bit-3200100-dm32.lib", "../lib/pegged-dm32.lib",
+		    "../lib/winhttp-dm32.lib"],
+            "versions": [
+                "COMPILER_DM32"
+            ]
+        }
+        ,
+        {
+            "name": "x86_mscoff",
+            "targetName": "prog-ms32",
+            "sourceFiles":["../lib/sqlite-win-32bit-3200100-ms32.lib", "../lib/pegged-ms32.lib",
+		    "winhttp.lib"],
+            "versions": [
+                "COMPILER_MS32"
+            ]
+        }
+    ]
+}
