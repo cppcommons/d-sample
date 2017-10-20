@@ -13,7 +13,8 @@
         {
             "name": "default",
             "targetName": "prog-dm32",
-            "sourceFiles":["../lib/sqlite-win-32bit-3200100-dm32.lib", "../lib/pegged-dm32.lib"],
+            "sourceFiles":["../lib/sqlite-win-32bit-3200100-dm32.lib", "../lib/pegged-dm32.lib",
+		    "../lib/winhttp-dm32.lib"],
             "versions": [
                 "COMPILER_DM32"
             ]
@@ -22,7 +23,8 @@
         {
             "name": "x86_mscoff",
             "targetName": "prog-ms32",
-            "sourceFiles":["../lib/sqlite-win-32bit-3200100-ms32.lib", "../lib/pegged-ms32.lib"],
+            "sourceFiles":["../lib/sqlite-win-32bit-3200100-ms32.lib", "../lib/pegged-ms32.lib",
+		    "winhttp.lib"],
             "versions": [
                 "COMPILER_MS32"
             ]
