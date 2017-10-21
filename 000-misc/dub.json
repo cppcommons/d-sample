@@ -7,8 +7,8 @@
     "subConfigurations": {
         "d2sqlite3": "without-lib"
     },
-    "sourcePaths":["."],
-    "importPaths":[".", "../../d-lib"],
+    "sourcePaths":[".", "../common"],
+    "importPaths":[".", "../common", "../../d-lib"],
     "configurations": [
         {
             "name": "default",

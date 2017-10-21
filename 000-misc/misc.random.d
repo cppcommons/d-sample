@@ -1,5 +1,7 @@
 module misc.random;
 
+import common.util;
+
 void misc_main()
 {
     import std.stdio : stdout, writeln;
@@ -10,6 +12,7 @@ void misc_main()
     writeln(random_bytes(20));
 }
 
+/+
 ubyte[] random_bytes(size_t length)
 {
     import std.random : choice, unpredictableSeed, Random;
@@ -25,6 +28,7 @@ ubyte[] random_bytes(size_t length)
     }
     return result;
 }
++/
 
 void random_test1() // https://qiita.com/yjiro0403/items/55c7c18c04e97f2bc84d
 {
