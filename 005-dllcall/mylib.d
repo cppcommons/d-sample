@@ -1,45 +1,113 @@
 module mylib;
 
-import core.sys.windows.dll;
-import std.c.windows.windows;
+// http://www.kmonos.net/alang/d/dll.html D で作る Win32 DLL - プログラミング言語 D (日本語訳)
+
+import core.runtime;
+import core.stdc.stdio;
+import core.stdc.stdlib;
+import core.sys.windows.windows;
+import std.string;
+
+HINSTANCE g_hInst;
+
+extern (C)
+{
+	void gc_setProxy(void* p);
+	void gc_clrProxy();
+}
 
 extern (Windows) BOOL DllMain(HINSTANCE hInstance, ULONG ulReason, LPVOID pvReserved)
 {
 	switch (ulReason)
 	{
 	case DLL_PROCESS_ATTACH:
-		dll_process_attach(hInstance, true);
+		printf("DLL_PROCESS_ATTACH\n");
+		Runtime.initialize();
 		break;
-
 	case DLL_PROCESS_DETACH:
-		dll_process_detach(hInstance, true);
+		printf("DLL_PROCESS_DETACH\n");
+		Runtime.terminate();
 		break;
-
 	case DLL_THREAD_ATTACH:
-		dll_thread_attach(true, true);
-		break;
-
+		printf("DLL_THREAD_ATTACH\n");
+		return false;
 	case DLL_THREAD_DETACH:
-		dll_thread_detach(true, true);
-		break;
-
+		printf("DLL_THREAD_DETACH\n");
+		return false;
 	default:
-		break;
+		assert(0);
 	}
+	g_hInst = hInstance;
 	return true;
 }
 
-extern (C) int add(int i, int j)
+extern (C) export void DLL_Initialize(void* gc)
+{
+	printf("DLL_Initialize()\n");
+	gc_setProxy(gc);
+}
+
+extern (C) export void DLL_Terminate()
+{
+	printf("DLL_Terminate()\n");
+	gc_clrProxy();
+}
+
+static this()
+{
+	printf("static this for mydll\n");
+	fflush(stdout);
+}
+
+static ~this()
+{
+	printf("static ~this for mydll\n");
+	fflush(stdout);
+}
+
+version (none)
+{
+	import core.sys.windows.dll;
+	import std.c.windows.windows;
+
+	extern (Windows) BOOL DllMain(HINSTANCE hInstance, ULONG ulReason, LPVOID pvReserved)
+	{
+		switch (ulReason)
+		{
+		case DLL_PROCESS_ATTACH:
+			dll_process_attach(hInstance, true);
+			break;
+
+		case DLL_PROCESS_DETACH:
+			dll_process_detach(hInstance, true);
+			break;
+
+		case DLL_THREAD_ATTACH:
+			dll_thread_attach(true, true);
+			break;
+
+		case DLL_THREAD_DETACH:
+			dll_thread_detach(true, true);
+			break;
+
+		default:
+			break;
+		}
+		return true;
+	}
+
+}
+extern (C) export int add(int i, int j)
 {
 	return i + j;
 }
 
-extern (C) int multiply(int i, int j)
+extern (C) export int multiply(int i, int j)
 {
 	return i * j;
 }
 
-extern (C) int myfunc()
+extern (C) export int myfunc()
 {
 	import std.stdio;
 	import d2sqlite3;
