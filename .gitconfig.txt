@@ -1,0 +1,5 @@
+[user]
+	name = root@win10
+	email = root@win10
+[credential]
+	helper = store
