@@ -39,6 +39,23 @@ void main()
         writeln("home=", home);
         stdout.flush();
     }
+
+    { // SJISへの変換
+        import std.conv : to;
+        import std.stdio : stdout, writeln;
+        import std.string : toStringz;
+        import std.windows.charset : fromMBSz, toMBSz;
+
+        string kanji = "[漢字]";
+        writeln("kanji=", kanji);
+        string sjis = to!(string)(toMBSz(kanji, 932));
+        writeln("utf8 to sjis : ", sjis);
+        writeln("sjis to utf8 : ", fromMBSz(toStringz(sjis), 932));
+
+        wstring wkanji = to!wstring(kanji);
+        writeln("wkanji=", wkanji);
+        //writeln("utf8 to sjis : ", to!(string)(toMBSz(wkanji)));
+    }
 }
 
 private void define_test()

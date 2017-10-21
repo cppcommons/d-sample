@@ -70,21 +70,6 @@ void main()
         }
     }
 
-    {
-        import std.conv : to;
-        import std.string : toStringz;
-        import std.windows.charset : fromMBSz, toMBSz;
-
-        string kanji = "kanji=漢字";
-        writeln(kanji);
-        string sjis = to!(string)(toMBSz(kanji));
-        writeln("utf8 to sjis : ", sjis);
-        writeln("sjis to utf8 : ", fromMBSz(toStringz(cast(char[]) sjis)));
-
-        wstring wkanji = to!wstring(kanji);
-        writeln(wkanji);
-        //writeln("utf8 to sjis : ", to!(string)(toMBSz(wkanji)));
-    }
 
     {
         import std.path;
