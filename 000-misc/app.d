@@ -17,6 +17,7 @@ wchar[] toString(wchar* s)
 
 void main(string[] args)
 {
+    // 引数の表示
     for (int i; i < args.length; i++)
     {
         import std.stdio : stdout, writeln;
