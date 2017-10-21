@@ -188,5 +188,6 @@ extern (C) export int myfunc()
 			writeln("<NULL>");
 		}
 	}
+	stdout.flush();
 	return 0;
 }
