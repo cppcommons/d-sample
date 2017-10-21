@@ -64,6 +64,7 @@ void main(string[] args)
     random_test1();
     random_test2();
     random_test3();
+    random_test4();
 }
 
 private void define_test()
@@ -221,4 +222,28 @@ private void random_test3() // https://qiita.com/yjiro0403/items/55c7c18c04e97f2
     {
         writeln("random_test3(): ", key, "=", aa[key], "times");
     }
+}
+
+private void random_test4() // https://qiita.com/yjiro0403/items/55c7c18c04e97f2bc84d
+{
+    import std.algorithm.sorting : sort;
+    import std.random : randomCover, unpredictableSeed, Random;
+    import std.stdio : stdout, writeln;
+
+    int[] a = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+    auto rnd = Random(unpredictableSeed);
+    int [] result;
+    foreach (e; randomCover(a, rnd))
+    {
+        //writeln(e); //[3, 2, 7, 8, 1, 4, 0, 5, 6]の順で出力(一例)
+        result ~= e;
+    }
+    writeln("random_test4(): ", result);
+    result.length = 0;
+    foreach (e; randomCover(a, rnd))
+    {
+        //writeln(e);
+        result ~= e;
+    }
+    writeln("random_test4(): ", result);
 }
