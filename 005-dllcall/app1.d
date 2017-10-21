@@ -3,15 +3,6 @@ import std.stdio;
 import d2sqlite3;
 import std.typecons : Nullable;
 
-extern (C)
-{
-	void* gc_getProxy();
-	//void gc_setProxy(void* p);
-	//void gc_clrProxy();
-}
-
-alias extern (C) void function(void*) proc_DLL_Initialize;
-alias extern (C) void function() proc_DLL_Terminate;
 alias extern (C) int function(int, int) proc_add;
 alias extern (C) int function(int, int) proc_multiply;
 alias extern (C) int function() proc_myfunc;
@@ -43,12 +34,8 @@ else
 	stdout.flush();
 
 	auto dll = LoadLibraryA("mylib.dll");
-	writeln("*0", dll is null);
+	writeln("*1", dll is null);
 	stdout.flush();
-	auto DLL_Initialize = cast(proc_DLL_Initialize) GetProcAddress(dll, "DLL_Initialize");
-	writeln("*1", DLL_Initialize is null);
-	stdout.flush();
-	//DLL_Initialize(gc_getProxy());
 	auto add = cast(proc_add) GetProcAddress(dll, "add");
 	writeln("*2", add is null);
 	stdout.flush();
