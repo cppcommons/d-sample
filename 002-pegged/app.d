@@ -1,5 +1,5 @@
 import core.thread;
-import std.conv: to;
+import std.conv : to;
 import pegged.grammar;
 
 mixin(grammar(`
@@ -19,70 +19,92 @@ M2Pkgs:
 
 char[] toString(char* s)
 {
-  import core.stdc.string: strlen;
-  return s ? s[0 .. strlen(s)] : cast(char[])null;
+    import core.stdc.string : strlen;
+
+    return s ? s[0 .. strlen(s)] : cast(char[]) null;
 }
 
 // http://forum.dlang.org/post/c6ojg9$c8p$1@digitaldaemon.com
 wchar[] toString(wchar* s)
 {
-  import core.stdc.wchar_;
-  return s ? s[0 .. wcslen(s)] : cast(wchar[])null;
+    import core.stdc.wchar_;
+
+    return s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
 }
 
 void main()
 {
-  import std.stdio;
+    import std.stdio;
 
-  {
-    //import core.stdc.stdlib: getenv;
-    import std.process: environment;
-    import std.string: strip;
-    //string pkgs = environment.get("MSYS2_PKGS");
-    string pkgs = "abc,xyz";
-    writefln("pkgs.length=%d", pkgs.length);
-    writefln("pkgs=%s", pkgs);
-    if (strip(pkgs)=="") {
-      writeln("empty pkgs");
-      return;
-    }
-    auto p = M2Pkgs(pkgs);
-    writeln(p);
-    if (!p.successful) {
-      writeln("not success!");
-      return;
-    }
-    writeln(p);
-    if (p.end != pkgs.length) {
-      writeln("length does not match!");
-      return;
-    }
-    writeln(p.matches.length);
-    for (int i=0; i<p.matches.length; i++) {
-      writefln("%d: %s", i, p.matches[i]);
-    }
-  }
+    {
+        //import core.stdc.stdlib: getenv;
+        import std.process : environment;
+        import std.string : strip;
 
-  {
-    import std.conv: to;
-    import std.string: toStringz;
-    import std.windows.charset: fromMBSz, toMBSz;
-    string kanji = "kanji=漢字";
-    writeln(kanji);
-    string sjis = to!(string)(toMBSz(kanji));
-    writeln("utf8 to sjis : ", sjis);
-    writeln("sjis to utf8 : ", fromMBSz(toStringz(cast(char[])sjis)));
+        //string pkgs = environment.get("MSYS2_PKGS");
+        string pkgs = "abc,xyz";
+        writefln("pkgs.length=%d", pkgs.length);
+        writefln("pkgs=%s", pkgs);
+        if (strip(pkgs) == "")
+        {
+            writeln("empty pkgs");
+            return;
+        }
+        auto p = M2Pkgs(pkgs);
+        writeln(p);
+        if (!p.successful)
+        {
+            writeln("not success!");
+            return;
+        }
+        writeln(p);
+        if (p.end != pkgs.length)
+        {
+            writeln("length does not match!");
+            return;
+        }
+        writeln(p.matches.length);
+        for (int i = 0; i < p.matches.length; i++)
+        {
+            writefln("%d: %s", i, p.matches[i]);
+        }
+    }
 
-    wstring wkanji = to!wstring(kanji);
-    writeln(wkanji);
-    //writeln("utf8 to sjis : ", to!(string)(toMBSz(wkanji)));
-  }
+    {
+        import std.conv : to;
+        import std.string : toStringz;
+        import std.windows.charset : fromMBSz, toMBSz;
 
-  {
-    import std.path;
-    string rsrcDir = std.path.expandTilde("~/myresources");
-    writeln(rsrcDir);
-  }
+        string kanji = "kanji=漢字";
+        writeln(kanji);
+        string sjis = to!(string)(toMBSz(kanji));
+        writeln("utf8 to sjis : ", sjis);
+        writeln("sjis to utf8 : ", fromMBSz(toStringz(cast(char[]) sjis)));
+
+        wstring wkanji = to!wstring(kanji);
+        writeln(wkanji);
+        //writeln("utf8 to sjis : ", to!(string)(toMBSz(wkanji)));
+    }
+
+    {
+        import std.path;
+
+        string rsrcDir = std.path.expandTilde("~/myresources");
+        writeln(rsrcDir);
+    }
+
+    // モジュール生成
+    asModule("arithmetic", "arithmetic", "Arithmetic:
+    Expr     <- Factor AddExpr*
+    AddExpr  <- ('+'/'-') Factor
+    Factor   <- Primary MulExpr*
+    MulExpr  <- ('*'/'/') Primary
+    Primary  <- Parens / Number / Variable / '-' Primary
+
+    Parens   <- '(' Expr ')'
+    Number   <~ [0-9]+
+    Variable <- identifier
+");
 
 }
 
