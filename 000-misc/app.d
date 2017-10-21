@@ -15,11 +15,12 @@ wchar[] toString(wchar* s)
     return s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
 }
 
-void main(string [] args)
+void main(string[] args)
 {
-    for (int i; i<args.length; i++)
+    for (int i; i < args.length; i++)
     {
         import std.stdio : stdout, writeln;
+
         writeln(i, "=", args[i]);
     }
 
@@ -86,20 +87,29 @@ private void define_test()
 }
 
 private string getHomePath()
-{ // from http://forum.dlang.org/post/otuvjlaoivpubftxdhxt@forum.dlang.org
-    import core.sys.windows.shlobj : CSIDL_PROFILE, SHGetFolderPathW;
-    import core.sys.windows.windows : MAX_PATH;
-    import std.conv : to;
-
-    wchar[] toString(wchar* s)
+{
+    version (windows)
     {
-        import core.stdc.wchar_ : wcslen;
+        import core.sys.windows.shlobj : CSIDL_PROFILE, SHGetFolderPathW;
+        import core.sys.windows.windows : MAX_PATH;
+        import std.conv : to;
 
-        return s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
+        wchar[] toString(wchar* s)
+        {
+            import core.stdc.wchar_ : wcslen;
+
+            return s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
+        }
+
+        wchar[MAX_PATH] buffer;
+        if (SHGetFolderPathW(null, CSIDL_PROFILE, null, 0, buffer.ptr) >= 0)
+            return to!string(toString(buffer.ptr));
+        return null;
     }
+    else
+    { // Not tested!
+        import std.path : expandTilde;
 
-    wchar[MAX_PATH] buffer;
-    if (SHGetFolderPathW(null, CSIDL_PROFILE, null, 0, buffer.ptr) >= 0)
-        return to!string(toString(buffer.ptr));
-    return null;
+        return expandTilde("~/");
+    }
 }

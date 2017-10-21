@@ -10,6 +10,11 @@
     },
     "tasks": [
         {
+            "taskName": "my-coverage.bat",
+            "isBuildCommand": false,
+            "command": "my-coverage.bat"
+        },
+        {
             "taskName": "build",
             "isBuildCommand": true,
             "problemMatcher": {

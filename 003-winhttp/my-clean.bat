@@ -1,2 +1,2 @@
 rmdir /s /q .dub
-del *.exe
+del prog-*.exe
