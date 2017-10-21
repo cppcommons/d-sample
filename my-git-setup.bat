@@ -5,6 +5,9 @@ git config --unset-all credential.helper
 git config --global --unset-all credential.helper
 ::git config --system --unset-all credential.helper
 
+git config --global credential.helper manager
+git config --global credential.useHttpPath true
+
 ::git config --global credential.helper wincred
 ::git config --global credential.helper store
 ::git config --global credential.helper cache
