@@ -60,6 +60,9 @@ void main(string[] args)
         wstring wkanji = to!wstring(kanji);
         writeln("wkanji=", wkanji);
     }
+
+    random_test1();
+    random_test2();
 }
 
 private void define_test()
@@ -113,4 +116,65 @@ private string getHomePath()
 
         return expandTilde("~/");
     }
+}
+
+private void random_test1() // https://qiita.com/yjiro0403/items/55c7c18c04e97f2bc84d
+{
+    import std.random : uniform, unpredictableSeed, Random;
+    import std.stdio : stdout, writeln;
+
+    //upredictableSeedによって実行するごとに異なる乱数列を生成できる
+    auto rnd = Random(unpredictableSeed);
+    //0から99の整数値をうち一つを出力
+    writeln(uniform(0, 100, rnd));
+    int i;
+    int n;
+    for (i = 0; i < 10_000; i++)
+    {
+        n = uniform(0, 100, rnd);
+        if (n < 0 || n > 99)
+        {
+            writeln("error-1");
+            break;
+        }
+    }
+    //0から100の整数値をうち一つを出力
+    writeln(uniform!"[]"(0, 100, rnd));
+    for (i = 0; i < 10_000; i++)
+    {
+        n = uniform!"[]"(0, 100, rnd);
+        if (n < 0 || n > 100)
+        {
+            writeln("error-2: ", n);
+            break;
+        }
+    }
+    //0から100のうち実数を一つ出力
+    writeln(uniform(0.0L, 100.0L, rnd));
+    real r;
+    for (i = 0; i < 10_000; i++)
+    {
+        r = uniform(0.0L, 100.0L, rnd);
+        if (r < 0.0L || r >= 100.0L)
+        {
+            writeln("error-3: ", r);
+            break;
+        }
+    }
+}
+
+private void random_test2() // https://qiita.com/yjiro0403/items/55c7c18c04e97f2bc84d
+{
+    import std.random : randomShuffle, uniform, unpredictableSeed, Random;
+    import std.stdio : stdout, writeln;
+
+    int[] i = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    //upredictableSeedによって実行するごとに異なる乱数列を生成できる
+    auto rnd = Random(unpredictableSeed);
+    randomShuffle(i, rnd);
+    writeln(i); //[9, 0, 8, 6, 4, 2, 5, 3, 1, 7] (一例)
+    //二次元配列でも可能です
+    int[][] j = [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9]];
+    randomShuffle(j, rnd);
+    writeln(j); //[[4, 5], [6, 7], [2, 3], [0, 1], [8, 9]] (一例)
 }
