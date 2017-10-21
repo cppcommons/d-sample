@@ -15,8 +15,14 @@ wchar[] toString(wchar* s)
     return s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
 }
 
-void main()
+void main(string [] args)
 {
+    for (int i; i<args.length; i++)
+    {
+        import std.stdio : stdout, writeln;
+        writeln(i, "=", args[i]);
+    }
+
     define_test(); // DEFINE テスト
 
     { // カレントディレクトリの取得
