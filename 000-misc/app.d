@@ -63,6 +63,7 @@ void main(string[] args)
 
     random_test1();
     random_test2();
+    random_test3();
 }
 
 private void define_test()
@@ -177,4 +178,47 @@ private void random_test2() // https://qiita.com/yjiro0403/items/55c7c18c04e97f2
     int[][] j = [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9]];
     randomShuffle(j, rnd);
     writeln(j); //[[4, 5], [6, 7], [2, 3], [0, 1], [8, 9]] (一例)
+}
+
+private void random_test3() // https://qiita.com/yjiro0403/items/55c7c18c04e97f2bc84d
+{
+    import std.algorithm.sorting : sort;
+    import std.random : dice;
+    import std.stdio : stdout, writeln;
+
+    int[int] aa;
+
+    foreach (int i; 0 .. 10_000)
+    {
+        auto n = dice(5, 3, 2);
+        //writeln("random_test3(): ", n);
+        int* p = (n in aa);
+        if (p is null)
+            aa[n] = 1;
+        else
+            (*p)++;
+    }
+    foreach (key; aa.keys.sort)
+    {
+        writeln("random_test3(): ", key, "=", aa[key], "times");
+    }
+    // Clear the associative array
+    foreach (key; aa.keys)
+    {
+        aa.remove(key);
+    }
+    foreach (int i; 0 .. 10_000)
+    {
+        auto n = dice([5, 3, 2]);
+        //writeln("random_test3(): ", n);
+        int* p = (n in aa);
+        if (p is null)
+            aa[n] = 1;
+        else
+            (*p)++;
+    }
+    foreach (key; aa.keys.sort)
+    {
+        writeln("random_test3(): ", key, "=", aa[key], "times");
+    }
 }
