@@ -1,1 +1,1 @@
-copy ..\lib\*.dll
+copy ..\..\d-lib\*.dll .

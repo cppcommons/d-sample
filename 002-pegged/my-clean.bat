@@ -1,2 +1,2 @@
-rm -rf .dub
-rm *.exe
+rmdir /s /q .dub
+del *.exe
