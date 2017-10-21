@@ -2,10 +2,28 @@ module misc.random;
 
 void misc_main()
 {
+    import std.stdio : stdout, writeln;
     random_test1();
     random_test2();
     random_test3();
     random_test4();
+    writeln(random_bytes(20));
+}
+
+ubyte[] random_bytes(size_t length)
+{
+    import std.random : choice, unpredictableSeed, Random;
+    import std.range : iota;
+
+    auto range = iota(0, ubyte.max);
+    ubyte[] result;
+    result.length = length;
+    auto rnd = Random(unpredictableSeed);
+    for (int i = 0; i < result.length; i++)
+    {
+        result[i] = cast(ubyte)choice(range, rnd);
+    }
+    return result;
 }
 
 void random_test1() // https://qiita.com/yjiro0403/items/55c7c18c04e97f2bc84d
