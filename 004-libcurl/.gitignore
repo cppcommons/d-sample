@@ -1,0 +1,8 @@
+.dub
+dub.selections.json
+prog-*.exe
+*.o
+*.obj
+*.lst
+libcurl.dll
+temp.*
