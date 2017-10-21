@@ -1,0 +1,7 @@
+.dub
+dub.selections.json
+*.exe
+*.o
+*.obj
+*.lst
+mylib.dll

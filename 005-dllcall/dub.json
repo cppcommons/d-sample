@@ -1,0 +1,63 @@
+{
+    "name": "program",
+    "targetType": "none",
+    "importPaths": [
+        "../../d-lib"
+    ],
+    "subPackages": [
+        {
+            "name": "mylib",
+            "targetType": "dynamicLibrary",
+            "targetName": "mylib",
+            "sourceFiles": [
+                "mylib.d",
+                "mylib.def",
+                "gcstub.obj",
+                "phobos.lib",
+                "../../d-lib/sqlite-win-32bit-3200100-dm32.lib",
+                "../../d-lib/pegged-dm32.lib",
+                "../../d-lib/winhttp-dm32.lib"
+            ],
+            "dependencies": {
+                "d2sqlite3": "~master"
+            },
+            "subConfigurations": {
+                "d2sqlite3": "without-lib"
+            }
+        },
+        {
+            "name": "app1",
+            "targetType": "executable",
+            "targetName": "app1-dm32",
+            "sourceFiles": [
+                "app1.d",
+                "../../d-lib/sqlite-win-32bit-3200100-dm32.lib",
+                "../../d-lib/pegged-dm32.lib",
+                "../../d-lib/winhttp-dm32.lib"
+            ],
+            "dependencies": {
+                "d2sqlite3": "~master"
+            },
+            "subConfigurations": {
+                "d2sqlite3": "without-lib"
+            }
+        },
+        {
+            "name": "app2",
+            "targetType": "executable",
+            "targetName": "app2-dm32",
+            "sourceFiles": [
+                "app2.d",
+                "../../d-lib/sqlite-win-32bit-3200100-dm32.lib",
+                "../../d-lib/pegged-dm32.lib",
+                "../../d-lib/winhttp-dm32.lib"
+            ],
+            "dependencies": {
+                "d2sqlite3": "~master"
+            },
+            "subConfigurations": {
+                "d2sqlite3": "without-lib"
+            }
+        }
+    ]
+}

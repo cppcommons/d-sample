@@ -1,0 +1,8 @@
+LIBRARY mylib.dll
+EXETYPE NT
+CODE SHARED EXECUTE
+DATA WRITE
+EXPORTS
+  add
+  multiply
+  myfunc
