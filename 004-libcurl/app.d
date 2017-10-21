@@ -1,21 +1,25 @@
 // app.d
 
-//private shared immutable ubyte[] libcurl_dll = cast(immutable ubyte[]) import(
-//        "libcurl.dll@v2.076.1.bin");
+//private shared immutable ubyte[] libcurl_dll = cast(immutable ubyte[]) import("libcurl.dll@v2.076.1.bin");
 //private shared ubyte[] libcurl_dll = cast(ubyte[]) import("libcurl.dll@v2.076.1.bin");
 
 void main(string[] args)
 {
     prepare_libcurl();
     {
-        import std.net.curl : byChunk;
+        import std.conv: to;
+        import std.net.curl : byChunkAsync;
         import std.stdio : stdout, writeln;
 
-        foreach (chunk; byChunk("dlang.org", 20))
+        ubyte[] bytes;
+        foreach (chunk; byChunkAsync("http://dlang.org", 20))
         {
             writeln(chunk);
             stdout.flush();
+            bytes ~= chunk;
         }
+        writeln("bytes.length=", bytes.length);
+        writeln(cast(char[])bytes);
     }
 }
 
