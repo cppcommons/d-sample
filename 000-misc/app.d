@@ -1,5 +1,6 @@
 // app.d
 
+// http://forum.dlang.org/post/c6ojg9$c8p$1@digitaldaemon.com
 char[] toString(char* s)
 {
     import core.stdc.string : strlen;
