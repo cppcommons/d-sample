@@ -7,7 +7,7 @@ void main(string[] args)
 {
     prepare_libcurl();
     {
-        import std.conv: to;
+        import std.conv : to;
         import std.net.curl : byChunkAsync;
         import std.stdio : stdout, writeln;
 
@@ -19,7 +19,7 @@ void main(string[] args)
             bytes ~= chunk;
         }
         writeln("bytes.length=", bytes.length);
-        writeln(cast(char[])bytes);
+        writeln(cast(char[]) bytes);
     }
 }
 
