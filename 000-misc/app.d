@@ -1,8 +1,5 @@
 // app.d
 
-// from http://forum.dlang.org/post/otuvjlaoivpubftxdhxt@forum.dlang.org
-// #define CSIDL_PROFILE 0x0028
-
 char[] toString(char* s)
 {
     import core.stdc.string : strlen;
@@ -54,7 +51,6 @@ void main()
 
         wstring wkanji = to!wstring(kanji);
         writeln("wkanji=", wkanji);
-        //writeln("utf8 to sjis : ", to!(string)(toMBSz(wkanji)));
     }
 }
 
@@ -85,7 +81,6 @@ private void define_test()
 
 private string getHomePath()
 { // from http://forum.dlang.org/post/otuvjlaoivpubftxdhxt@forum.dlang.org
-    import core.stdc.wchar_ : wcslen;
     import core.sys.windows.shlobj : CSIDL_PROFILE, SHGetFolderPathW;
     import core.sys.windows.windows : MAX_PATH;
     import std.conv : to;
