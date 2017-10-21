@@ -226,8 +226,10 @@ private void random_test3() // https://qiita.com/yjiro0403/items/55c7c18c04e97f2
 
 private void random_test4() // https://qiita.com/yjiro0403/items/55c7c18c04e97f2bc84d
 {
+    import std.algorithm.iteration: each;
     import std.algorithm.sorting : sort;
-    import std.random : randomCover, randomSample, unpredictableSeed, Random;
+    import std.random : choice, randomCover, randomSample, unpredictableSeed, Random;
+    import std.range : iota;
     import std.stdio : stdout, writeln;
 
     int[] a = [0, 1, 2, 3, 4, 5, 6, 7, 8];
@@ -248,4 +250,12 @@ private void random_test4() // https://qiita.com/yjiro0403/items/55c7c18c04e97f2
     writeln("random_test4(): ", result);
     //
     writeln("random_test4(): randomSample()==>", randomSample(a, 5)); //[1, 4, 5, 7 , 8] (一例)
+    result.length = 0;
+    result.length = 15;
+    auto the_range = iota(0, 5);
+    for (int i=0; i<result.length; i++)
+    {
+        result[i] = choice(the_range, rnd);
+    }
+    writeln("random_test4(): ", result);
 }
