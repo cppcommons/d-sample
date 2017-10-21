@@ -19,56 +19,58 @@ version (unittest)
 {
 }
 else
-    void main(string[] args)
 {
-    // 引数の表示 (utf-8でわたってくる)
-    for (int i; i < args.length; i++)
+    void main(string[] args)
     {
-        import std.stdio : stdout, writeln;
+        // 引数の表示 (utf-8でわたってくる)
+        for (int i; i < args.length; i++)
+        {
+            import std.stdio : stdout, writeln;
 
-        writeln(i, "=", args[i]);
+            writeln(i, "=", args[i]);
+        }
+
+        define_test(); // DEFINE テスト
+
+        { // カレントディレクトリの取得
+            import std.file : getcwd;
+            import std.stdio : stdout, writeln;
+
+            string cwd = getcwd();
+            writeln(cwd);
+            stdout.flush();
+        }
+
+        { // ホームディレクトリの取得
+            import std.file : getcwd;
+            import std.stdio : stdout, writeln;
+
+            string home = getHomePath();
+            writeln("home=", home);
+            stdout.flush();
+        }
+
+        { // SJISへの変換
+            import std.conv : to;
+            import std.stdio : stdout, writeln;
+            import std.string : toStringz;
+            import std.windows.charset : fromMBSz, toMBSz;
+
+            string kanji = "[漢字]";
+            writeln("kanji=", kanji);
+            string sjis = to!(string)(toMBSz(kanji, 932));
+            writeln("utf8 to sjis : ", sjis);
+            writeln("sjis to utf8 : ", fromMBSz(toStringz(sjis), 932));
+
+            wstring wkanji = to!wstring(kanji);
+            writeln("wkanji=", wkanji);
+        }
+
+        random_test1();
+        random_test2();
+        random_test3();
+        random_test4();
     }
-
-    define_test(); // DEFINE テスト
-
-    { // カレントディレクトリの取得
-        import std.file : getcwd;
-        import std.stdio : stdout, writeln;
-
-        string cwd = getcwd();
-        writeln(cwd);
-        stdout.flush();
-    }
-
-    { // ホームディレクトリの取得
-        import std.file : getcwd;
-        import std.stdio : stdout, writeln;
-
-        string home = getHomePath();
-        writeln("home=", home);
-        stdout.flush();
-    }
-
-    { // SJISへの変換
-        import std.conv : to;
-        import std.stdio : stdout, writeln;
-        import std.string : toStringz;
-        import std.windows.charset : fromMBSz, toMBSz;
-
-        string kanji = "[漢字]";
-        writeln("kanji=", kanji);
-        string sjis = to!(string)(toMBSz(kanji, 932));
-        writeln("utf8 to sjis : ", sjis);
-        writeln("sjis to utf8 : ", fromMBSz(toStringz(sjis), 932));
-
-        wstring wkanji = to!wstring(kanji);
-        writeln("wkanji=", wkanji);
-    }
-
-    random_test1();
-    random_test2();
-    random_test3();
-    random_test4();
 }
 
 private void define_test()
