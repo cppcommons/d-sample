@@ -17,6 +17,21 @@ wchar[] toString(wchar* s)
 
 void main()
 {
+    define_test(); // DEFINE テスト
+
+    { // カレントディレクトリの取得
+        import std.file : getcwd;
+        import std.stdio : stdout, writeln;
+
+        string cwd = getcwd();
+        writeln(cwd);
+        stdout.flush();
+    }
+
+}
+
+private void define_test()
+{
     version (COMPILER_DM32)
     {
         import std.stdio : stdout, writeln;
@@ -33,16 +48,9 @@ void main()
     }
     else
     {
-        writeln("UNKNOWN COMPILER");
-    }
-
-    {
-        import std.file : getcwd;
         import std.stdio : stdout, writeln;
 
-        string cwd = getcwd();
-        writeln(cwd);
-        stdout.flush();
+        writeln("UNKNOWN COMPILER");
     }
 
 }
