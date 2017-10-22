@@ -10,3 +10,4 @@ mylib.dll
 release
 debug
 *.pro.user
+dll_data*

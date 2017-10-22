@@ -1,9 +1,14 @@
 #include <stdio.h>
 #include "MemoryModule.h"
 
-//#include <string>
-//#include <fstream>
-//#include <streambuf>
+//#include "dll_data.h"
+extern "C" {
+	extern const char dll_data[];
+}
+
+static const char *x[] = {
+	dll_data, NULL
+};
 
 int main() 
 {
@@ -18,6 +23,7 @@ int main()
 	
 	
 	HMEMORYMODULE hModule = MemoryLoadLibrary(fcontent);
+	//HMEMORYMODULE hModule = MemoryLoadLibrary(dll_data);
 	printf("0x%08x\n", hModule);
 
 	typedef int (*proc_add2)(int a, int b);
