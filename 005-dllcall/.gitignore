@@ -11,3 +11,4 @@ release
 debug
 *.pro.user
 dll_data*
+lib_entry.lib
