@@ -2,6 +2,11 @@
 
 extern "C" void *get_proc(const char *proc_name);
 
+extern "C" int add2(int a, int b);
+
+extern "C" int test1();
+
+#if 0x0
 extern int add2(int a, int b)
 {
 	typedef int (*proc_add2)(int a, int b);
@@ -15,6 +20,7 @@ extern int test1()
 	static proc_test1 _test1 = (proc_test1)get_proc("test1");
 	return _test1();
 }
+#endif
 
 int main()
 {
