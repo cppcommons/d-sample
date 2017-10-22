@@ -1,18 +1,20 @@
 #include <stdio.h>
 #include "MemoryModule.h"
 
-//#include "dll_data.h"
-extern "C" {
-	extern const char dll_data[];
-}
-
-static const char *x[] = {
-	dll_data, NULL
-};
+#include "dll_data.h"
 
 int main() 
 {
 	printf("start!\n");
+
+	char *dll_data = (char *)malloc(dll_data_unit * dll_data_count);
+	char *dll_ptr = dll_data;
+	for (int i=0; i<dll_data_count; i++)
+	{
+		const char *unit = dll_data_array[i];
+		memcpy(dll_ptr, unit, dll_data_unit);
+		dll_ptr += dll_data_unit;
+	}
 
 	FILE * fp = fopen("release/dlltest.dll", "rb");
 	fseek(fp, 0, SEEK_END); 
@@ -22,8 +24,8 @@ int main()
 	fread(fcontent, 1, size, fp);	
 	
 	
-	HMEMORYMODULE hModule = MemoryLoadLibrary(fcontent);
-	//HMEMORYMODULE hModule = MemoryLoadLibrary(dll_data);
+	//HMEMORYMODULE hModule = MemoryLoadLibrary(fcontent);
+	HMEMORYMODULE hModule = MemoryLoadLibrary(dll_data);
 	printf("0x%08x\n", hModule);
 
 	typedef int (*proc_add2)(int a, int b);
