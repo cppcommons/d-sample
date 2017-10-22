@@ -49,14 +49,14 @@ typedef void (*CustomFreeLibraryFunc)(HCUSTOMMODULE, void *);
  * All dependencies are resolved using default LoadLibrary/GetProcAddress
  * calls through the Windows API.
  */
-static HMEMORYMODULE MemoryLoadLibrary(const void *);
+HMEMORYMODULE MemoryLoadLibrary(const void *);
 
 /**
  * Load DLL from memory location using custom dependency resolvers.
  *
  * Dependencies will be resolved using passed callback methods.
  */
-static HMEMORYMODULE MemoryLoadLibraryEx(const void *,
+HMEMORYMODULE MemoryLoadLibraryEx(const void *,
     CustomLoadLibraryFunc,
     CustomGetProcAddressFunc,
     CustomFreeLibraryFunc,
@@ -65,42 +65,42 @@ static HMEMORYMODULE MemoryLoadLibraryEx(const void *,
 /**
  * Get address of exported method.
  */
-static FARPROC MemoryGetProcAddress(HMEMORYMODULE, LPCSTR);
+FARPROC MemoryGetProcAddress(HMEMORYMODULE, LPCSTR);
 
 /**
  * Free previously loaded DLL.
  */
-static void MemoryFreeLibrary(HMEMORYMODULE);
+void MemoryFreeLibrary(HMEMORYMODULE);
 
 /**
  * Find the location of a resource with the specified type and name.
  */
-static HMEMORYRSRC MemoryFindResource(HMEMORYMODULE, LPCTSTR, LPCTSTR);
+HMEMORYRSRC MemoryFindResource(HMEMORYMODULE, LPCTSTR, LPCTSTR);
 
 /**
  * Find the location of a resource with the specified type, name and language.
  */
-static HMEMORYRSRC MemoryFindResourceEx(HMEMORYMODULE, LPCTSTR, LPCTSTR, WORD);
+HMEMORYRSRC MemoryFindResourceEx(HMEMORYMODULE, LPCTSTR, LPCTSTR, WORD);
 
 /**
  * Get the size of the resource in bytes.
  */
-static DWORD MemorySizeofResource(HMEMORYMODULE, HMEMORYRSRC);
+DWORD MemorySizeofResource(HMEMORYMODULE, HMEMORYRSRC);
 
 /**
  * Get a pointer to the contents of the resource.
  */
-static LPVOID MemoryLoadResource(HMEMORYMODULE, HMEMORYRSRC);
+LPVOID MemoryLoadResource(HMEMORYMODULE, HMEMORYRSRC);
 
 /**
  * Load a string resource.
  */
-static int MemoryLoadString(HMEMORYMODULE, UINT, LPTSTR, int);
+int MemoryLoadString(HMEMORYMODULE, UINT, LPTSTR, int);
 
 /**
  * Load a string resource with a given language.
  */
-static int MemoryLoadStringEx(HMEMORYMODULE, UINT, LPTSTR, int, WORD);
+int MemoryLoadStringEx(HMEMORYMODULE, UINT, LPTSTR, int, WORD);
 
 #ifdef __cplusplus
 }

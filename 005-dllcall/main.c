@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include "MemoryModule.h"
 
+#include "MemoryModule.c"
 #include "dll_data.h"
 
 static FARPROC get_proc(const char *proc_name)
@@ -25,7 +25,8 @@ static FARPROC get_proc(const char *proc_name)
 extern int my_add2(int a, int b)
 {
 	typedef int (*proc_add2)(int a, int b);
-	static proc_add2 add2 = (proc_add2)get_proc("add2");
+	static proc_add2 add2 = NULL;
+	if (!add2) add2 = (proc_add2)get_proc("add2");
 	return add2(a, b);
 }
 
