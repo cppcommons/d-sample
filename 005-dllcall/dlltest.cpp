@@ -35,7 +35,7 @@ void test1()
     if (r != ARCHIVE_OK)
         exit(1);
     while (archive_read_next_header(a, &entry) == ARCHIVE_OK) {
-        //printf("%s\n",archive_entry_pathname(entry));
+        printf("%s\n",archive_entry_pathname(entry));
         auto entry_size = archive_entry_size(entry);
         //archive_read_data_skip(a);  // Note 2
         std::vector<char> buff(entry_size);
@@ -45,7 +45,7 @@ void test1()
             std::cout << "(size != buff.size())" << std::endl;
             exit(1);
         }
-        //std::cout << entry_size << std::endl;
+        std::cout << entry_size << std::endl;
     }
     r = archive_read_free(a);  // Note 3
     if (r != ARCHIVE_OK)
