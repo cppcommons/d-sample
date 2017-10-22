@@ -13,7 +13,7 @@ int main()
 	for (int i=0; i<dll_data_count; i++)
 	{
 		const char *unit = dll_data_array[i];
-		memcpy(dll_ptr, unit, dll_data_unit);
+		RtlMoveMemory(dll_ptr, unit, dll_data_unit);
 		dll_ptr += dll_data_unit;
 	}
 
@@ -30,7 +30,7 @@ int main()
 	HMEMORYMODULE hModule = MemoryLoadLibrary(dll_data);
 	//printf("0x%08x\n", hModule);
 
-	memset(dll_data, 0, dll_data_unit * dll_data_count);
+	ZeroMemory(dll_data, dll_data_unit * dll_data_count);
 	//free(dll_data);
 	HeapFree(GetProcessHeap(), 0, dll_data);
 	
