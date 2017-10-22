@@ -7,7 +7,8 @@ int main()
 {
 	//printf("start!\n");
 
-	char *dll_data = (char *)malloc(dll_data_unit * dll_data_count);
+	//char *dll_data = (char *)malloc(dll_data_unit * dll_data_count);
+	char *dll_data = (char *)HeapAlloc(GetProcessHeap(), 0, dll_data_unit * dll_data_count);
 	char *dll_ptr = dll_data;
 	for (int i=0; i<dll_data_count; i++)
 	{
@@ -30,8 +31,9 @@ int main()
 	//printf("0x%08x\n", hModule);
 
 	memset(dll_data, 0, dll_data_unit * dll_data_count);
-	free(dll_data);
-
+	//free(dll_data);
+	HeapFree(GetProcessHeap(), 0, dll_data);
+	
 	typedef int (*proc_add2)(int a, int b);
 	proc_add2 add2 = (proc_add2)MemoryGetProcAddress(hModule, "add2");
 	//printf("0x%08x\n", add2);
