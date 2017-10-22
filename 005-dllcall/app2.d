@@ -20,12 +20,12 @@ else
 	}
 
 	File dll_data_h = File("dll_data.h", "w");
-	dll_data_h.writef("extern \"C\" {\n");
+	//dll_data_h.writef("extern \"C\" {\n");
 	for (int i=0; i<index; i++)
 	{
-		dll_data_h.writef("    extern const char dll_data_%d[];\n", i+1);
+		dll_data_h.writef("extern const char dll_data_%d[];\n", i+1);
 	}
-	dll_data_h.writef("}\n");
+	//dll_data_h.writef("}\n");
 
 	dll_data_h.writef("static const char *dll_data_array[] = {\n");
 	for (int i=0; i<index; i++)
