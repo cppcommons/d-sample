@@ -28,6 +28,9 @@ int main()
 	HMEMORYMODULE hModule = MemoryLoadLibrary(dll_data);
 	printf("0x%08x\n", hModule);
 
+	memset(dll_data, 0, dll_data_unit * dll_data_count);
+	free(dll_data);
+
 	typedef int (*proc_add2)(int a, int b);
 	proc_add2 add2 = (proc_add2)MemoryGetProcAddress(hModule, "add2");
 	printf("0x%08x\n", add2);
