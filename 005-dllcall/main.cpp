@@ -1,8 +1,10 @@
 #include <stdio.h>
+//#include "MemoryModule.c"
+//#include "dll_data.h"
 
-#include "MemoryModule.c"
-#include "dll_data.h"
+extern "C" void *get_proc(const char *proc_name);
 
+#if 0x0
 static FARPROC get_proc(const char *proc_name)
 {
 	static HMEMORYMODULE hModule = NULL;
@@ -21,12 +23,14 @@ static FARPROC get_proc(const char *proc_name)
 	}
 	return MemoryGetProcAddress(hModule, proc_name);
 }
+#endif
 
 extern int my_add2(int a, int b)
 {
 	typedef int (*proc_add2)(int a, int b);
-	static proc_add2 add2 = NULL;
-	if (!add2) add2 = (proc_add2)get_proc("add2");
+	//static proc_add2 add2 = NULL;
+	//if (!add2) add2 = (proc_add2)get_proc("add2");
+	static proc_add2 add2 = (proc_add2)get_proc("add2");
 	return add2(a, b);
 }
 

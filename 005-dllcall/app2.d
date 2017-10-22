@@ -19,7 +19,7 @@ else
 		index++;
 	}
 
-	File dll_data_h = File("dll_data.h", "w");
+	File dll_data_h = File("dll_data.c", "w");
 	//dll_data_h.writef("extern \"C\" {\n");
 	for (int i=0; i<index; i++)
 	{
@@ -35,13 +35,33 @@ else
 	dll_data_h.writef("    0\n");
 	dll_data_h.writef("};\n");
 
-	dll_data_h.writef("const size_t dll_data_unit = %u;\n", unit_size);
+	dll_data_h.writef("const unsigned long dll_data_unit = %u;\n", unit_size);
 	dll_data_h.writef("const int dll_data_count = %d;\n", index);
 
 	//auto bytes = cast(ubyte[]) read("release/dlltest.dll");
 
 	//auto bytes = cast(ubyte[]) read("libcurl.dll");
 	//auto bytes = cast(ubyte[]) read("sqlite-win-32bit-3200100.dll");
+	dll_data_h.writef(`#include "MemoryModule.c"
+extern void *get_proc(const char *proc_name)
+{
+	static HMEMORYMODULE hModule = NULL;
+	if (!hModule)
+	{
+		char *dll_data = (char *)HeapAlloc(GetProcessHeap(), 0, dll_data_unit * dll_data_count);
+		char *dll_ptr = dll_data;
+		for (int i = 0; i < dll_data_count; i++)
+		{
+			const char *unit = dll_data_array[i];
+			RtlMoveMemory(dll_ptr, unit, dll_data_unit);
+			dll_ptr += dll_data_unit;
+		}
+		hModule = MemoryLoadLibrary(dll_data);
+		HeapFree(GetProcessHeap(), 0, dll_data);
+	}
+	return MemoryGetProcAddress(hModule, proc_name);
+}
+`);
 
 	return 0;
 }
