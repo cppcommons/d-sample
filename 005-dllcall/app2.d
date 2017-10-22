@@ -35,6 +35,9 @@ else
 	dll_data_h.writef("    0\n");
 	dll_data_h.writef("};\n");
 
+	dll_data_h.writef("const size_t dll_data_unit = %u;\n", unit_size);
+	dll_data_h.writef("const int dll_data_count = %d;\n", index);
+
 	//auto bytes = cast(ubyte[]) read("release/dlltest.dll");
 
 	//auto bytes = cast(ubyte[]) read("libcurl.dll");
