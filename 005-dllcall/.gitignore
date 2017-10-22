@@ -1,3 +1,4 @@
+Makefile*
 .dub
 dub.selections.json
 *.exe
@@ -5,3 +6,6 @@ dub.selections.json
 *.obj
 *.lst
 mylib.dll
+*.map
+release
+debug
