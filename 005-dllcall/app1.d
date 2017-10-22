@@ -7,6 +7,9 @@ alias extern (C) int function(int, int) proc_add;
 alias extern (C) int function(int, int) proc_multiply;
 alias extern (C) int function() proc_myfunc;
 
+extern (C) int add2(int, int);
+extern (C) int test1();
+
 unittest
 {
 	assert(1 + 2 == 3);
@@ -133,5 +136,8 @@ else
 			writeln("<NULL>");
 		}
 	}
+	int rc = test1();
+	writeln("rc=", rc);
+	writeln("add2(): ", add2(11,22));
 	return 0;
 }
