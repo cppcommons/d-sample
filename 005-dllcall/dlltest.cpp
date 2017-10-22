@@ -5,6 +5,11 @@ Dlltest::Dlltest()
 {
 }
 
+int add2(int a, int b)
+{
+    return a + b;
+}
+
 extern "C" {
 #include <archive.h>
 #include <archive_entry.h>

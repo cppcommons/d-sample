@@ -9,3 +9,4 @@ mylib.dll
 *.map
 release
 debug
+*.pro.user

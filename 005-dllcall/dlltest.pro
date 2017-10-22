@@ -16,8 +16,7 @@ DEFINES += DLLTEST_LIBRARY
 
 SOURCES += dlltest.cpp
 
-HEADERS += dlltest.h\
-        dlltest_global.h
+HEADERS += dlltest.h
 
 QMAKE_LFLAGS += -static
 
