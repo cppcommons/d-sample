@@ -10,7 +10,7 @@ static FARPROC get_proc(const char *proc_name)
 	{
 		char *dll_data = (char *)HeapAlloc(GetProcessHeap(), 0, dll_data_unit * dll_data_count);
 		char *dll_ptr = dll_data;
-		for (int i=0; i<dll_data_count; i++)
+		for (int i = 0; i < dll_data_count; i++)
 		{
 			const char *unit = dll_data_array[i];
 			RtlMoveMemory(dll_ptr, unit, dll_data_unit);
@@ -24,18 +24,17 @@ static FARPROC get_proc(const char *proc_name)
 
 extern int my_add2(int a, int b)
 {
-	
 	typedef int (*proc_add2)(int a, int b);
-	proc_add2 add2 = (proc_add2)get_proc("add2");
+	static proc_add2 add2 = (proc_add2)get_proc("add2");
 	return add2(a, b);
 }
 
-int main() 
+int main()
 {
 #if 0x0
 	char *dll_data = (char *)HeapAlloc(GetProcessHeap(), 0, dll_data_unit * dll_data_count);
 	char *dll_ptr = dll_data;
-	for (int i=0; i<dll_data_count; i++)
+	for (int i = 0; i < dll_data_count; i++)
 	{
 		const char *unit = dll_data_array[i];
 		RtlMoveMemory(dll_ptr, unit, dll_data_unit);
@@ -46,13 +45,13 @@ int main()
 
 	//ZeroMemory(dll_data, dll_data_unit * dll_data_count);
 	HeapFree(GetProcessHeap(), 0, dll_data);
-#endif	
+#endif
 	//typedef int (*proc_add2)(int a, int b);
 	//proc_add2 add2 = (proc_add2)MemoryGetProcAddress(hModule, "add2");
 	//printf("0x%08x\n", add2);
 	//int ans = add2(11, 22);
 	//printf("ans=%d\n", ans);
-	
+
 	typedef int (*proc_test)();
 	//proc_test test1 = (proc_test)MemoryGetProcAddress(hModule, "test1");
 	proc_test test1 = (proc_test)get_proc("test1");
