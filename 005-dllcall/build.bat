@@ -17,6 +17,5 @@ C:\D\dm\bin\lib -c -p32 lib_entry.lib lib_entry.obj ^
   my_library_3_data.obj ^
   my_library_4_data.obj ^
   my_library_5_data.obj ^
-  my_library_6_data.obj ^
-  my_library_7_data.obj
-main.exe
+  my_library_6_data.obj
+::main.exe
