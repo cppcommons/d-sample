@@ -9,6 +9,7 @@ alias extern (C) int function() proc_myfunc;
 
 extern (C) int add2(int, int);
 extern (C) int test1();
+extern (C) int test2();
 extern (C) int dvalue();
 
 unittest
@@ -141,5 +142,7 @@ else
 	writeln("rc=", rc);
 	writeln("add2(): ", add2(11,22));
 	writeln("dvalue(): ", dvalue());
+	//writeln("test2(): ", test2());
+	//writeln("test2(): ", test2());
 	return 0;
 }

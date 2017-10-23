@@ -14,6 +14,13 @@ extern "C" int test1()
 	return _test1();
 }
 
+extern "C" int test2()
+{
+	typedef int (*proc_test2)();
+	static proc_test2 _test2 = (proc_test2)my_library_get_proc("test2");
+	return _test2();
+}
+
 static int myfunc()
 {
 	return 3 + 4;
