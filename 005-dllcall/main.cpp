@@ -10,8 +10,12 @@ int main()
 {
 	int rc2 = test2();
 	printf("rc2=%d\n", rc2);
+	rc2 = test2();
+	printf("rc2=%d\n", rc2);
+	#if 0x0
 	int rc = test1();
 	printf("rc=%d\n", rc);
+	#endif
 	printf("add2(): %d\n", add2(111, 222));
 	return 0;
 }
