@@ -154,7 +154,7 @@ Distributed under the Boost Software License, Version 1.0.
    (See accompanying file LICENSE_1_0.txt or copy at
          http://www.boost.org/LICENSE_1_0.txt)
 */
-module std.net.curl;
+module easy.std.net.curl;
 
 import core.thread;
 import etc.c.curl;
@@ -4106,6 +4106,21 @@ import std.typecons : Flag, Yes, No;
 /// Flag to specify whether or not an exception is thrown on error.
 alias ThrowOnError = Flag!"throwOnError";
 
+import core.stdc.config : c_long;
+extern(C) CURLcode curl_global_init(c_long flags);
+extern(C) void curl_global_cleanup();
+extern(C) curl_version_info_data * curl_version_info(CURLversion);
+extern(C) CURL* curl_easy_init();
+extern(C) CURLcode curl_easy_setopt(CURL *curl, CURLoption option,...);
+extern(C) CURLcode curl_easy_perform(CURL *curl);
+extern(C) CURLcode curl_easy_getinfo(CURL *curl, CURLINFO info,...);
+extern(C) CURL* curl_easy_duphandle(CURL *curl);
+extern(C) char* curl_easy_strerror(CURLcode);
+extern(C) CURLcode curl_easy_pause(CURL *handle, int bitmask);
+extern(C) void curl_easy_cleanup(CURL *curl);
+extern(C) curl_slist* curl_slist_append(curl_slist *, char *);
+extern(C) void curl_slist_free_all(curl_slist *);
+
 private struct CurlAPI
 {
     static struct API
@@ -4127,102 +4142,36 @@ private struct CurlAPI
         void function(curl_slist *) slist_free_all;
     }
     __gshared API _api;
-    __gshared void* _handle;
+    //__gshared void* _handle;
 
     static ref API instance() @property
     {
         import std.concurrency : initOnce;
-        initOnce!_handle(loadAPI());
+        //initOnce!_handle(loadAPI());
+        loadAPI();
         return _api;
     }
 
-    static void* loadAPI()
+    static void loadAPI()
     {
-        version (Posix)
-        {
-            import core.sys.posix.dlfcn : dlsym, dlopen, dlclose, RTLD_LAZY;
-            alias loadSym = dlsym;
-        }
-        else version (Windows)
-        {
-            import core.sys.windows.windows : GetProcAddress, GetModuleHandleA,
-                LoadLibraryA;
-            alias loadSym = GetProcAddress;
-        }
-        else
-            static assert(0, "unimplemented");
-
-        void* handle;
-        version (Posix)
-            handle = dlopen(null, RTLD_LAZY);
-        else version (Windows)
-            handle = GetModuleHandleA(null);
-        assert(handle !is null);
+        _api.global_init = &curl_global_init;
+        _api.global_cleanup = &curl_global_cleanup;
+        _api.version_info = &curl_version_info;
+        _api.easy_init = &curl_easy_init;
+        _api.easy_setopt = &curl_easy_setopt;
+        _api.easy_perform = &curl_easy_perform;
+        _api.easy_getinfo = &curl_easy_getinfo;
+        _api.easy_duphandle = &curl_easy_duphandle;
+        _api.easy_strerror = &curl_easy_strerror;
+        _api.easy_pause = &curl_easy_pause;
+        _api.easy_cleanup = &curl_easy_cleanup;
+        _api.slist_append = &curl_slist_append;
+        _api.slist_free_all = &curl_slist_free_all;
 
         // try to load curl from the executable to allow static linking
-        if (loadSym(handle, "curl_global_init") is null)
-        {
-            import std.format : format;
-            version (Posix)
-                dlclose(handle);
-
-            version (OSX)
-                static immutable names = ["libcurl.4.dylib"];
-            else version (Posix)
-            {
-                static immutable names = ["libcurl.so", "libcurl.so.4",
-                "libcurl-gnutls.so.4", "libcurl-nss.so.4", "libcurl.so.3"];
-            }
-            else version (Windows)
-                static immutable names = ["libcurl.dll", "curl.dll"];
-
-            foreach (name; names)
-            {
-                version (Posix)
-                    handle = dlopen(name.ptr, RTLD_LAZY);
-                else version (Windows)
-                    handle = LoadLibraryA(name.ptr);
-                if (handle !is null) break;
-            }
-
-            enforce!CurlException(handle !is null, "Failed to load curl, tried %(%s, %).".format(names));
-        }
-
-        foreach (i, FP; typeof(API.tupleof))
-        {
-            enum name = __traits(identifier, _api.tupleof[i]);
-            auto p = enforce!CurlException(loadSym(handle, "curl_"~name),
-                                           "Couldn't load curl_"~name~" from libcurl.");
-            _api.tupleof[i] = cast(FP) p;
-        }
 
         enforce!CurlException(!_api.global_init(CurlGlobal.all),
                               "Failed to initialize libcurl");
-
-        static extern(C) void cleanup()
-        {
-            if (_handle is null) return;
-            _api.global_cleanup();
-            version (Posix)
-            {
-                import core.sys.posix.dlfcn : dlclose;
-                dlclose(_handle);
-            }
-            else version (Windows)
-            {
-                import core.sys.windows.windows : FreeLibrary;
-                FreeLibrary(_handle);
-            }
-            else
-                static assert(0, "unimplemented");
-            _api = API.init;
-            _handle = null;
-        }
-
-        import core.stdc.stdlib : atexit;
-        atexit(&cleanup);
-
-        return handle;
     }
 }
 

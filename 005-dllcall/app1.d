@@ -38,6 +38,23 @@ else
 	writeln("start!スタート!");
 	stdout.flush();
 
+    {
+        import std.conv : to;
+        //import std.net.curl : byChunkAsync;
+		import easy.std.net.curl: byChunkAsync;
+        import std.stdio : stdout, writeln;
+
+        ubyte[] bytes;
+        foreach (chunk; byChunkAsync("http://dlang.org", 20))
+        {
+            writeln(chunk);
+            stdout.flush();
+            bytes ~= chunk;
+        }
+        writeln("bytes.length=", bytes.length);
+        writeln(cast(char[]) bytes);
+    }
+
 	auto dll = LoadLibraryA("mylib.dll");
 	writeln("*1", dll is null);
 	stdout.flush();
