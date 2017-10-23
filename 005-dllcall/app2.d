@@ -9,6 +9,7 @@ else
 	import core.stdc.stdio : printf;
 	import std.conv: to;
 	import std.file : read;
+	import std.format: format;
 	import std.stdio : File;
 
 	printf("args.length=%d\n", args.length);
@@ -18,7 +19,9 @@ else
 		return 1;
 	}
 
-	File f = File("release/dlltest.dll");
+	immutable string identifier = args[1];
+	//File f = File("release/dlltest.dll");
+	File f = File(args[2]);
 
 	immutable ulong unit_size = (args.length == 4) ? to!ulong(args[3]) : f.size;
 
@@ -26,11 +29,12 @@ else
 	foreach (chunk; f.byChunk(cast(uint)unit_size))
 	{
 		printf("chunk\n");
-		write_unit(index, chunk, unit_size);
+		write_unit(identifier, index, chunk, unit_size);
 		index++;
 	}
 
-	File dll_data_h = File("dll_data.c", "w");
+	auto fname = format!"%s_0_data.c"(identifier);
+	File dll_data_h = File(fname, "w");
 	//dll_data_h.writef("extern \"C\" {\n");
 	for (int i=0; i<index; i++)
 	{
@@ -77,7 +81,7 @@ extern void *get_proc(const char *proc_name)
 	return 0;
 }
 
-private void write_unit(int index, ubyte[] bytes, ulong unit_size)
+private void write_unit(string identifier, int index, ubyte[] bytes, ulong unit_size)
 {
 	import core.stdc.stdio : fprintf;
 	import std.format : format;
@@ -88,7 +92,7 @@ private void write_unit(int index, ubyte[] bytes, ulong unit_size)
 	{
 		bytes ~= 0;
 	}
-	auto fname = format!"dll_data_%d.c"(index + 1);
+	auto fname = format!"%s_%d_data.c"(identifier, index + 1);
 	auto f = File(fname, "w");
 	f.writef("extern const char dll_data_%d[] = {\n", index + 1);
 	int first = true;
