@@ -9,10 +9,14 @@ static void write_abs_jump(unsigned char *opcodes, const void *jmpdest)
     opcodes[0] = 0xFF; 
     opcodes[1] = 0x25;
     *reinterpret_cast<DWORD *>(opcodes + 2) = reinterpret_cast<DWORD>(opcodes + 6);
-    *reinterpret_cast<DWORD *>(opcodes + 6) = reinterpret_cast<DWORD>(jmpdest);
+	*reinterpret_cast<DWORD *>(opcodes + 6) = reinterpret_cast<DWORD>(jmpdest);
 }
 
-extern "C" unsigned char add2[256] = {0, 0, 0, 0, 0};
+//extern "C" unsigned char add2[10] = { 0 };
+#define export_fun(X) extern "C" unsigned char X[10] = { 0 }
+export_fun(add2);
+//typedef unsigned char opcode_t[10];
+//extern "C" opcode_t add2;
 
 class Dummy2
 {
