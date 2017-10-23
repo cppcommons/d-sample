@@ -1,57 +1,74 @@
+#include <windows.h>
+#include <stdio.h>
+
 extern "C" void *sqlite_get_proc(const char *proc_name);
 
-struct sqlite3_stmt {};
-
-#if 0x0
-// SQLITE_API int sqlite3_bind_parameter_index(sqlite3_stmt*, const char *zName);
-extern "C" int sqlite3_bind_parameter_index(sqlite3_stmt* stmt, const char *zName)
+static void write_abs_jump(unsigned char *opcodes, const void *jmpdest)
 {
-	typedef int (*proc_sqlite3_bind_parameter_index)(sqlite3_stmt*, const char *zName);
-	static proc_sqlite3_bind_parameter_index fun =
-	 (proc_sqlite3_bind_parameter_index)sqlite_get_proc("sqlite3_bind_parameter_index");
-	return fun(stmt, zName);
+	// Taken from: https://www.gamedev.net/forums/topic/566233-x86-asm-help-understanding-jmp-opcodes/
+	opcodes[0] = 0xFF;
+	opcodes[1] = 0x25;
+	*reinterpret_cast<DWORD *>(opcodes + 2) = reinterpret_cast<DWORD>(opcodes + 6);
+	*reinterpret_cast<DWORD *>(opcodes + 6) = reinterpret_cast<DWORD>(jmpdest);
 }
 
-extern "C" int add2(int a, int b)
+static void register_proc(const char *proc_name, unsigned char *opcode)
 {
-	typedef int (*proc_add2)(int a, int b);
-	static proc_add2 _add2 = (proc_add2)sqlite_get_proc("add2");
-	return _add2(a, b);
+	void *proc = sqlite_get_proc("add2");
+	write_abs_jump(opcode, proc);
 }
 
-extern "C" int test1()
-{
-	typedef int (*proc_test1)();
-	static proc_test1 _test1 = (proc_test1)sqlite_get_proc("test1");
-	return _test1();
-}
-
-extern "C" int test2()
-{
-	typedef int (*proc_test2)();
-	static proc_test2 _test2 = (proc_test2)sqlite_get_proc("test2");
-	return _test2();
-}
-
-static int myfunc()
-{
-	return 3 + 4;
-}
-
-class Dummy
-{
-  public:
-	int a;
-	explicit Dummy()
+class ExportedFunction {
+public:
+	unsigned char opcode[10];
+	explicit ExportedFunction(const char *name)
 	{
-		a = myfunc();
+		printf("ExportedFunction(const char *name): %s\n", name);
+		register_proc(name, opcode);
 	}
 };
 
-static Dummy dummy;
+#define export_fun2(X) extern "C" ExportedFunction X(#X)
 
-extern "C" int dvalue()
-{
-	return dummy.a;
-}
-#endif
+export_fun2(sqlite3_bind_double);
+export_fun2(sqlite3_bind_int64);
+export_fun2(sqlite3_bind_null);
+export_fun2(sqlite3_bind_parameter_count);
+export_fun2(sqlite3_bind_parameter_index);
+export_fun2(sqlite3_bind_parameter_name);
+export_fun2(sqlite3_bind_text64);
+export_fun2(sqlite3_changes);
+export_fun2(sqlite3_clear_bindings);
+export_fun2(sqlite3_close);
+export_fun2(sqlite3_column_blob);
+export_fun2(sqlite3_column_bytes);
+export_fun2(sqlite3_column_count);
+export_fun2(sqlite3_column_decltype);
+export_fun2(sqlite3_column_double);
+export_fun2(sqlite3_column_int64);
+export_fun2(sqlite3_column_name);
+export_fun2(sqlite3_column_text);
+export_fun2(sqlite3_column_type);
+export_fun2(sqlite3_commit_hook);
+export_fun2(sqlite3_complete);
+export_fun2(sqlite3_db_filename);
+export_fun2(sqlite3_db_handle);
+export_fun2(sqlite3_db_readonly);
+export_fun2(sqlite3_enable_load_extension);
+export_fun2(sqlite3_errcode);
+export_fun2(sqlite3_errmsg);
+export_fun2(sqlite3_finalize);
+export_fun2(sqlite3_interrupt);
+export_fun2(sqlite3_last_insert_rowid);
+export_fun2(sqlite3_load_extension);
+export_fun2(sqlite3_open_v2);
+export_fun2(sqlite3_prepare_v2);
+export_fun2(sqlite3_profile);
+export_fun2(sqlite3_progress_handler);
+export_fun2(sqlite3_reset);
+export_fun2(sqlite3_rollback_hook);
+export_fun2(sqlite3_step);
+export_fun2(sqlite3_table_column_metadata);
+export_fun2(sqlite3_total_changes);
+export_fun2(sqlite3_trace);
+export_fun2(sqlite3_update_hook);

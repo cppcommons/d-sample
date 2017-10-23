@@ -24,8 +24,8 @@ static void register_proc(const char *proc_name, unsigned char *opcode)
 #define register_fun(X) register_proc(#X, X)
 
 //export_fun(add2);
-export_fun(test1);
-export_fun(test2);
+//export_fun(test1);
+//export_fun(test2);
 
 static class Dummy2
 {
@@ -33,8 +33,8 @@ static class Dummy2
 	explicit Dummy2()
 	{
 		//register_fun(add2);
-		register_fun(test1);
-		register_fun(test2);
+		//register_fun(test1);
+		//register_fun(test2);
 	}
 } dummy2;
 
@@ -51,16 +51,8 @@ public:
 //extern "C" ExportedFunction add2("add2");
 #define export_fun2(X) extern "C" ExportedFunction X(#X)
 export_fun2(add2);
-
-#if 0x0
-extern "C" int
-add2(int a, int b)
-{
-	typedef int (*proc_add2)(int a, int b);
-	static proc_add2 _add2 = (proc_add2)my_library_get_proc("add2");
-	return _add2(a, b);
-}
-#endif
+export_fun2(test1);
+export_fun2(test2);
 
 static int myfunc()
 {
