@@ -342,12 +342,12 @@ static void _FreeLibrary(HCUSTOMMODULE module, void *userdata)
     FreeLibrary((HMODULE) module);
 }
 
-HMEMORYMODULE MemoryLoadLibrary(const void *data)
+static HMEMORYMODULE MemoryLoadLibrary(const void *data)
 {
     return MemoryLoadLibraryEx(data, _LoadLibrary, _GetProcAddress, _FreeLibrary, NULL);
 }
 
-HMEMORYMODULE MemoryLoadLibraryEx(const void *data,
+static HMEMORYMODULE MemoryLoadLibraryEx(const void *data,
     CustomLoadLibraryFunc loadLibrary,
     CustomGetProcAddressFunc getProcAddress,
     CustomFreeLibraryFunc freeLibrary,
@@ -464,18 +464,18 @@ error:
 }
 
 #ifdef USE_BINARY_SEARCH
-int _compare(const struct NAME_TABLE *p1, const struct NAME_TABLE *p2)
+static int _compare(const struct NAME_TABLE *p1, const struct NAME_TABLE *p2)
 {
     return _stricmp(p1->name, p2->name);
 }
 
-int _find(LPCSTR *name, const struct NAME_TABLE *p)
+static int _find(LPCSTR *name, const struct NAME_TABLE *p)
 {
     return _stricmp(*name, p->name);
 }
 #endif
 
-FARPROC MemoryGetProcAddress(HMEMORYMODULE module, LPCSTR name)
+static FARPROC MemoryGetProcAddress(HMEMORYMODULE module, LPCSTR name)
 {
     unsigned char *codeBase = ((PMEMORYMODULE)module)->codeBase;
     int idx=-1;
@@ -565,7 +565,7 @@ FARPROC MemoryGetProcAddress(HMEMORYMODULE module, LPCSTR name)
     return (FARPROC) (codeBase + (*(DWORD *) (codeBase + (DWORD)exports->AddressOfFunctions + (idx*4))));
 }
 
-void MemoryFreeLibrary(HMEMORYMODULE mod)
+static void MemoryFreeLibrary(HMEMORYMODULE mod)
 {
     int i;
     PMEMORYMODULE module = (PMEMORYMODULE)mod;
@@ -606,7 +606,7 @@ void MemoryFreeLibrary(HMEMORYMODULE mod)
 
 #define DEFAULT_LANGUAGE        MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL)
 
-HMEMORYRSRC MemoryFindResource(HMEMORYMODULE module, LPCTSTR name, LPCTSTR type)
+static HMEMORYRSRC MemoryFindResource(HMEMORYMODULE module, LPCTSTR name, LPCTSTR type)
 {
     return MemoryFindResourceEx(module, name, type, DEFAULT_LANGUAGE);
 }
@@ -701,7 +701,7 @@ static PIMAGE_RESOURCE_DIRECTORY_ENTRY _MemorySearchResourceEntry(
     return result;
 }
 
-HMEMORYRSRC MemoryFindResourceEx(HMEMORYMODULE module, LPCTSTR name, LPCTSTR type, WORD language)
+static HMEMORYRSRC MemoryFindResourceEx(HMEMORYMODULE module, LPCTSTR name, LPCTSTR type, WORD language)
 {
     unsigned char *codeBase = ((PMEMORYMODULE) module)->codeBase;
     PIMAGE_DATA_DIRECTORY directory = GET_HEADER_DICTIONARY((PMEMORYMODULE) module, IMAGE_DIRECTORY_ENTRY_RESOURCE);
@@ -755,14 +755,14 @@ HMEMORYRSRC MemoryFindResourceEx(HMEMORYMODULE module, LPCTSTR name, LPCTSTR typ
     return (codeBase + directory->VirtualAddress + (foundLanguage->OffsetToData & 0x7fffffff));
 }
 
-DWORD MemorySizeofResource(HMEMORYMODULE module, HMEMORYRSRC resource)
+static DWORD MemorySizeofResource(HMEMORYMODULE module, HMEMORYRSRC resource)
 {
     PIMAGE_RESOURCE_DATA_ENTRY entry = (PIMAGE_RESOURCE_DATA_ENTRY) resource;
     
     return entry->Size;
 }
 
-LPVOID MemoryLoadResource(HMEMORYMODULE module, HMEMORYRSRC resource)
+static LPVOID MemoryLoadResource(HMEMORYMODULE module, HMEMORYRSRC resource)
 {
     unsigned char *codeBase = ((PMEMORYMODULE) module)->codeBase;
     PIMAGE_RESOURCE_DATA_ENTRY entry = (PIMAGE_RESOURCE_DATA_ENTRY) resource;
@@ -770,13 +770,13 @@ LPVOID MemoryLoadResource(HMEMORYMODULE module, HMEMORYRSRC resource)
     return codeBase + entry->OffsetToData;
 }
 
-int
+static int
 MemoryLoadString(HMEMORYMODULE module, UINT id, LPTSTR buffer, int maxsize)
 {
     return MemoryLoadStringEx(module, id, buffer, maxsize, DEFAULT_LANGUAGE);
 }
 
-int
+static int
 MemoryLoadStringEx(HMEMORYMODULE module, UINT id, LPTSTR buffer, int maxsize, WORD language)
 {
 	HMEMORYRSRC resource;
