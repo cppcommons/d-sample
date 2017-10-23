@@ -48,7 +48,9 @@ public:
 	}
 };
 
-extern "C" ExportedFunction add2("add2");
+//extern "C" ExportedFunction add2("add2");
+#define export_fun2(X) extern "C" ExportedFunction X(#X)
+export_fun2(add2);
 
 #if 0x0
 extern "C" int
