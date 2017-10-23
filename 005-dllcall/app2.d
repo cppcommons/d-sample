@@ -38,27 +38,27 @@ else
 	//dll_data_h.writef("extern \"C\" {\n");
 	for (int i=0; i<index; i++)
 	{
-		dll_data_h.writef("extern const char dll_data_%d[];\n", i+1);
+		dll_data_h.writef("extern const char %s_%d[];\n", identifier, i+1);
 	}
 	//dll_data_h.writef("}\n");
 
 	dll_data_h.writef("static const char *dll_data_array[] = {\n");
 	for (int i=0; i<index; i++)
 	{
-		dll_data_h.writef("    dll_data_%d,\n", i+1);
+		dll_data_h.writef("    %s_%d,\n", identifier, i+1);
 	}
 	dll_data_h.writef("    0\n");
 	dll_data_h.writef("};\n");
 
-	dll_data_h.writef("const unsigned long dll_data_unit = %u;\n", unit_size);
-	dll_data_h.writef("const int dll_data_count = %d;\n", index);
+	dll_data_h.writef("static const unsigned long dll_data_unit = %u;\n", unit_size);
+	dll_data_h.writef("static const int dll_data_count = %d;\n", index);
 
 	//auto bytes = cast(ubyte[]) read("release/dlltest.dll");
 
 	//auto bytes = cast(ubyte[]) read("libcurl.dll");
 	//auto bytes = cast(ubyte[]) read("sqlite-win-32bit-3200100.dll");
 	dll_data_h.writef(`#include "MemoryModule.c"
-extern void *get_proc(const char *proc_name)
+extern void *%s_get_proc(const char *proc_name)
 {
 	static HMEMORYMODULE hModule = NULL;
 	if (!hModule)
@@ -76,7 +76,7 @@ extern void *get_proc(const char *proc_name)
 	}
 	return MemoryGetProcAddress(hModule, proc_name);
 }
-`);
+`, identifier);
 
 	return 0;
 }
@@ -94,7 +94,7 @@ private void write_unit(string identifier, int index, ubyte[] bytes, ulong unit_
 	}
 	auto fname = format!"%s_%d_data.c"(identifier, index + 1);
 	auto f = File(fname, "w");
-	f.writef("extern const char dll_data_%d[] = {\n", index + 1);
+	f.writef("extern const char %s_%d[] = {\n", identifier, index + 1);
 	int first = true;
 	int count = 0;
 	foreach (ub; bytes)
