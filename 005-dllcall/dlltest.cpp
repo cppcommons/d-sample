@@ -1,5 +1,6 @@
 #include "dlltest.h"
 
+#include <stdio.h>
 
 #ifndef _TLSDECL_H_
 #define _TLSDECL_H_
@@ -62,6 +63,7 @@ extern "C" {
 
 int test1()
 {
+    printf("test1() start!\n");
     struct archive *a;
     struct archive_entry *entry;
     int r;
@@ -98,6 +100,7 @@ int test2()
     static TLS_VARIABLE_DECL int loc_var = 123;
     loc_var++;
     return loc_var;
+    //return 0;
 }
 
 #ifdef DLLTEST_TEST_MAIN

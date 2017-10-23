@@ -12,15 +12,15 @@ static void write_abs_jump(unsigned char *opcodes, const void *jmpdest)
 	*reinterpret_cast<DWORD *>(opcodes + 6) = reinterpret_cast<DWORD>(jmpdest);
 }
 
-static void register_proc(const char *proc_name, unsigned char *opcode)
+static void register_proc(const char *name, unsigned char *opcode)
 {
-	void *proc = sqlite_get_proc("add2");
+	void *proc = sqlite_get_proc(name);
 	write_abs_jump(opcode, proc);
 }
 
 class ExportedFunction {
 public:
-	unsigned char opcode[10];
+	unsigned char opcode[16];
 	explicit ExportedFunction(const char *name)
 	{
 		printf("ExportedFunction(const char *name): %s\n", name);

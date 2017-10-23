@@ -12,35 +12,20 @@ static void write_abs_jump(unsigned char *opcodes, const void *jmpdest)
 	*reinterpret_cast<DWORD *>(opcodes + 6) = reinterpret_cast<DWORD>(jmpdest);
 }
 
-static void register_proc(const char *proc_name, unsigned char *opcode)
+static void register_proc(const char *name, unsigned char *opcode)
 {
-	void *proc = my_library_get_proc("add2");
+	void *proc = my_library_get_proc(name);
 	//printf("%s=0x%08x\n", proc_name, proc);
 	write_abs_jump(opcode, proc);
 }
 
 //extern "C" unsigned char add2[10] = { 0 };
-#define export_fun(X) extern "C" unsigned char X[10] = {0}
-#define register_fun(X) register_proc(#X, X)
-
-//export_fun(add2);
-//export_fun(test1);
-//export_fun(test2);
-
-static class Dummy2
-{
-  public:
-	explicit Dummy2()
-	{
-		//register_fun(add2);
-		//register_fun(test1);
-		//register_fun(test2);
-	}
-} dummy2;
+//#define export_fun(X) extern "C" unsigned char X[10] = {0}
+//#define register_fun(X) register_proc(#X, X)
 
 class ExportedFunction {
 public:
-	unsigned char opcode[10];
+	unsigned char opcode[16];
 	explicit ExportedFunction(const char *name)
 	{
 		printf("ExportedFunction(const char *name): %s\n", name);

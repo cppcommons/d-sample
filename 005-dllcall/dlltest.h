@@ -20,6 +20,7 @@ public:
 extern "C" {
     DLLTESTSHARED_EXPORT int add2(int a, int b);
     DLLTESTSHARED_EXPORT int test1();
+    DLLTESTSHARED_EXPORT int test2();
 }
 
 #endif // DLLTEST_H

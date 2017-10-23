@@ -63,6 +63,11 @@ else
 	//FreeLibrary(dll);
 	writeln("*7");
 	stdout.flush();
+	writeln("before add2()");
+	writeln("add2(): ", add2(11,22));
+	writeln("dvalue(): ", dvalue());
+	int rc = test1();
+	writeln("rc=", rc);
 
 	// Open a database in memory.
 	auto db = Database(":memory:");
@@ -138,10 +143,6 @@ else
 			writeln("<NULL>");
 		}
 	}
-	int rc = test1();
-	writeln("rc=", rc);
-	writeln("add2(): ", add2(11,22));
-	writeln("dvalue(): ", dvalue());
 	//writeln("test2(): ", test2());
 	//writeln("test2(): ", test2());
 	return 0;
