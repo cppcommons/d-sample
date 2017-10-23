@@ -1,21 +1,32 @@
-private const uint unit_size = 400 * 1024; /* 400KB */
+//private const uint unit_size = 400 * 1024; /* 400KB */
 
 version (unittest)
 {
 }
 else
-	int main()
+	int main(string[] args)
 {
 	import core.stdc.stdio : printf;
+	import std.conv: to;
 	import std.file : read;
 	import std.stdio : File;
 
+	printf("args.length=%d\n", args.length);
+	if (args.length < 3 || args.length > 4)
+	{
+		printf("app2 <identifier> <dll-path> [<unit-size>]");
+		return 1;
+	}
+
 	File f = File("release/dlltest.dll");
+
+	immutable ulong unit_size = (args.length == 4) ? to!ulong(args[3]) : f.size;
+
 	int index = 0;
-	foreach (chunk; f.byChunk(unit_size))
+	foreach (chunk; f.byChunk(cast(uint)unit_size))
 	{
 		printf("chunk\n");
-		write_unit(index, chunk);
+		write_unit(index, chunk, unit_size);
 		index++;
 	}
 
@@ -66,13 +77,13 @@ extern void *get_proc(const char *proc_name)
 	return 0;
 }
 
-private void write_unit(int index, ubyte[] bytes)
+private void write_unit(int index, ubyte[] bytes, ulong unit_size)
 {
 	import core.stdc.stdio : fprintf;
 	import std.format : format;
 	import std.stdio : File;
 
-	bytes.reserve(unit_size);
+	bytes.reserve(cast(uint)unit_size);
 	while (bytes.length < unit_size)
 	{
 		bytes ~= 0;

@@ -31,7 +31,8 @@ int test1()
     //archive_read_support_filter_all(a);
     archive_read_support_format_zip(a);
     archive_read_support_format_7zip(a);
-    r = archive_read_open_filename(a, R"***(E:\d-dev\.binaries\msys2-i686-20161025.7z)***", 10240); // Note 1
+    //r = archive_read_open_filename(a, R"***(E:\d-dev\.binaries\msys2-i686-20161025.7z)***", 10240); // Note 1
+    r = archive_read_open_filename(a, R"***(C:\Users\Public\qtx\.binaries\msys2-i686-20161025.7z)***", 10240); // Note 1
     if (r != ARCHIVE_OK)
         return(10);
     while (archive_read_next_header(a, &entry) == ARCHIVE_OK) {
