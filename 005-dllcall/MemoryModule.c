@@ -57,15 +57,6 @@ typedef unsigned long ULONG_PTR;
 
 #include "MemoryModule.h"
 
-#ifdef USE_BINARY_SEARCH
-
-struct NAME_TABLE {
-    LPCSTR name;
-    WORD idx;
-};
-
-#endif
-
 typedef struct {
     PIMAGE_NT_HEADERS headers;
     unsigned char *codeBase;
@@ -75,10 +66,6 @@ typedef struct {
     CustomLoadLibraryFunc loadLibrary;
     CustomGetProcAddressFunc getProcAddress;
     CustomFreeLibraryFunc freeLibrary;
-#ifdef USE_BINARY_SEARCH
-    struct NAME_TABLE *name_table;
-    int numEntries;
-#endif
     void *userdata;
 } MEMORYMODULE, *PMEMORYMODULE;
 
@@ -408,9 +395,6 @@ static HMEMORYMODULE MemoryLoadLibraryEx(const void *data,
     result->getProcAddress = getProcAddress;
     result->freeLibrary = freeLibrary;
     result->userdata = userdata;
-#ifdef USE_BINARY_SEARCH
-    result->name_table = NULL;
-#endif
 
     // commit memory for headers
     headers = (unsigned char *)VirtualAlloc(code,
@@ -463,18 +447,6 @@ error:
     return NULL;
 }
 
-#ifdef USE_BINARY_SEARCH
-static int _compare(const struct NAME_TABLE *p1, const struct NAME_TABLE *p2)
-{
-    return _stricmp(p1->name, p2->name);
-}
-
-static int _find(LPCSTR *name, const struct NAME_TABLE *p)
-{
-    return _stricmp(*name, p->name);
-}
-#endif
-
 static FARPROC MemoryGetProcAddress(HMEMORYMODULE module, LPCSTR name)
 {
     unsigned char *codeBase = ((PMEMORYMODULE)module)->codeBase;
@@ -496,45 +468,6 @@ static FARPROC MemoryGetProcAddress(HMEMORYMODULE module, LPCSTR name)
         return NULL;
     }
 
-#ifdef USE_BINARY_SEARCH
-
-    // build name table and sort it by names
-    if (((PMEMORYMODULE)module)->name_table == NULL) {
-	struct NAME_TABLE *entry = (struct NAME_TABLE*)malloc(exports->NumberOfNames
-							      * sizeof(struct NAME_TABLE));
-	((PMEMORYMODULE)module)->name_table = entry;
-	if (entry == NULL) {
-	    ((PMEMORYMODULE)module)->numEntries = 0;
-	    SetLastError(ERROR_OUTOFMEMORY);
-	    return NULL;
-	}
-	((PMEMORYMODULE)module)->numEntries = exports->NumberOfNames;
-
-	nameRef = (DWORD *) (codeBase + exports->AddressOfNames);
-	ordinal = (WORD *) (codeBase + exports->AddressOfNameOrdinals);
-	for (i=0; i<exports->NumberOfNames; i++, nameRef++, ordinal++) {
-	    entry->name = (const char *) (codeBase + (*nameRef));
-	    entry->idx = *ordinal;
-	    entry++;
-	}
-	entry = ((PMEMORYMODULE)module)->name_table;
-	qsort(entry, exports->NumberOfNames, sizeof(struct NAME_TABLE), _compare);
-    }
-
-    if (!IS_INTRESOURCE(name)) {
-	// search function name in list of exported names with binary search
-	if (((PMEMORYMODULE)module)->name_table) {
-	    struct NAME_TABLE *found;
-	    found = bsearch(&name,
-			    ((PMEMORYMODULE)module)->name_table,
-			    exports->NumberOfNames,
-			    sizeof(struct NAME_TABLE), _find);
-	    if (found)
-		idx = found->idx;
-	}
-    } else
-	idx = (int)name;
-#else
     if (!IS_INTRESOURCE(name)) {
 	// search function name in list of exported names
 	nameRef = (DWORD *) (codeBase + (DWORD)exports->AddressOfNames);
@@ -547,7 +480,6 @@ static FARPROC MemoryGetProcAddress(HMEMORYMODULE module, LPCSTR name)
 	}
     } else
 	idx = (int)name;
-#endif    
 
     if (idx == -1) {
         // exported symbol not found
@@ -578,12 +510,6 @@ static void MemoryFreeLibrary(HMEMORYMODULE mod)
             module->initialized = 0;
         }
 
-#ifdef USE_BINARY_SEARCH
-	if (module->name_table != NULL) {
-	    free(module->name_table);
-	}
-#endif
-
         if (module->modules != NULL) {
             // free previously opened libraries
             for (i=0; i<module->numModules; i++) {
@@ -603,7 +529,3 @@ static void MemoryFreeLibrary(HMEMORYMODULE mod)
         HeapFree(GetProcessHeap(), 0, module);
     }
 }
-
-#if 0x0
-#define DEFAULT_LANGUAGE        MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL)
-#endif // 0x0
