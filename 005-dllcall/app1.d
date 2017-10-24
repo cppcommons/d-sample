@@ -11,6 +11,27 @@ extern (C) int add2(int, int);
 extern (C) int test1();
 extern (C) int test2();
 
+/+
+class MyClass
+{
+    virtual int add2(int a, int b) { return a + b; }
+    virtual int mul2(int a, int b) { return a * b; }
+};
+
+extern "C" MyClass * MyClassNew() { return new MyClass; }
++/
+
+extern(C++)
+{
+	interface MyClass
+	{
+		int add2(int a, int b);
+		int mul2(int a, int b);
+	}
+	MyClass MyClassNew();
+	//void MyClassDelete(ref MyClass c);
+}
+
 int a; // スレッドごとに別々の静的変数を用意
 shared int b; // スレッド間で共有される静的変数を用意
 
@@ -24,6 +45,10 @@ else
 
 	writeln("start!スタート!");
 	stdout.flush();
+
+	MyClass mc = MyClassNew();
+	writeln("mc.add2(110, 220)=", mc.add2(110, 220));
+	writeln("mc.mul2(110, 100)=", mc.mul2(110, 100));
 
 	version (none)
 	{

@@ -14,14 +14,14 @@ setlocal enabledelayedexpansion enableextensions
 set LIST=
 for %%x in (easy_win_*.c) do set LIST=!LIST! %%x
 for %%x in (easy_win_*.cpp) do set LIST=!LIST! %%x
-C:\D\dm\bin\dmc -c %LIST%
+C:\D\dm\bin\dmc -c myclass.cpp %LIST%
 if %errorlevel% neq 0 ( exit /b )
 
 setlocal enabledelayedexpansion enableextensions
 set LIST=
 for %%x in (easy_win_*.obj) do set LIST=!LIST! %%x
 ::for %%x in (entry_*.obj) do set LIST=!LIST! %%x
-C:\D\dm\bin\lib -c -n -p512 lib_entry.lib %LIST%
+C:\D\dm\bin\lib -c -n -p512 lib_entry.lib myclass.obj %LIST%
 if %errorlevel% neq 0 ( exit /b )
 
 del main.exe
