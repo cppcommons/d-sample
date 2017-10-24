@@ -79,7 +79,9 @@ extern void *easy_win_%s_get_proc(const char *proc_name)
 	auto fname2 = format!"easy_win_%s_funclist.cpp"(identifier);
 	File file2 = File(fname2, "w");
 	file2.writef(`#include <windows.h>
+#ifdef EASY_WIN_DEBUG
 #include <stdio.h>
+#endif /* EASY_WIN_DEBUG */
 
 extern "C" void *easy_win_%s_get_proc(const char *proc_name);
 
@@ -89,7 +91,9 @@ class ExportedFunction
 	unsigned char opcodes[16];
 	explicit ExportedFunction(const char *name)
 	{
+#ifdef EASY_WIN_DEBUG
 		printf("ExportedFunction(const char *name): %%s\n", name);
+#endif /* EASY_WIN_DEBUG */
 		void *jmpdest = easy_win_%s_get_proc(name);
 		opcodes[0] = 0xFF;
 		opcodes[1] = 0x25;
