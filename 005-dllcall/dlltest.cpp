@@ -160,15 +160,25 @@ typedef long long coint64;
 typedef unsigned long long coid;
 
 /* extern */
-coid co_bytearray_new(qint64 size = 0, char *type = 0);
-coint64 co_bytearray_reserve(coid oid, coint64 reserve);
-coint64 co_bytearray_size(coid oid);
-coint64 co_bytearray_append(coid oid, const char *data, coint64 size);
-coint64 co_bytearray_read_seek(coid oid);                     // Thread Local Seek Pointer
-coint64 co_bytearray_read_pos(coid oid);                      // Thread Local Seek Pointer
-coint64 co_bytearray_read(coid oid, char *data, coint64 size); // Thread Local Seek Pointer
-coint64 co_bytearray_available(coid oid);                     // Thread Local Seek Pointer
+coid co_buffer_create(qint64 size = 0, char *type = 0);
+coint64 co_buffer_clear(coid oid);
+coint64 co_buffer_reserve(coid oid, coint64 reserve);
+coint64 co_buffer_size(coid oid);
+coint64 co_buffer_resize(coid oid, coint64 size);
+coint64 co_buffer_append(coid oid, const char *data, coint64 size);
+coint64 co_buffer_read_seek(coid oid);                     // Thread Local Seek Pointer
+coint64 co_buffer_read_pos(coid oid);                      // Thread Local Seek Pointer
+coint64 co_buffer_read(coid oid, char *buffer, coint64 max_size); // Thread Local Seek Pointer
+coint64 co_buffer_available(coid oid);                     // Thread Local Seek Pointer
 
+void co_set_double(coid oid, double value, bool *ok = 0);
+double co_get_double(coid oid, bool *ok = 0);
+
+void co_set_string(coid oid, const char *data, coint64 size, bool *ok = 0);
+coint64 co_get_string(coid oid, char *buffer, coint64 buffer_size, bool *ok = 0);
+
+coid co_create();
+coid co_duplicate(coid oid);
 coint64 co_link_count(coid oid);
 coint64 co_link(coid oid);
 coint64 co_unlink(coid oid);
