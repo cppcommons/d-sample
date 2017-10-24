@@ -157,7 +157,9 @@ static MyMutex mutex;
 
 /* typedef */
 typedef long long coint64;
-typedef unsigned long long coid;
+typedef coint64 coid;
+typedef long coint32;
+typedef coint32 costatus;
 
 /* extern */
 coid co_buffer_create(qint64 size = 0, char *type = 0);
@@ -177,7 +179,12 @@ double co_get_double(coid oid, bool *ok = 0);
 void co_set_string(coid oid, const char *data, coint64 size, bool *ok = 0);
 coint64 co_get_string(coid oid, char *buffer, coint64 buffer_size, bool *ok = 0);
 
+typedef coid (*co_object_callback)(void *instance, const char *method_name, int argc, coid argv[], costatus *status);
+
 coid co_create();
+coid co_create_double(double value);
+coid co_return_double(double value);
+void co_set_object(coid oid, void *instance, co_object_callback callback);
 coid co_duplicate(coid oid);
 coint64 co_link_count(coid oid);
 coint64 co_link(coid oid);
