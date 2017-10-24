@@ -8,8 +8,7 @@ if %errorlevel% neq 0 ( exit /b )
 call app2.bat
 
 del lib_entry.lib
-del *_codedata.obj
-del *_entry.obj
+del easy_win_*.obj
 
 setlocal enabledelayedexpansion enableextensions
 set LIST=
