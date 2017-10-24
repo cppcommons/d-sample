@@ -183,6 +183,8 @@ QByteArray & cos_bytearray_pointer(coid oid);
 #include <iostream>
 #include <string>
 
+namespace myns {
+
 struct MyStruct //: public QObject
 {
     QVariant var;
@@ -193,7 +195,6 @@ struct MyStruct //: public QObject
         s.sprintf("i=%d", this->i);
         return s;
     }
-
     QString toString2() {
         QString s;
         s.sprintf("***MyStruct(i=%d)***", this->i);
@@ -201,8 +202,20 @@ struct MyStruct //: public QObject
     }
 };
 
+}
+Q_DECLARE_METATYPE(myns::MyStruct)
+
+using namespace myns;
+
 struct MyVariant {
     QVariant value;
+    MyVariant()
+    {
+    }
+    MyVariant(MyStruct &x)
+    {
+        this->value = QVariant::fromValue(x);
+    }
 };
 
 QDebug operator<< (QDebug d, const MyStruct &x) {
@@ -211,7 +224,7 @@ QDebug operator<< (QDebug d, const MyStruct &x) {
 
 QDebug operator<< (QDebug d, const MyVariant &x) {
     d << "[" << x.value.typeName() << "]";
-    if (x.value.typeName()==QString("MyStruct"))
+    if (x.value.typeName()==QString("myns::MyStruct"))
     {
         d << "???";
         d << x.value.value<MyStruct>().toString2();
@@ -224,7 +237,6 @@ QDebug operator<< (QDebug d, const MyVariant &x) {
     return d;
 }
 
-Q_DECLARE_METATYPE(MyStruct)
 
 int main(int argc, char *argv[])
 {
@@ -287,13 +299,17 @@ int main(int argc, char *argv[])
     qDebug() << mystruct;
     QMap<quint64, MyVariant> map4;
     MyVariant myvar2;
-    myvar2.value = QVariant::fromValue(mystruct);
+    //myvar2.value = QVariant::fromValue(mystruct);
+    myvar2 = mystruct;
     map4[0] = myvar2;
     MyVariant myvar3;
     myvar3.value = 1.23;
     map4[1] = myvar3;
     qDebug() << map4;
     qDebug() << myvar2.value.toString();
+    MyVariant myvar4(mystruct);
+    map4[2] = mystruct;
+    qDebug() << map4;
 
 
     qDebug() << "end!";
