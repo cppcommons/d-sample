@@ -33,7 +33,7 @@ else
 		index++;
 	}
 
-	auto fname = format!"%s_0_codedata.c"(identifier);
+	auto fname = format!"easy_win_%s_0_codedata.c"(identifier);
 	File dll_data_h = File(fname, "w");
 	//dll_data_h.writef("extern \"C\" {\n");
 	for (int i=0; i<index; i++)
@@ -88,7 +88,7 @@ private void write_unit(string identifier, int index, ubyte[] bytes, ulong unit_
 	{
 		bytes ~= 0;
 	}
-	auto fname = format!"%s_%d_codedata.c"(identifier, index + 1);
+	auto fname = format!"easy_win_%s_%d_codedata.c"(identifier, index + 1);
 	auto f = File(fname, "w");
 	f.writef("extern const char easy_win_%s_%d[] = {\n", identifier, index + 1);
 	int first = true;
