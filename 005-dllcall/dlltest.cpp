@@ -138,8 +138,6 @@ struct MyApp : public QCoreApplication
 };
 static MyApp app(argc, (char **)argv);
 
-typedef quint64 coid;
-
 static struct StaticInit
 {
     explicit StaticInit()
@@ -157,20 +155,24 @@ struct MyMutex : public QMutex
 };
 static MyMutex mutex;
 
-/* extern */
-coid cos_bytearray_new(qint64 size = 0, char *type = 0);
-qint64 cos_bytearray_reserve(coid oid, qint64 reserve);
-qint64 cos_bytearray_size(coid oid);
-qint64 cos_bytearray_append(coid oid, const char *data, qint64 size);
-qint64 cos_bytearray_read_seek(coid oid);                     // Thread Local Seek Pointer
-qint64 cos_bytearray_read_pos(coid oid);                      // Thread Local Seek Pointer
-qint64 cos_bytearray_read(coid oid, char *data, qint64 size); // Thread Local Seek Pointer
-qint64 cos_bytearray_available(coid oid);                     // Thread Local Seek Pointer
+/* typedef */
+typedef long long coint64;
+typedef unsigned long long coid;
 
-qint64 cos_link_count(coid oid);
-qint64 cos_link(coid oid);
-qint64 cos_unlink(coid oid);
-qint64 cos_delete(coid oid);
+/* extern */
+coid co_bytearray_new(qint64 size = 0, char *type = 0);
+coint64 co_bytearray_reserve(coid oid, coint64 reserve);
+coint64 co_bytearray_size(coid oid);
+coint64 co_bytearray_append(coid oid, const char *data, coint64 size);
+coint64 co_bytearray_read_seek(coid oid);                     // Thread Local Seek Pointer
+coint64 co_bytearray_read_pos(coid oid);                      // Thread Local Seek Pointer
+coint64 co_bytearray_read(coid oid, char *data, coint64 size); // Thread Local Seek Pointer
+coint64 co_bytearray_available(coid oid);                     // Thread Local Seek Pointer
+
+coint64 co_link_count(coid oid);
+coint64 co_link(coid oid);
+coint64 co_unlink(coid oid);
+coint64 co_delete(coid oid);
 
 /* internal */
 QByteArray &cos_bytearray_pointer(coid oid);
@@ -196,7 +198,7 @@ struct MyStruct //: public QObject
         s.sprintf("i=%d", this->i);
         return s;
     }
-    QString toString2()
+    QString toString2() const
     {
         QString s;
         s.sprintf("***MyStruct(i=%d)***", this->i);
@@ -215,24 +217,24 @@ static void doDeleteLater(QVariant *obj)
     delete obj;
 }
 
-struct MyVariant
+struct CoVariant
 {
     //QVariant value;
     QSharedPointer<QVariant> value2;
-    MyVariant()
+    CoVariant()
     {
         this->value2 = QSharedPointer<QVariant>(new QVariant, doDeleteLater);
         //this->value2->clear();
     }
-    MyVariant(double x) : MyVariant()
+    CoVariant(double x) : CoVariant()
     {
         *(this->value2) = x;
     }
-    MyVariant(QVariant &x) : MyVariant()
+    CoVariant(QVariant &x) : CoVariant()
     {
         *(this->value2) = x;
     }
-    MyVariant(MyStruct &x) : MyVariant()
+    CoVariant(MyStruct &x) : CoVariant()
     {
         *(this->value2) = QVariant::fromValue(x);
     }
@@ -240,10 +242,11 @@ struct MyVariant
 
 QDebug operator<<(QDebug d, const MyStruct &x)
 {
+    d << x.toString2();
     return d;
 }
 
-QDebug operator<<(QDebug d, const MyVariant &x)
+QDebug operator<<(QDebug d, const CoVariant &x)
 {
     d << "[" << x.value2->typeName() << "]";
     if (x.value2->typeName() == QString("myns::MyStruct"))
@@ -261,6 +264,8 @@ QDebug operator<<(QDebug d, const MyVariant &x)
 
 int main(int argc, char *argv[])
 {
+    UNUSED_PARAMETER(argc);
+    UNUSED_PARAMETER(argv);
     //QCoreApplication app(argc, argv);
     qDebug() << "main()!" << app.arguments();
     qDebug() << "main()!" << QCoreApplication::arguments();
@@ -318,16 +323,16 @@ int main(int argc, char *argv[])
     map3["#struct"].value<MyStruct>().buff->write("abc");
     qDebug() << buff.data();
     qDebug() << mystruct;
-    QMap<quint64, MyVariant> map4;
-    MyVariant myvar2;
+    QMap<quint64, CoVariant> map4;
+    CoVariant myvar2;
     //myvar2.value = QVariant::fromValue(mystruct);
     myvar2 = mystruct;
     map4[0] = myvar2;
-    MyVariant myvar3;
+    CoVariant myvar3;
     myvar3 = 1.23;
     map4[1] = myvar3;
     qDebug() << map4;
-    MyVariant myvar4(mystruct);
+    CoVariant myvar4(mystruct);
     map4[2] = mystruct;
     qDebug() << map4;
 
