@@ -2,48 +2,28 @@ module mylib;
 
 // http://www.kmonos.net/alang/d/dll.html D で作る Win32 DLL - プログラミング言語 D (日本語訳)
 
-import core.stdc.stdio;
-import core.sys.windows.dll;
-import core.sys.windows.windows;
+import core.sys.windows.dll : SimpleDllMain;
+
+mixin SimpleDllMain; // C:\D\dmd2\src\druntime\import\core\sys\windows\dll.d
+
+//import core.sys.windows.windows;
 
 static this()
 {
+	import core.stdc.stdio;
+
 	printf("static this for mydll\n");
 	fflush(stdout);
 }
 
 static ~this()
 {
+	import core.stdc.stdio;
+
 	printf("static ~this for mydll\n");
 	fflush(stdout);
 }
 
-
-extern (Windows) BOOL DllMain(HINSTANCE hInstance, ULONG ulReason, LPVOID pvReserved)
-{
-	switch (ulReason)
-	{
-	case DLL_PROCESS_ATTACH:
-		dll_process_attach(hInstance, true);
-		break;
-
-	case DLL_PROCESS_DETACH:
-		dll_process_detach(hInstance, true);
-		break;
-
-	case DLL_THREAD_ATTACH:
-		dll_thread_attach(true, true);
-		break;
-
-	case DLL_THREAD_DETACH:
-		dll_thread_detach(true, true);
-		break;
-
-	default:
-		break;
-	}
-	return true;
-}
 
 extern (C) export int add(int i, int j)
 {
