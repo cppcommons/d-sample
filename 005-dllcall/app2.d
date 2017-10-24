@@ -153,11 +153,13 @@ private void write_unit(string identifier, int index, ubyte[] bytes, ulong unit_
     import std.format : format;
     import std.stdio : File;
 
+    /+
     bytes.reserve(cast(uint) unit_size);
     while (bytes.length < unit_size)
     {
         bytes ~= 0;
     }
+    +/
     auto fname = format!"easy_win_%s_%d_codedata.c"(identifier, index + 1);
     auto f = File(fname, "w");
     f.writef("extern const unsigned char easy_win_%s_%d[] = {\n", identifier, index + 1);
