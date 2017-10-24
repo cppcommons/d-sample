@@ -48,6 +48,7 @@ else
 		import std.stdio : stdout, writeln;
 
 		ubyte[] bytes;
+		bytes.reserve(10240);
 		foreach (chunk; byChunkAsync("http://dlang.org", 20))
 		{
 			writeln(chunk);

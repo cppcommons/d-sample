@@ -1,8 +1,8 @@
 /* Definitions for Digital Mars Compiler */
-#if !defined(_MSC_VER) && !defined(__GNUC__)
+#ifdef __DMC__
 typedef unsigned long ULONG_PTR;
 #define IS_INTRESOURCE(_r) ((((ULONG_PTR)(_r)) >> 16) == 0)
-#endif
+#endif /* __DMC__ */
 /*
  * Memory DLL loading code
  * Version 0.0.3
