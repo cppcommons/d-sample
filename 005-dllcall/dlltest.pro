@@ -21,3 +21,6 @@ HEADERS += dlltest.h
 QMAKE_LFLAGS += -static
 
 QMAKE_LIBS += -larchive -liconv -llzma -lbz2 -lz -lnettle
+
+#DESTDIR = .
+DLLDESTDIR = .
