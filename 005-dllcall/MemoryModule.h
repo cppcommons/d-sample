@@ -92,6 +92,7 @@ static DWORD MemorySizeofResource(HMEMORYMODULE, HMEMORYRSRC);
  */
 static LPVOID MemoryLoadResource(HMEMORYMODULE, HMEMORYRSRC);
 
+#if 0x0
 /**
  * Load a string resource.
  */
@@ -101,6 +102,7 @@ static int MemoryLoadString(HMEMORYMODULE, UINT, LPTSTR, int);
  * Load a string resource with a given language.
  */
 static int MemoryLoadStringEx(HMEMORYMODULE, UINT, LPTSTR, int, WORD);
+#endif
 
 #ifdef __cplusplus
 }
