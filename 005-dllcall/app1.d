@@ -25,6 +25,7 @@ else
 	writeln("start!スタート!");
 	stdout.flush();
 
+	version (none)
 	{
 		import std.conv : to;
 
@@ -173,7 +174,7 @@ else
 
 	{
 		import std.stdio;
-		import core.sync.mutex: Mutex;
+		import core.sync.mutex : Mutex;
 		import core.thread;
 
 		//static __gshared int total;
@@ -198,6 +199,13 @@ else
 
 		int result1, result2;
 		auto tg = new ThreadGroup;
+		tg.create = {
+			for (int i = 0; i < 1000; i++)
+			{
+				sync_fun();
+				sync_fun2();
+			}
+		};
 		tg.create = {
 			for (int i = 0; i < 1000; i++)
 			{
