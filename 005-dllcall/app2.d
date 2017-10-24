@@ -26,9 +26,12 @@ else
 
     immutable ulong unit_size = (args.length == 4) ? to!ulong(args[3]) : f.size;
 
+    ulong[] chunk_size_list;
+
     int index = 0;
     foreach (chunk; f.byChunk(cast(uint) unit_size))
     {
+        chunk_size_list ~= chunk.length;
         //printf("chunk\n");
         write_unit(identifier, index, chunk, unit_size);
         index++;
@@ -36,6 +39,8 @@ else
 
     auto fname1 = format!"easy_win_%s_0_codedata.c"(identifier);
     File file1 = File(fname1, "w");
+    file1.writef(`#include "MemoryModule-micro.c"
+`);
     //file1.writef("extern \"C\" {\n");
     for (int i = 0; i < index; i++)
     {
@@ -45,29 +50,33 @@ else
 
     file1.write(`struct dll_unit
 {
-    const unsigned char *ptr;
-    long size;
+	const unsigned char *ptr;
+	unsigned long size;
 };
 `);
 
     file1.writef("static struct dll_unit dll_data_array[] = {\n");
     for (int i = 0; i < index; i++)
     {
-        file1.writef("	{ easy_win_%s_%d, %u },\n", identifier, i + 1, unit_size);
+        file1.writef("	{ easy_win_%s_%d, %u },\n", identifier, i + 1, chunk_size_list[i]);
     }
     file1.writef("	{ 0, 0 }\n");
     file1.writef("};\n");
 
-    file1.writef("static const unsigned long dll_data_unit = %u;\n", unit_size);
+    //file1.writef("static const unsigned long dll_data_unit = %u;\n", unit_size);
     file1.writef("static const int dll_data_count = %d;\n", index);
 
-    file1.writef(`#include "MemoryModule-micro.c"
-extern void *easy_win_%s_get_proc(const char *proc_name)
+    file1.writef(`extern void *easy_win_%s_get_proc_address(const char *proc_name)
 {
 	static HMEMORYMODULE hModule = NULL;
 	if (!hModule)
 	{
-		unsigned char *dll_data = (unsigned char *)HeapAlloc(GetProcessHeap(), 0, dll_data_unit * dll_data_count);
+		unsigned long dll_data_size = 0;
+		for (int i = 0; i < dll_data_count; i++)
+		{
+			dll_data_size += dll_data_array[i].size;
+		}
+		unsigned char *dll_data = (unsigned char *)HeapAlloc(GetProcessHeap(), 0, dll_data_size);
 		unsigned char *dll_ptr = dll_data;
 		for (int i = 0; i < dll_data_count; i++)
 		{
@@ -90,7 +99,7 @@ extern void *easy_win_%s_get_proc(const char *proc_name)
 #include <stdio.h>
 #endif /* EASY_WIN_DEBUG */
 
-extern "C" void *easy_win_%s_get_proc(const char *proc_name);
+extern "C" void *easy_win_%s_get_proc_address(const char *proc_name);
 
 class ExportedFunction
 {
@@ -101,7 +110,7 @@ class ExportedFunction
 #ifdef EASY_WIN_DEBUG
 		printf("ExportedFunction(const char *name): %%s\n", name);
 #endif /* EASY_WIN_DEBUG */
-		void *jmpdest = easy_win_%s_get_proc(name);
+		void *jmpdest = easy_win_%s_get_proc_address(name);
 		opcodes[0] = 0xFF;
 		opcodes[1] = 0x25;
 		*reinterpret_cast<DWORD *>(opcodes + 2) = reinterpret_cast<DWORD>(opcodes + 6);
@@ -151,7 +160,7 @@ private void write_unit(string identifier, int index, ubyte[] bytes, ulong unit_
     }
     auto fname = format!"easy_win_%s_%d_codedata.c"(identifier, index + 1);
     auto f = File(fname, "w");
-    f.writef("extern const char easy_win_%s_%d[] = {\n", identifier, index + 1);
+    f.writef("extern const unsigned char easy_win_%s_%d[] = {\n", identifier, index + 1);
     int first = true;
     int count = 0;
     foreach (ub; bytes)
