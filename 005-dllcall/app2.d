@@ -34,27 +34,27 @@ else
 		index++;
 	}
 
-	auto fname = format!"easy_win_%s_0_codedata.c"(identifier);
-	File dll_data_h = File(fname, "w");
-	//dll_data_h.writef("extern \"C\" {\n");
+	auto fname1 = format!"easy_win_%s_0_codedata.c"(identifier);
+	File file1 = File(fname1, "w");
+	//file1.writef("extern \"C\" {\n");
 	for (int i = 0; i < index; i++)
 	{
-		dll_data_h.writef("extern const char easy_win_%s_%d[];\n", identifier, i + 1);
+		file1.writef("extern const char easy_win_%s_%d[];\n", identifier, i + 1);
 	}
-	//dll_data_h.writef("}\n");
+	//file1.writef("}\n");
 
-	dll_data_h.writef("static const char *dll_data_array[] = {\n");
+	file1.writef("static const char *dll_data_array[] = {\n");
 	for (int i = 0; i < index; i++)
 	{
-		dll_data_h.writef("    easy_win_%s_%d,\n", identifier, i + 1);
+		file1.writef("    easy_win_%s_%d,\n", identifier, i + 1);
 	}
-	dll_data_h.writef("    0\n");
-	dll_data_h.writef("};\n");
+	file1.writef("    0\n");
+	file1.writef("};\n");
 
-	dll_data_h.writef("static const unsigned long dll_data_unit = %u;\n", unit_size);
-	dll_data_h.writef("static const int dll_data_count = %d;\n", index);
+	file1.writef("static const unsigned long dll_data_unit = %u;\n", unit_size);
+	file1.writef("static const int dll_data_count = %d;\n", index);
 
-	dll_data_h.writef(`#include "MemoryModule.c"
+	file1.writef(`#include "MemoryModule.c"
 extern void *easy_win_%s_get_proc(const char *proc_name)
 {
 	static HMEMORYMODULE hModule = NULL;
@@ -74,10 +74,11 @@ extern void *easy_win_%s_get_proc(const char *proc_name)
 	return MemoryGetProcAddress(hModule, proc_name);
 }
 `, identifier);
+	file1.close();
 
 	auto fname2 = format!"easy_win_%s_funclist.cpp"(identifier);
 	File file2 = File(fname2, "w");
-		file2.writef(`#include <windows.h>
+	file2.writef(`#include <windows.h>
 #include <stdio.h>
 
 extern "C" void *easy_win_%s_get_proc(const char *proc_name);
@@ -103,20 +104,21 @@ class ExportedFunction
 	auto dmd = execute(["pexports", args[2]]);
 	//if (dmd.status != 0) writeln("Compilation failed:\n", dmd.output);
 	{
-		import std.algorithm : startsWith;
-		import std.conv: to;
-		import std.stdio: writeln, stdout;
-		import std.string: splitLines;
+		import std.algorithm : startsWith, endsWith;
+		import std.conv : to;
+		import std.stdio : writeln, stdout;
+		import std.string : splitLines;
 
 		//writeln(dmd.output);
-		writeln(dmd.output.startsWith("LIBRARY "));
+		//writeln(dmd.output.startsWith("LIBRARY "));
 		string[] lines = dmd.output.splitLines;
-		writeln(lines);
-		foreach(line; lines)
+		//writeln(lines);
+		foreach (line; lines)
 		{
-			if (line.startsWith("LIBRARY ") || line == "EXPORTS") continue;
-			writeln("LINE: ", line);
-			stdout.writef("export_fun(%s);\n", line);
+			if (line.startsWith("LIBRARY ") || line == "EXPORTS" || line.endsWith(" DATA"))
+				continue;
+			//writeln("LINE: ", line);
+			//stdout.writef("export_fun(%s);\n", line);
 			file2.writef("export_fun(%s);\n", line);
 		}
 	}

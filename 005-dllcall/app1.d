@@ -10,7 +10,6 @@ alias extern (C) int function() proc_myfunc;
 extern (C) int add2(int, int);
 extern (C) int test1();
 extern (C) int test2();
-extern (C) int dvalue();
 
 unittest
 {
@@ -86,7 +85,6 @@ else
 	stdout.flush();
 	writeln("before add2()");
 	writeln("add2(): ", add2(11, 22));
-	writeln("dvalue(): ", dvalue());
 	//int rc = test1();
 	//writeln("rc=", rc);
 
