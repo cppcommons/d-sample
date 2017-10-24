@@ -32,8 +32,6 @@
             "sourceFiles": [
                 "app1.d",
                 "curl.d",
-                "../../d-lib/pegged-dm32.lib",
-                "../../d-lib/winhttp-dm32.lib",
                 "lib_entry.lib"
             ],
             "dependencies": {
@@ -49,16 +47,8 @@
             "targetName": "app2-dm32",
             "sourceFiles": [
                 "app2.d",
-                "../../d-lib/sqlite-win-32bit-3200100-dm32.lib",
-                "../../d-lib/pegged-dm32.lib",
-                "../../d-lib/winhttp-dm32.lib"
-            ],
-            "dependencies": {
-                "d2sqlite3": "~master"
-            },
-            "subConfigurations": {
-                "d2sqlite3": "without-lib"
-            }
+                "../../d-lib/pegged-dm32.lib"
+            ]
         }
     ]
 }

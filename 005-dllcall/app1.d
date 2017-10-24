@@ -3,7 +3,7 @@ import std.stdio;
 import d2sqlite3;
 import std.typecons : Nullable;
 
-alias extern (C) int function(int, int) proc_add;
+alias extern (C) int function(int a, int b) proc_add;
 alias extern (C) int function(int, int) proc_multiply;
 alias extern (C) int function() proc_myfunc;
 
