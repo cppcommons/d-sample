@@ -75,6 +75,31 @@ extern void *easy_win_%s_get_proc(const char *proc_name)
 }
 `, identifier);
 
+	auto fname2 = format!"easy_win_%s_funclist.cpp"(identifier);
+	File file2 = File(fname2, "w");
+		file2.writef(`#include <windows.h>
+#include <stdio.h>
+
+extern "C" void *easy_win_%s_get_proc(const char *proc_name);
+
+class ExportedFunction
+{
+  public:
+	unsigned char opcodes[16];
+	explicit ExportedFunction(const char *name)
+	{
+		printf("ExportedFunction(const char *name): %%s\n", name);
+		void *jmpdest = easy_win_%s_get_proc(name);
+		opcodes[0] = 0xFF;
+		opcodes[1] = 0x25;
+		*reinterpret_cast<DWORD *>(opcodes + 2) = reinterpret_cast<DWORD>(opcodes + 6);
+		*reinterpret_cast<DWORD *>(opcodes + 6) = reinterpret_cast<DWORD>(jmpdest);
+	}
+};
+
+#define export_fun(X) extern "C" ExportedFunction X(#X)
+
+`, identifier, identifier);
 	auto dmd = execute(["pexports", args[2]]);
 	//if (dmd.status != 0) writeln("Compilation failed:\n", dmd.output);
 	{
@@ -91,9 +116,11 @@ extern void *easy_win_%s_get_proc(const char *proc_name)
 		{
 			if (line.startsWith("LIBRARY ") || line == "EXPORTS") continue;
 			writeln("LINE: ", line);
-			stdout.writef("export_fun(%s)\n", line);
+			stdout.writef("export_fun(%s);\n", line);
+			file2.writef("export_fun(%s);\n", line);
 		}
 	}
+	file2.close();
 
 	return 0;
 }

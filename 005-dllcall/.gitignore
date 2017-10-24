@@ -12,7 +12,8 @@ debug
 *.pro.user
 dll_data*
 lib_entry.lib
-*_codedata.c
-*_codedata.obj
+easy_win_*.c
+easy_win_*.cpp
+easy_win_*.obj
 *.bak
 dlltest.dll
