@@ -7,10 +7,11 @@ else
 	int main(string[] args)
 {
 	import core.stdc.stdio : printf;
-	import std.conv: to;
+	import std.conv : to;
 	import std.file : read;
-	import std.format: format;
+	import std.format : format;
 	import std.stdio : File;
+	import std.process : execute, executeShell;
 
 	printf("args.length=%d\n", args.length);
 	if (args.length < 3 || args.length > 4)
@@ -26,7 +27,7 @@ else
 	immutable ulong unit_size = (args.length == 4) ? to!ulong(args[3]) : f.size;
 
 	int index = 0;
-	foreach (chunk; f.byChunk(cast(uint)unit_size))
+	foreach (chunk; f.byChunk(cast(uint) unit_size))
 	{
 		printf("chunk\n");
 		write_unit(identifier, index, chunk, unit_size);
@@ -36,16 +37,16 @@ else
 	auto fname = format!"easy_win_%s_0_codedata.c"(identifier);
 	File dll_data_h = File(fname, "w");
 	//dll_data_h.writef("extern \"C\" {\n");
-	for (int i=0; i<index; i++)
+	for (int i = 0; i < index; i++)
 	{
-		dll_data_h.writef("extern const char easy_win_%s_%d[];\n", identifier, i+1);
+		dll_data_h.writef("extern const char easy_win_%s_%d[];\n", identifier, i + 1);
 	}
 	//dll_data_h.writef("}\n");
 
 	dll_data_h.writef("static const char *dll_data_array[] = {\n");
-	for (int i=0; i<index; i++)
+	for (int i = 0; i < index; i++)
 	{
-		dll_data_h.writef("    easy_win_%s_%d,\n", identifier, i+1);
+		dll_data_h.writef("    easy_win_%s_%d,\n", identifier, i + 1);
 	}
 	dll_data_h.writef("    0\n");
 	dll_data_h.writef("};\n");
@@ -74,6 +75,22 @@ extern void *easy_win_%s_get_proc(const char *proc_name)
 }
 `, identifier);
 
+	auto dmd = execute(["pexports", args[2]]);
+	//if (dmd.status != 0) writeln("Compilation failed:\n", dmd.output);
+	{
+		import std.stdio;
+		import std.algorithm : startsWith;
+		import std.algorithm, std.range;
+		import std.conv: to;
+		import std.string: splitLines;
+
+		//writeln(dmd.output);
+		writeln(dmd.output.startsWith("LIBRARY "));
+		string s = to!string(dmd.output);
+		string[] lines = s.splitLines;
+		writeln(lines);
+	}
+
 	return 0;
 }
 
@@ -83,7 +100,7 @@ private void write_unit(string identifier, int index, ubyte[] bytes, ulong unit_
 	import std.format : format;
 	import std.stdio : File;
 
-	bytes.reserve(cast(uint)unit_size);
+	bytes.reserve(cast(uint) unit_size);
 	while (bytes.length < unit_size)
 	{
 		bytes ~= 0;
