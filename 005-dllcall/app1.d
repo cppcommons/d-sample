@@ -27,6 +27,9 @@ unittest
 	writeln("test clear");
 }
 
+int a; // スレッドごとに別々の静的変数を用意
+shared int b; // スレッド間で共有される静的変数を用意
+
 version (unittest)
 {
 }
@@ -38,22 +41,23 @@ else
 	writeln("start!スタート!");
 	stdout.flush();
 
-    {
-        import std.conv : to;
-        //import std.net.curl : byChunkAsync;
-		import easy.std.net.curl: byChunkAsync;
-        import std.stdio : stdout, writeln;
+	{
+		import std.conv : to;
 
-        ubyte[] bytes;
-        foreach (chunk; byChunkAsync("http://dlang.org", 20))
-        {
-            writeln(chunk);
-            stdout.flush();
-            bytes ~= chunk;
-        }
-        writeln("bytes.length=", bytes.length);
-        writeln(cast(char[]) bytes);
-    }
+		//import std.net.curl : byChunkAsync;
+		import easy.std.net.curl : byChunkAsync;
+		import std.stdio : stdout, writeln;
+
+		ubyte[] bytes;
+		foreach (chunk; byChunkAsync("http://dlang.org", 20))
+		{
+			writeln(chunk);
+			stdout.flush();
+			bytes ~= chunk;
+		}
+		writeln("bytes.length=", bytes.length);
+		writeln(cast(char[]) bytes);
+	}
 
 	auto dll = LoadLibraryA("mylib.dll");
 	writeln("*1", dll is null);
@@ -81,10 +85,10 @@ else
 	writeln("*7");
 	stdout.flush();
 	writeln("before add2()");
-	writeln("add2(): ", add2(11,22));
+	writeln("add2(): ", add2(11, 22));
 	writeln("dvalue(): ", dvalue());
-	int rc = test1();
-	writeln("rc=", rc);
+	//int rc = test1();
+	//writeln("rc=", rc);
 
 	// Open a database in memory.
 	auto db = Database(":memory:");
@@ -162,5 +166,27 @@ else
 	}
 	//writeln("test2(): ", test2());
 	//writeln("test2(): ", test2());
+
+	{
+		import std.stdio;
+		import core.thread;
+
+		int result1, result2;
+
+		auto tg = new ThreadGroup;
+		tg.create = { // ここを実行するスレッドから見えているのは main 関数から見える a とは別の a
+			a++;
+			result1 = test2();
+		};
+		tg.create = {
+			b++; // ここを実行するスレッドから見えているのは main 関数から見える b と同じ b
+			result2 = test2();
+		};
+		tg.joinAll();
+		writeln(a); // main 関数から見える a は変更されていないので 0
+		writeln(cast(int) b); // 共有しているので変更されて 1
+		writeln(result1, " ", result2);
+	}
+
 	return 0;
 }
