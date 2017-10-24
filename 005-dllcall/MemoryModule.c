@@ -604,4 +604,6 @@ static void MemoryFreeLibrary(HMEMORYMODULE mod)
     }
 }
 
+#if 0x0
 #define DEFAULT_LANGUAGE        MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL)
+#endif // 0x0
