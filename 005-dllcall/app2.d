@@ -46,9 +46,9 @@ else
 	file1.writef("static const char *dll_data_array[] = {\n");
 	for (int i = 0; i < index; i++)
 	{
-		file1.writef("    easy_win_%s_%d,\n", identifier, i + 1);
+		file1.writef("	easy_win_%s_%d,\n", identifier, i + 1);
 	}
-	file1.writef("    0\n");
+	file1.writef("	0\n");
 	file1.writef("};\n");
 
 	file1.writef("static const unsigned long dll_data_unit = %u;\n", unit_size);
