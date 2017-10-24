@@ -80,7 +80,7 @@ extern void *easy_win_%s_get_proc(const char *proc_name)
 	{
 		import std.algorithm : startsWith;
 		import std.conv: to;
-		import std.stdio: writeln;
+		import std.stdio: writeln, stdout;
 		import std.string: splitLines;
 
 		//writeln(dmd.output);
@@ -91,6 +91,7 @@ extern void *easy_win_%s_get_proc(const char *proc_name)
 		{
 			if (line.startsWith("LIBRARY ") || line == "EXPORTS") continue;
 			writeln("LINE: ", line);
+			stdout.writef("export_fun(%s)\n", line);
 		}
 	}
 
