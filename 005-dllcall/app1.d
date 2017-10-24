@@ -225,5 +225,16 @@ else
 		writeln("total2=", total2);
 	}
 
+	version (CRuntime_DigitalMars)
+	{
+		import std.stdio;
+		writeln("version (CRuntime_DigitalMars)");
+	}
+	else version (CRuntime_Microsoft)
+	{
+		import std.stdio;
+		writeln("version (CRuntime_Microsoft)");
+	}
+
 	return 0;
 }
