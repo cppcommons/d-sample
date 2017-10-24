@@ -19,7 +19,7 @@ setlocal enabledelayedexpansion enableextensions
 set LIST=
 for %%x in (easy_win_*.obj) do set LIST=!LIST! %%x
 ::for %%x in (entry_*.obj) do set LIST=!LIST! %%x
-C:\D\dm\bin\lib -c -p512 lib_entry.lib %LIST%
+C:\D\dm\bin\lib -c -n -p512 lib_entry.lib %LIST%
 
 del main.exe
 C:\D\dm\bin\dmc main.cpp lib_entry.lib
