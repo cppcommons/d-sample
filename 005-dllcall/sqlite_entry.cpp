@@ -18,13 +18,16 @@ static void register_proc(const char *name, unsigned char *opcode)
 	write_abs_jump(opcode, proc);
 }
 
-class ExportedFunction {
-public:
+class ExportedFunction
+{
+  public:
 	unsigned char opcode[16];
 	explicit ExportedFunction(const char *name)
 	{
 		printf("ExportedFunction(const char *name): %s\n", name);
-		register_proc(name, opcode);
+		//register_proc(name, opcode);
+		void *proc = sqlite_get_proc(name);
+		write_abs_jump(opcode, proc);
 	}
 };
 
