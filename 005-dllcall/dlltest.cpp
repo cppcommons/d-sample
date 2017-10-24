@@ -183,15 +183,46 @@ QByteArray & cos_bytearray_pointer(coid oid);
 #include <iostream>
 #include <string>
 
-struct MyStruct
+struct MyStruct //: public QObject
 {
+    QVariant var;
     int i;
-    QString toString() {
+    QBuffer *buff = NULL;
+    operator QString() const {
         QString s;
         s.sprintf("i=%d", this->i);
         return s;
     }
+
+    QString toString2() {
+        QString s;
+        s.sprintf("***MyStruct(i=%d)***", this->i);
+        return s;
+    }
 };
+
+struct MyVariant {
+    QVariant value;
+};
+
+QDebug operator<< (QDebug d, const MyStruct &x) {
+    return d;
+}
+
+QDebug operator<< (QDebug d, const MyVariant &x) {
+    d << "[" << x.value.typeName() << "]";
+    if (x.value.typeName()==QString("MyStruct"))
+    {
+        d << "???";
+        d << x.value.value<MyStruct>().toString2();
+    }
+    else
+    {
+        d << "!!!";
+        d << x.value;
+    }
+    return d;
+}
 
 Q_DECLARE_METATYPE(MyStruct)
 
@@ -241,14 +272,29 @@ int main(int argc, char *argv[])
     map3["#real"] = (double)123.4;
     QList<QVariant> mylist = { 1.2, "abc" };
     map3["#list"] = mylist;
+    static QBuffer buff;
+    buff.open(QIODevice::ReadWrite);
     MyStruct mystruct;
     mystruct.i = 789;
+    mystruct.buff = &buff;
+    //mystruct.buff.write("abc");
     QVariant myvar = QVariant::fromValue(mystruct);
     map3["#struct"] = myvar;
     qDebug() << map3;
     qDebug() << map3["#struct"].value<MyStruct>().i;
+    map3["#struct"].value<MyStruct>().buff->write("abc");
+    qDebug() << buff.data();
+    qDebug() << mystruct;
+    QMap<quint64, MyVariant> map4;
+    MyVariant myvar2;
+    myvar2.value = QVariant::fromValue(mystruct);
+    map4[0] = myvar2;
+    MyVariant myvar3;
+    myvar3.value = 1.23;
+    map4[1] = myvar3;
+    qDebug() << map4;
+    qDebug() << myvar2.value.toString();
 
-    ba.constData();
 
     qDebug() << "end!";
 
