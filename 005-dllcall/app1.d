@@ -44,7 +44,7 @@ else
 		import std.conv : to;
 
 		//import std.net.curl : byChunkAsync;
-		import easy.std.net.curl : byChunkAsync;
+		import easy.windows.std.net.curl : byChunkAsync;
 		import std.stdio : stdout, writeln;
 
 		ubyte[] bytes;

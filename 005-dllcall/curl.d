@@ -154,7 +154,7 @@ Distributed under the Boost Software License, Version 1.0.
    (See accompanying file LICENSE_1_0.txt or copy at
          http://www.boost.org/LICENSE_1_0.txt)
 */
-module easy.std.net.curl;
+module easy.windows.std.net.curl;
 
 import core.thread;
 import etc.c.curl;
