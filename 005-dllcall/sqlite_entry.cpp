@@ -12,11 +12,13 @@ static void write_abs_jump(unsigned char *opcodes, const void *jmpdest)
 	*reinterpret_cast<DWORD *>(opcodes + 6) = reinterpret_cast<DWORD>(jmpdest);
 }
 
+#if 0x0
 static void register_proc(const char *name, unsigned char *opcode)
 {
 	void *proc = sqlite_get_proc(name);
 	write_abs_jump(opcode, proc);
 }
+#endif
 
 class ExportedFunction
 {
