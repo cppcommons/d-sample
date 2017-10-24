@@ -1,5 +1,7 @@
+#if !defined(_MSC_VER) && !defined(__GNUC__)
 typedef unsigned long ULONG_PTR;
 #define IS_INTRESOURCE(_r) ((((ULONG_PTR)(_r)) >> 16) == 0)
+#endif
 /*
  * Memory DLL loading code
  * Version 0.0.3
@@ -55,7 +57,40 @@ typedef unsigned long ULONG_PTR;
 #define IMAGE_SIZEOF_BASE_RELOCATION (sizeof(IMAGE_BASE_RELOCATION))
 #endif
 
-#include "MemoryModule.h"
+//#include "MemoryModule.h"
+#include <windows.h>
+typedef void *HMEMORYMODULE;
+typedef void *HMEMORYRSRC;
+typedef void *HCUSTOMMODULE;
+typedef HCUSTOMMODULE (*CustomLoadLibraryFunc)(LPCSTR, void *);
+typedef FARPROC (*CustomGetProcAddressFunc)(HCUSTOMMODULE, LPCSTR, void *);
+typedef void (*CustomFreeLibraryFunc)(HCUSTOMMODULE, void *);
+/**
+ * Load DLL from memory location.
+ *
+ * All dependencies are resolved using default LoadLibrary/GetProcAddress
+ * calls through the Windows API.
+ */
+static HMEMORYMODULE MemoryLoadLibrary(const void *);
+/**
+ * Load DLL from memory location using custom dependency resolvers.
+ *
+ * Dependencies will be resolved using passed callback methods.
+ */
+static HMEMORYMODULE MemoryLoadLibraryEx(const void *,
+    CustomLoadLibraryFunc,
+    CustomGetProcAddressFunc,
+    CustomFreeLibraryFunc,
+    void *);
+/**
+ * Get address of exported method.
+ */
+static FARPROC MemoryGetProcAddress(HMEMORYMODULE, LPCSTR);
+/**
+ * Free previously loaded DLL.
+ */
+static void MemoryFreeLibrary(HMEMORYMODULE);
+
 
 typedef struct {
     PIMAGE_NT_HEADERS headers;
