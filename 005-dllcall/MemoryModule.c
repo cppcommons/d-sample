@@ -606,6 +606,7 @@ static void MemoryFreeLibrary(HMEMORYMODULE mod)
 
 #define DEFAULT_LANGUAGE        MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL)
 
+#if 0x0
 static HMEMORYRSRC MemoryFindResource(HMEMORYMODULE module, LPCTSTR name, LPCTSTR type)
 {
     return MemoryFindResourceEx(module, name, type, DEFAULT_LANGUAGE);
@@ -769,3 +770,4 @@ static LPVOID MemoryLoadResource(HMEMORYMODULE module, HMEMORYRSRC resource)
     
     return codeBase + entry->OffsetToData;
 }
+#endif // 0x0
