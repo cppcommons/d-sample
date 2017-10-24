@@ -1,3 +1,4 @@
+/* Definitions for Digital Mars Compiler */
 #if !defined(_MSC_VER) && !defined(__GNUC__)
 typedef unsigned long ULONG_PTR;
 #define IS_INTRESOURCE(_r) ((((ULONG_PTR)(_r)) >> 16) == 0)
@@ -25,13 +26,6 @@ typedef unsigned long ULONG_PTR;
  *
  * Portions created by Joachim Bauch are Copyright (C) 2004-2013
  * Joachim Bauch. All Rights Reserved.
- *
- *
- * THeller: Added binary search in MemoryGetProcAddress function
- * (#define USE_BINARY_SEARCH to enable it).  This gives a very large
- * speedup for libraries that exports lots of functions.
- *
- * These portions are Copyright (C) 2013 Thomas Heller.
  */
 
 #ifndef __GNUC__
