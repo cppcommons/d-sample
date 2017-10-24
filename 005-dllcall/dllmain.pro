@@ -14,3 +14,5 @@ DEFINES += DLLTEST_TEST_MAIN
 SOURCES += dlltest.cpp
 
 QMAKE_LIBS += -larchive -liconv -llzma -lbz2 -lz -lnettle
+
+DESTDIR = .

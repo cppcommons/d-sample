@@ -44,21 +44,6 @@
 
 #endif /* _TLSDECL_H_ */
 
-#include <QtCore>
-
-static int argc = 2;
-static const char *argv[] = {"dummy1", "dummy2"};
-static QCoreApplication qtapp(argc, (char **)argv);
-
-static struct StaticInit
-{
-    explicit StaticInit()
-    {
-        qDebug() << "StaticInit::StaticInit(2)!" << qtapp.arguments();
-    }
-}
-_init;
-
 Dlltest::Dlltest()
 {
 }
@@ -123,19 +108,100 @@ int test2()
     //return 0;
 }
 
-#ifdef DLLTEST_TEST_MAIN
 #include <QtCore>
+
+static int argc = 2;
+static const char *argv[] = {"dummy1", "dummy2"};
+struct MyApp : public QCoreApplication
+{
+    explicit MyApp(int &argc, char **argv) : QCoreApplication(argc, argv)
+    {
+        qDebug() << "MyApp::MyApp()";
+    }
+};
+static MyApp app(argc, (char **)argv);
+
+typedef quint64 coid;
+
+static struct StaticInit
+{
+    explicit StaticInit()
+    {
+        qDebug() << "StaticInit::StaticInit(2)!" << app.arguments();
+    }
+} _init;
+
+struct MyMutex : public QMutex
+{
+    explicit MyMutex()
+    {
+        qDebug() << "MyMutex::MyMutex()";
+    }
+};
+static MyMutex mutex;
+
+/* extern */
+coid         cos_bytearray_new(qint64 size = 0, qint64 reserve = -1);
+qint64       cos_bytearray_size(coid oid);
+const char * cos_bytearray_const_data(coid oid, qint64 *size);
+qint64       cos_bytearray_append(coid oid, const char *data, qint64 size);
+qint64       cos_bytearray_seek(coid oid, qint64 i); // Thread Local Seek Pointer
+qint64       cos_bytearray_read(coid oid, char *data, qint64 size);
+qint64       cos_bytearray_available(coid oid);
+
+qint64       cos_link_count(coid oid);
+qint64       cos_link(coid oid);
+qint64       cos_unlink(coid oid);
+qint64       cos_delete(coid oid);
+
+/* internal */
+QByteArray & cos_bytearray_pointer(coid oid);
+
+
+#ifdef DLLTEST_TEST_MAIN
+//#include <QtCore>
+
+#include <map>
+#include <iostream>
+#include <string>
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication app(argc, argv);
+    //QCoreApplication app(argc, argv);
+    qDebug() << "main()!" << app.arguments();
+    qDebug() << "main()!" << QCoreApplication::arguments();
+    mutex.lock();
+    mutex.unlock();
 
     int a = 0b1011;     // 11
     int b = 0b10000000; // 128
 
     qDebug() << a << b;
 
-    test1();
+    //test1();
+
+    std::map<quint64, std::string> mymap;
+    mymap[15] = "abc";
+    std::cout << mymap.at(15) << std::endl;
+    //std::cout << mymap << std::endl;
+    QMap<QString, int> map1;
+    QMap<coid, QVariant> map2;
+    map2[1] = "xyz";
+    map2[2] = 123.4;
+    QString temp = "ttt";
+    QByteArray ba = temp.toUtf8();
+    ba.reserve(1024);
+    map2[3] = ba;
+    qDebug() << map2;
+    map2.remove(2);
+    map2.remove(200);
+    qDebug() << map2;
+    ba.append("xxx");
+    qDebug() << map2;
+    map2[3].toByteArray().append("yyy");
+    qDebug() << map2;
+
+    ba.constData();
 
     qDebug() << "end!";
 
