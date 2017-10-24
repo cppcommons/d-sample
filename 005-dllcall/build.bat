@@ -4,7 +4,7 @@ mingw32-make -f Makefile.Release
 ::@echo off
 
 del lib_entry.lib
-del *_data.obj
+del *_codedata.obj
 del *_entry.obj
 
 setlocal enabledelayedexpansion enableextensions

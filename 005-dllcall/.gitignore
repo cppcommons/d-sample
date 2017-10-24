@@ -12,7 +12,7 @@ debug
 *.pro.user
 dll_data*
 lib_entry.lib
-*_data.c
-*_data.obj
+*_codedata.c
+*_codedata.obj
 *.bak
 dlltest.dll
