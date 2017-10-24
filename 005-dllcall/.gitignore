@@ -14,3 +14,4 @@ dll_data*
 lib_entry.lib
 *_data.c
 *_data.obj
+*.bak
