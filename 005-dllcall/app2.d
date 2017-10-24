@@ -13,7 +13,7 @@ else
 	import std.stdio : File;
 	import std.process : execute, executeShell;
 
-	printf("args.length=%d\n", args.length);
+	//printf("args.length=%d\n", args.length);
 	if (args.length < 3 || args.length > 4)
 	{
 		printf("app2 <identifier> <dll-path> [<unit-size>]");
@@ -29,7 +29,7 @@ else
 	int index = 0;
 	foreach (chunk; f.byChunk(cast(uint) unit_size))
 	{
-		printf("chunk\n");
+		//printf("chunk\n");
 		write_unit(identifier, index, chunk, unit_size);
 		index++;
 	}
