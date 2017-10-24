@@ -172,7 +172,6 @@ else
 		import core.thread;
 
 		int result1, result2;
-
 		auto tg = new ThreadGroup;
 		tg.create = { // ここを実行するスレッドから見えているのは main 関数から見える a とは別の a
 			a++;
@@ -186,6 +185,52 @@ else
 		writeln(a); // main 関数から見える a は変更されていないので 0
 		writeln(cast(int) b); // 共有しているので変更されて 1
 		writeln(result1, " ", result2);
+	}
+
+	{
+		import std.stdio;
+		import core.sync.mutex: Mutex;
+		import core.thread;
+
+		//static __gshared int total;
+		//static shared int total;
+		int total;
+		void sync_fun()
+		{
+			synchronized
+			{
+				total += 1;
+			}
+		}
+
+		int total2;
+		shared Mutex mtx = new shared Mutex();
+		void sync_fun2()
+		{
+			mtx.lock_nothrow();
+			total2 += 1;
+			mtx.unlock_nothrow();
+		}
+
+		int result1, result2;
+		auto tg = new ThreadGroup;
+		tg.create = {
+			for (int i = 0; i < 1000; i++)
+			{
+				sync_fun();
+				sync_fun2();
+			}
+		};
+		tg.create = {
+			for (int i = 0; i < 1000; i++)
+			{
+				sync_fun();
+				sync_fun2();
+			}
+		};
+		tg.joinAll();
+		writeln("total=", total);
+		writeln("total2=", total2);
 	}
 
 	return 0;
