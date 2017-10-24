@@ -1,7 +1,7 @@
 #include <windows.h>
 #include <stdio.h>
 
-extern "C" void *sqlite_get_proc(const char *proc_name);
+extern "C" void *easy_win_sqlite_get_proc(const char *proc_name);
 
 class ExportedFunction
 {
@@ -10,7 +10,7 @@ class ExportedFunction
 	explicit ExportedFunction(const char *name)
 	{
 		printf("ExportedFunction(const char *name): %s\n", name);
-		void *jmpdest = sqlite_get_proc(name);
+		void *jmpdest = easy_win_sqlite_get_proc(name);
 		opcodes[0] = 0xFF;
 		opcodes[1] = 0x25;
 		*reinterpret_cast<DWORD *>(opcodes + 2) = reinterpret_cast<DWORD>(opcodes + 6);

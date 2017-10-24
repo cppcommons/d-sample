@@ -1,7 +1,7 @@
 #include <windows.h>
 #include <stdio.h>
 
-extern "C" void *libcurl_get_proc(const char *proc_name);
+extern "C" void *easy_win_libcurl_get_proc(const char *proc_name);
 
 static void write_abs_jump(unsigned char *opcodes, const void *jmpdest)
 {
@@ -14,7 +14,7 @@ static void write_abs_jump(unsigned char *opcodes, const void *jmpdest)
 
 static void register_proc(const char *name, unsigned char *opcode)
 {
-	void *proc = libcurl_get_proc(name);
+	void *proc = easy_win_libcurl_get_proc(name);
 	write_abs_jump(opcode, proc);
 }
 
