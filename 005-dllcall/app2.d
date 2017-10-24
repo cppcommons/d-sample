@@ -78,17 +78,20 @@ extern void *easy_win_%s_get_proc(const char *proc_name)
 	auto dmd = execute(["pexports", args[2]]);
 	//if (dmd.status != 0) writeln("Compilation failed:\n", dmd.output);
 	{
-		import std.stdio;
 		import std.algorithm : startsWith;
-		import std.algorithm, std.range;
 		import std.conv: to;
+		import std.stdio: writeln;
 		import std.string: splitLines;
 
 		//writeln(dmd.output);
 		writeln(dmd.output.startsWith("LIBRARY "));
-		string s = to!string(dmd.output);
-		string[] lines = s.splitLines;
+		string[] lines = dmd.output.splitLines;
 		writeln(lines);
+		foreach(line; lines)
+		{
+			if (line.startsWith("LIBRARY ") || line == "EXPORTS") continue;
+			writeln("LINE: ", line);
+		}
 	}
 
 	return 0;
