@@ -80,7 +80,7 @@ int test1()
     archive_read_support_format_7zip(a);
 #if 0x0
     r = archive_read_open_filename(a, R"***(E:\d-dev\.binaries\msys2-i686-20161025.7z)***", 10240); // Note 1
-    //r = archive_read_open_filename(a, R"***(C:\Users\Public\qtx\.binaries\msys2-i686-20161025.7z)***", 10240); // Note 1
+//r = archive_read_open_filename(a, R"***(C:\Users\Public\qtx\.binaries\msys2-i686-20161025.7z)***", 10240); // Note 1
 #else
     //int fd = _wopen(LR"***(E:\d-dev\.binaries\msys2-i686-20161025.7z)***", _O_RDONLY | _O_BINARY);
     FILE *f = _wfopen(LR"***(E:\d-dev\.binaries\msys2-i686-20161025.7z)***", L"rb");
@@ -158,23 +158,22 @@ struct MyMutex : public QMutex
 static MyMutex mutex;
 
 /* extern */
-coid         cos_bytearray_new(qint64 size = 0, char *type = 0);
-qint64       cos_bytearray_reserve(coid oid, qint64 reserve);
-qint64       cos_bytearray_size(coid oid);
-qint64       cos_bytearray_append(coid oid, const char *data, qint64 size);
-qint64       cos_bytearray_read_seek(coid oid); // Thread Local Seek Pointer
-qint64       cos_bytearray_read_pos(coid oid); // Thread Local Seek Pointer
-qint64       cos_bytearray_read(coid oid, char *data, qint64 size); // Thread Local Seek Pointer
-qint64       cos_bytearray_available(coid oid); // Thread Local Seek Pointer
+coid cos_bytearray_new(qint64 size = 0, char *type = 0);
+qint64 cos_bytearray_reserve(coid oid, qint64 reserve);
+qint64 cos_bytearray_size(coid oid);
+qint64 cos_bytearray_append(coid oid, const char *data, qint64 size);
+qint64 cos_bytearray_read_seek(coid oid);                     // Thread Local Seek Pointer
+qint64 cos_bytearray_read_pos(coid oid);                      // Thread Local Seek Pointer
+qint64 cos_bytearray_read(coid oid, char *data, qint64 size); // Thread Local Seek Pointer
+qint64 cos_bytearray_available(coid oid);                     // Thread Local Seek Pointer
 
-qint64       cos_link_count(coid oid);
-qint64       cos_link(coid oid);
-qint64       cos_unlink(coid oid);
-qint64       cos_delete(coid oid);
+qint64 cos_link_count(coid oid);
+qint64 cos_link(coid oid);
+qint64 cos_unlink(coid oid);
+qint64 cos_delete(coid oid);
 
 /* internal */
-QByteArray & cos_bytearray_pointer(coid oid);
-
+QByteArray &cos_bytearray_pointer(coid oid);
 
 #ifdef DLLTEST_TEST_MAIN
 //#include <QtCore>
@@ -183,25 +182,27 @@ QByteArray & cos_bytearray_pointer(coid oid);
 #include <iostream>
 #include <string>
 
-namespace myns {
+namespace myns
+{
 
 struct MyStruct //: public QObject
 {
     QVariant var;
     int i;
     QBuffer *buff = NULL;
-    operator QString() const {
+    operator QString() const
+    {
         QString s;
         s.sprintf("i=%d", this->i);
         return s;
     }
-    QString toString2() {
+    QString toString2()
+    {
         QString s;
         s.sprintf("***MyStruct(i=%d)***", this->i);
         return s;
     }
 };
-
 }
 Q_DECLARE_METATYPE(myns::MyStruct)
 
@@ -211,9 +212,11 @@ static void doDeleteLater(QVariant *obj)
 {
     //obj->deleteLater();
     qDebug() << "doDeleteLater()" << *obj;
+    delete obj;
 }
 
-struct MyVariant {
+struct MyVariant
+{
     //QVariant value;
     QSharedPointer<QVariant> value2;
     MyVariant()
@@ -235,13 +238,15 @@ struct MyVariant {
     }
 };
 
-QDebug operator<< (QDebug d, const MyStruct &x) {
+QDebug operator<<(QDebug d, const MyStruct &x)
+{
     return d;
 }
 
-QDebug operator<< (QDebug d, const MyVariant &x) {
+QDebug operator<<(QDebug d, const MyVariant &x)
+{
     d << "[" << x.value2->typeName() << "]";
-    if (x.value2->typeName()==QString("myns::MyStruct"))
+    if (x.value2->typeName() == QString("myns::MyStruct"))
     {
         d << "???";
         d << x.value2->value<MyStruct>().toString2();
@@ -253,7 +258,6 @@ QDebug operator<< (QDebug d, const MyVariant &x) {
     }
     return d;
 }
-
 
 int main(int argc, char *argv[])
 {
@@ -299,7 +303,7 @@ int main(int argc, char *argv[])
     map3["abc"] = "uuu";
     map3["#10238"] = "uuu";
     map3["#real"] = (double)123.4;
-    QList<QVariant> mylist = { 1.2, "abc" };
+    QList<QVariant> mylist = {1.2, "abc"};
     map3["#list"] = mylist;
     static QBuffer buff;
     buff.open(QIODevice::ReadWrite);
@@ -326,7 +330,6 @@ int main(int argc, char *argv[])
     MyVariant myvar4(mystruct);
     map4[2] = mystruct;
     qDebug() << map4;
-
 
     qDebug() << "end!";
 
