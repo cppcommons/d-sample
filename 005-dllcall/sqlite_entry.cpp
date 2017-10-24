@@ -3,33 +3,20 @@
 
 extern "C" void *sqlite_get_proc(const char *proc_name);
 
-static void write_abs_jump(unsigned char *opcodes, const void *jmpdest)
-{
-	// Taken from: https://www.gamedev.net/forums/topic/566233-x86-asm-help-understanding-jmp-opcodes/
-	opcodes[0] = 0xFF;
-	opcodes[1] = 0x25;
-	*reinterpret_cast<DWORD *>(opcodes + 2) = reinterpret_cast<DWORD>(opcodes + 6);
-	*reinterpret_cast<DWORD *>(opcodes + 6) = reinterpret_cast<DWORD>(jmpdest);
-}
-
-#if 0x0
-static void register_proc(const char *name, unsigned char *opcode)
-{
-	void *proc = sqlite_get_proc(name);
-	write_abs_jump(opcode, proc);
-}
-#endif
-
 class ExportedFunction
 {
   public:
-	unsigned char opcode[16];
+	unsigned char opcodes[16];
 	explicit ExportedFunction(const char *name)
 	{
 		printf("ExportedFunction(const char *name): %s\n", name);
 		//register_proc(name, opcode);
-		void *proc = sqlite_get_proc(name);
-		write_abs_jump(opcode, proc);
+		void *jmpdest = sqlite_get_proc(name);
+		//write_abs_jump(opcodes, proc);
+		opcodes[0] = 0xFF;
+		opcodes[1] = 0x25;
+		*reinterpret_cast<DWORD *>(opcodes + 2) = reinterpret_cast<DWORD>(opcodes + 6);
+		*reinterpret_cast<DWORD *>(opcodes + 6) = reinterpret_cast<DWORD>(jmpdest);
 	}
 };
 
