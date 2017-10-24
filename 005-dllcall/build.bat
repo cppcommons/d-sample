@@ -33,7 +33,7 @@ if %errorlevel% neq 0 ( exit /b )
 if "%1" neq "keep" (
   del easy_win_*
   del *.obj
-  del Makefile*
+  del Makefile.*
 )
 if "%1" equ "clean" (
   rmdir /s /q .dub
