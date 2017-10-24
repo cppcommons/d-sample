@@ -4,69 +4,76 @@ version (unittest)
 {
 }
 else
-	int main(string[] args)
+    int main(string[] args)
 {
-	import core.stdc.stdio : printf;
-	import std.conv : to;
-	import std.file : read;
-	import std.format : format;
-	import std.stdio : File;
-	import std.process : execute, executeShell;
+    import core.stdc.stdio : printf;
+    import std.conv : to;
+    import std.file : read;
+    import std.format : format;
+    import std.stdio : File;
+    import std.process : execute, executeShell;
 
-	//printf("args.length=%d\n", args.length);
-	if (args.length < 3 || args.length > 4)
-	{
-		printf("app2 <identifier> <dll-path> [<unit-size>]");
-		return 1;
-	}
+    //printf("args.length=%d\n", args.length);
+    if (args.length < 3 || args.length > 4)
+    {
+        printf("app2 <identifier> <dll-path> [<unit-size>]");
+        return 1;
+    }
 
-	immutable string identifier = args[1];
-	//File f = File("release/dlltest.dll");
-	File f = File(args[2]);
+    immutable string identifier = args[1];
+    //File f = File("release/dlltest.dll");
+    File f = File(args[2]);
 
-	immutable ulong unit_size = (args.length == 4) ? to!ulong(args[3]) : f.size;
+    immutable ulong unit_size = (args.length == 4) ? to!ulong(args[3]) : f.size;
 
-	int index = 0;
-	foreach (chunk; f.byChunk(cast(uint) unit_size))
-	{
-		//printf("chunk\n");
-		write_unit(identifier, index, chunk, unit_size);
-		index++;
-	}
+    int index = 0;
+    foreach (chunk; f.byChunk(cast(uint) unit_size))
+    {
+        //printf("chunk\n");
+        write_unit(identifier, index, chunk, unit_size);
+        index++;
+    }
 
-	auto fname1 = format!"easy_win_%s_0_codedata.c"(identifier);
-	File file1 = File(fname1, "w");
-	//file1.writef("extern \"C\" {\n");
-	for (int i = 0; i < index; i++)
-	{
-		file1.writef("extern const char easy_win_%s_%d[];\n", identifier, i + 1);
-	}
-	//file1.writef("}\n");
+    auto fname1 = format!"easy_win_%s_0_codedata.c"(identifier);
+    File file1 = File(fname1, "w");
+    //file1.writef("extern \"C\" {\n");
+    for (int i = 0; i < index; i++)
+    {
+        file1.writef("extern const unsigned char easy_win_%s_%d[];\n", identifier, i + 1);
+    }
+    //file1.writef("}\n");
 
-	file1.writef("static const char *dll_data_array[] = {\n");
-	for (int i = 0; i < index; i++)
-	{
-		file1.writef("	easy_win_%s_%d,\n", identifier, i + 1);
-	}
-	file1.writef("	0\n");
-	file1.writef("};\n");
+    file1.write(`struct dll_unit
+{
+    const unsigned char *ptr;
+    long size;
+};
+`);
 
-	file1.writef("static const unsigned long dll_data_unit = %u;\n", unit_size);
-	file1.writef("static const int dll_data_count = %d;\n", index);
+    file1.writef("static struct dll_unit dll_data_array[] = {\n");
+    for (int i = 0; i < index; i++)
+    {
+        file1.writef("	{ easy_win_%s_%d, %u },\n", identifier, i + 1, unit_size);
+    }
+    file1.writef("	{ 0, 0 }\n");
+    file1.writef("};\n");
 
-	file1.writef(`#include "MemoryModule-micro.c"
+    file1.writef("static const unsigned long dll_data_unit = %u;\n", unit_size);
+    file1.writef("static const int dll_data_count = %d;\n", index);
+
+    file1.writef(`#include "MemoryModule-micro.c"
 extern void *easy_win_%s_get_proc(const char *proc_name)
 {
 	static HMEMORYMODULE hModule = NULL;
 	if (!hModule)
 	{
-		char *dll_data = (char *)HeapAlloc(GetProcessHeap(), 0, dll_data_unit * dll_data_count);
-		char *dll_ptr = dll_data;
+		unsigned char *dll_data = (unsigned char *)HeapAlloc(GetProcessHeap(), 0, dll_data_unit * dll_data_count);
+		unsigned char *dll_ptr = dll_data;
 		for (int i = 0; i < dll_data_count; i++)
 		{
-			const char *unit = dll_data_array[i];
-			RtlMoveMemory(dll_ptr, unit, dll_data_unit);
-			dll_ptr += dll_data_unit;
+			const unsigned char *unit = dll_data_array[i].ptr;
+			RtlMoveMemory(dll_ptr, unit, dll_data_array[i].size);
+			dll_ptr += dll_data_array[i].size;
 		}
 		hModule = MemoryLoadLibrary(dll_data);
 		HeapFree(GetProcessHeap(), 0, dll_data);
@@ -74,11 +81,11 @@ extern void *easy_win_%s_get_proc(const char *proc_name)
 	return MemoryGetProcAddress(hModule, proc_name);
 }
 `, identifier);
-	file1.close();
+    file1.close();
 
-	auto fname2 = format!"easy_win_%s_funclist.cpp"(identifier);
-	File file2 = File(fname2, "w");
-	file2.writef(`#include <windows.h>
+    auto fname2 = format!"easy_win_%s_funclist.cpp"(identifier);
+    File file2 = File(fname2, "w");
+    file2.writef(`#include <windows.h>
 #ifdef EASY_WIN_DEBUG
 #include <stdio.h>
 #endif /* EASY_WIN_DEBUG */
@@ -105,73 +112,73 @@ class ExportedFunction
 #define export_fun(X) extern "C" ExportedFunction X(#X)
 
 `, identifier, identifier);
-	auto dmd = execute(["pexports", args[2]]);
-	//if (dmd.status != 0) writeln("Compilation failed:\n", dmd.output);
-	{
-		import std.algorithm : startsWith, endsWith;
-		import std.conv : to;
-		import std.stdio : writeln, stdout;
-		import std.string : splitLines;
+    auto dmd = execute(["pexports", args[2]]);
+    //if (dmd.status != 0) writeln("Compilation failed:\n", dmd.output);
+    {
+        import std.algorithm : startsWith, endsWith;
+        import std.conv : to;
+        import std.stdio : writeln, stdout;
+        import std.string : splitLines;
 
-		//writeln(dmd.output);
-		//writeln(dmd.output.startsWith("LIBRARY "));
-		string[] lines = dmd.output.splitLines;
-		//writeln(lines);
-		foreach (line; lines)
-		{
-			if (line.startsWith("LIBRARY ") || line == "EXPORTS" || line.endsWith(" DATA"))
-				continue;
-			//writeln("LINE: ", line);
-			//stdout.writef("export_fun(%s);\n", line);
-			file2.writef("export_fun(%s);\n", line);
-		}
-	}
-	file2.close();
-	write_memory_module();
-	return 0;
+        //writeln(dmd.output);
+        //writeln(dmd.output.startsWith("LIBRARY "));
+        string[] lines = dmd.output.splitLines;
+        //writeln(lines);
+        foreach (line; lines)
+        {
+            if (line.startsWith("LIBRARY ") || line == "EXPORTS" || line.endsWith(" DATA"))
+                continue;
+            //writeln("LINE: ", line);
+            //stdout.writef("export_fun(%s);\n", line);
+            file2.writef("export_fun(%s);\n", line);
+        }
+    }
+    file2.close();
+    write_memory_module();
+    return 0;
 }
 
 private void write_unit(string identifier, int index, ubyte[] bytes, ulong unit_size)
 {
-	import core.stdc.stdio : fprintf;
-	import std.format : format;
-	import std.stdio : File;
+    import core.stdc.stdio : fprintf;
+    import std.format : format;
+    import std.stdio : File;
 
-	bytes.reserve(cast(uint) unit_size);
-	while (bytes.length < unit_size)
-	{
-		bytes ~= 0;
-	}
-	auto fname = format!"easy_win_%s_%d_codedata.c"(identifier, index + 1);
-	auto f = File(fname, "w");
-	f.writef("extern const char easy_win_%s_%d[] = {\n", identifier, index + 1);
-	int first = true;
-	int count = 0;
-	foreach (ub; bytes)
-	{
-		if (count >= 20)
-		{
-			f.writef("\n");
-			count = 0;
-		}
-		if (first)
-			f.writef("  ");
-		else
-			f.writef(", ");
-		first = false;
-		f.writef("0x%02x", ub);
-		count++;
-	}
-	f.writef("\n};\n");
-	f.close();
+    bytes.reserve(cast(uint) unit_size);
+    while (bytes.length < unit_size)
+    {
+        bytes ~= 0;
+    }
+    auto fname = format!"easy_win_%s_%d_codedata.c"(identifier, index + 1);
+    auto f = File(fname, "w");
+    f.writef("extern const char easy_win_%s_%d[] = {\n", identifier, index + 1);
+    int first = true;
+    int count = 0;
+    foreach (ub; bytes)
+    {
+        if (count >= 20)
+        {
+            f.writef("\n");
+            count = 0;
+        }
+        if (first)
+            f.writef("  ");
+        else
+            f.writef(", ");
+        first = false;
+        f.writef("0x%02x", ub);
+        count++;
+    }
+    f.writef("\n};\n");
+    f.close();
 }
 
 private void write_memory_module()
 {
-	import std.stdio : File;
+    import std.stdio : File;
 
-	File file1 = File("MemoryModule-micro.c", "w");
-	file1.write(`/* Definitions for Digital Mars Compiler */
+    File file1 = File("MemoryModule-micro.c", "w");
+    file1.write(`/* Definitions for Digital Mars Compiler */
 #ifdef __DMC__
 typedef unsigned long ULONG_PTR;
 #define IS_INTRESOURCE(_r) ((((ULONG_PTR)(_r)) >> 16) == 0)
@@ -732,5 +739,5 @@ static void MemoryFreeLibrary(HMEMORYMODULE mod)
     }
 }
 `);
-	file1.close;
+    file1.close;
 }

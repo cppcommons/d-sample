@@ -11,21 +11,6 @@ extern (C) int add2(int, int);
 extern (C) int test1();
 extern (C) int test2();
 
-unittest
-{
-	assert(1 + 2 == 3);
-	auto arr = [1, 2, 3];
-	assert(arr.length == 4); // 間違ってるけど Emacs が教えてくれる！
-}
-
-unittest
-{
-	// このコードはunittestでコンパイルされた時のみ実行される
-	writeln("this is unittest code");
-	//assert(add(1,2) == 3); // error
-	writeln("test clear");
-}
-
 int a; // スレッドごとに別々の静的変数を用意
 shared int b; // スレッド間で共有される静的変数を用意
 
