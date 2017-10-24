@@ -207,14 +207,31 @@ Q_DECLARE_METATYPE(myns::MyStruct)
 
 using namespace myns;
 
+static void doDeleteLater(QVariant *obj)
+{
+    //obj->deleteLater();
+    qDebug() << "doDeleteLater()" << *obj;
+}
+
 struct MyVariant {
-    QVariant value;
+    //QVariant value;
+    QSharedPointer<QVariant> value2;
     MyVariant()
     {
+        this->value2 = QSharedPointer<QVariant>(new QVariant, doDeleteLater);
+        //this->value2->clear();
     }
-    MyVariant(MyStruct &x)
+    MyVariant(double x) : MyVariant()
     {
-        this->value = QVariant::fromValue(x);
+        *(this->value2) = x;
+    }
+    MyVariant(QVariant &x) : MyVariant()
+    {
+        *(this->value2) = x;
+    }
+    MyVariant(MyStruct &x) : MyVariant()
+    {
+        *(this->value2) = QVariant::fromValue(x);
     }
 };
 
@@ -223,16 +240,16 @@ QDebug operator<< (QDebug d, const MyStruct &x) {
 }
 
 QDebug operator<< (QDebug d, const MyVariant &x) {
-    d << "[" << x.value.typeName() << "]";
-    if (x.value.typeName()==QString("myns::MyStruct"))
+    d << "[" << x.value2->typeName() << "]";
+    if (x.value2->typeName()==QString("myns::MyStruct"))
     {
         d << "???";
-        d << x.value.value<MyStruct>().toString2();
+        d << x.value2->value<MyStruct>().toString2();
     }
     else
     {
         d << "!!!";
-        d << x.value;
+        d << *(x.value2);
     }
     return d;
 }
@@ -303,10 +320,9 @@ int main(int argc, char *argv[])
     myvar2 = mystruct;
     map4[0] = myvar2;
     MyVariant myvar3;
-    myvar3.value = 1.23;
+    myvar3 = 1.23;
     map4[1] = myvar3;
     qDebug() << map4;
-    qDebug() << myvar2.value.toString();
     MyVariant myvar4(mystruct);
     map4[2] = mystruct;
     qDebug() << map4;
