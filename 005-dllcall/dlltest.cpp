@@ -61,6 +61,8 @@ extern "C" {
 #include <iostream>
 #include <string>
 #include <vector>
+#include <io.h>
+#include <fcntl.h>
 
 // https://github.com/libarchive/libarchive/wiki/Examples
 
@@ -71,14 +73,26 @@ int test1()
     struct archive_entry *entry;
     int r;
 
+    printf("test1(1)\n");
     a = archive_read_new();
     //archive_read_support_filter_all(a);
     archive_read_support_format_zip(a);
     archive_read_support_format_7zip(a);
+#if 0x0
     r = archive_read_open_filename(a, R"***(E:\d-dev\.binaries\msys2-i686-20161025.7z)***", 10240); // Note 1
     //r = archive_read_open_filename(a, R"***(C:\Users\Public\qtx\.binaries\msys2-i686-20161025.7z)***", 10240); // Note 1
+#else
+    //int fd = _wopen(LR"***(E:\d-dev\.binaries\msys2-i686-20161025.7z)***", _O_RDONLY | _O_BINARY);
+    FILE *f = _wfopen(LR"***(E:\d-dev\.binaries\msys2-i686-20161025.7z)***", L"rb");
+    int fd = fileno(f);
+    //printf("f=0x%08x\n", f);
+    //r = archive_read_open_FILE(a, f);
+    r = archive_read_open_fd(a, fd, 10240);
+#endif
+    printf("test1(2)\n");
     if (r != ARCHIVE_OK)
         return (10);
+    printf("test1(3)\n");
     while (archive_read_next_header(a, &entry) == ARCHIVE_OK)
     {
         printf("%s\n", archive_entry_pathname(entry));
@@ -94,9 +108,12 @@ int test1()
         }
         std::cout << entry_size << std::endl;
     }
+    printf("test1(4)\n");
     r = archive_read_free(a); // Note 3
     if (r != ARCHIVE_OK)
         return (30);
+    printf("test1(5)\n");
+    //fclose(f);
     return 0;
 }
 
@@ -141,13 +158,14 @@ struct MyMutex : public QMutex
 static MyMutex mutex;
 
 /* extern */
-coid         cos_bytearray_new(qint64 size = 0, qint64 reserve = -1);
+coid         cos_bytearray_new(qint64 size = 0, char *type = 0);
+qint64       cos_bytearray_reserve(coid oid, qint64 reserve);
 qint64       cos_bytearray_size(coid oid);
-const char * cos_bytearray_const_data(coid oid, qint64 *size);
 qint64       cos_bytearray_append(coid oid, const char *data, qint64 size);
-qint64       cos_bytearray_seek(coid oid, qint64 i); // Thread Local Seek Pointer
-qint64       cos_bytearray_read(coid oid, char *data, qint64 size);
-qint64       cos_bytearray_available(coid oid);
+qint64       cos_bytearray_read_seek(coid oid); // Thread Local Seek Pointer
+qint64       cos_bytearray_read_pos(coid oid); // Thread Local Seek Pointer
+qint64       cos_bytearray_read(coid oid, char *data, qint64 size); // Thread Local Seek Pointer
+qint64       cos_bytearray_available(coid oid); // Thread Local Seek Pointer
 
 qint64       cos_link_count(coid oid);
 qint64       cos_link(coid oid);
@@ -178,7 +196,8 @@ int main(int argc, char *argv[])
 
     qDebug() << a << b;
 
-    //test1();
+    int rc = test1();
+    qDebug() << "rc:test1=" << rc;
 
     std::map<quint64, std::string> mymap;
     mymap[15] = "abc";
