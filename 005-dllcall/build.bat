@@ -1,3 +1,6 @@
+if "%1" equ "clean" goto clean
+
+
 qmake.exe dlltest.pro -spec win32-g++ "CONFIG+=release"
 mingw32-make -f Makefile.Release
 if %errorlevel% neq 0 ( exit /b )
@@ -25,6 +28,8 @@ if %errorlevel% neq 0 ( exit /b )
 del main.exe
 C:\D\dm\bin\dmc main.cpp lib_entry.lib
 if %errorlevel% neq 0 ( exit /b )
+
+:clean
 
 if "%1" neq "keep" (
   del easy_win_*
