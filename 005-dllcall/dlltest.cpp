@@ -183,6 +183,18 @@ QByteArray & cos_bytearray_pointer(coid oid);
 #include <iostream>
 #include <string>
 
+struct MyStruct
+{
+    int i;
+    QString toString() {
+        QString s;
+        s.sprintf("i=%d", this->i);
+        return s;
+    }
+};
+
+Q_DECLARE_METATYPE(MyStruct)
+
 int main(int argc, char *argv[])
 {
     //QCoreApplication app(argc, argv);
@@ -196,8 +208,8 @@ int main(int argc, char *argv[])
 
     qDebug() << a << b;
 
-    int rc = test1();
-    qDebug() << "rc:test1=" << rc;
+    //int rc = test1();
+    //qDebug() << "rc:test1=" << rc;
 
     std::map<quint64, std::string> mymap;
     mymap[15] = "abc";
@@ -211,6 +223,7 @@ int main(int argc, char *argv[])
     QByteArray ba = temp.toUtf8();
     ba.reserve(1024);
     map2[3] = ba;
+    map2[4] = (quint64)123L;
     qDebug() << map2;
     map2.remove(2);
     map2.remove(200);
@@ -219,6 +232,21 @@ int main(int argc, char *argv[])
     qDebug() << map2;
     map2[3].toByteArray().append("yyy");
     qDebug() << map2;
+    map2.clear();
+    qDebug() << map2;
+    QMap<QByteArray, QVariant> map3;
+    map3["abc"] = "xyz";
+    map3["abc"] = "uuu";
+    map3["#10238"] = "uuu";
+    map3["#real"] = (double)123.4;
+    QList<QVariant> mylist = { 1.2, "abc" };
+    map3["#list"] = mylist;
+    MyStruct mystruct;
+    mystruct.i = 789;
+    QVariant myvar = QVariant::fromValue(mystruct);
+    map3["#struct"] = myvar;
+    qDebug() << map3;
+    qDebug() << map3["#struct"].value<MyStruct>().i;
 
     ba.constData();
 
