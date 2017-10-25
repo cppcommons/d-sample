@@ -6,9 +6,12 @@ else
 {
 	import std.algorithm : startsWith, endsWith;
 	import std.array : join, split;
+	import std.datetime.systime: DosFileTimeToSysTime;
+	import std.file : mkdirRecurse, read, setTimes;
 	import std.stdio : stdout, writefln, writeln;
 	import std.stdio : File;
-	import std.digest.crc, std.file, std.zip;
+	import std.digest.crc;
+	import std.zip;
 
 	writeln("start! start!");
 	stdout.flush();
@@ -26,6 +29,7 @@ else
 		if (path.endsWith("/"))
 		{
 			mkdirRecurse(path);
+			setTimes(path, DosFileTimeToSysTime(am.time()), DosFileTimeToSysTime(am.time()));
 			continue;
 		}
 		string[] array = path.split("/");
@@ -44,6 +48,7 @@ else
 		auto f = File(path, "wb");
 		f.rawWrite(am.expandedData);
 		f.close();
+		setTimes(path, DosFileTimeToSysTime(am.time()), DosFileTimeToSysTime(am.time()));
 	}
 
 	return 0;
