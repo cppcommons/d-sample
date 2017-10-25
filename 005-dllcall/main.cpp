@@ -5,9 +5,13 @@ extern "C" int add2(int a, int b);
 extern "C" int test1();
 extern "C" int test2();
 
+#include <string>
+#include <iostream>
 
 int main()
 {
+	std::string s = "abc";
+	std::cout << s << std::endl;
 	int rc2 = test2();
 	printf("rc2=%d\n", rc2);
 	rc2 = test2();

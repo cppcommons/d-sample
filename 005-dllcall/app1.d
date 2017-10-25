@@ -21,13 +21,14 @@ class MyClass
 extern "C" MyClass * MyClassNew() { return new MyClass; }
 +/
 
-extern(C++) // http://www.kmonos.net/alang/d/cpp_interface.html C++とのインターフェイス
+extern (C++) // http://www.kmonos.net/alang/d/cpp_interface.html C++とのインターフェイス
 {
 	interface MyClass
 	{
 		int add2(int a, int b);
 		int mul2(int a, int b);
 	}
+
 	MyClass MyClassNew();
 	//void MyClassDelete(ref MyClass c);
 }
@@ -43,7 +44,6 @@ extern "C" int dmc_tls_test()
 +/
 
 extern (C) int dmc_tls_test();
-
 
 int a; // スレッドごとに別々の静的変数を用意
 shared int b; // スレッド間で共有される静的変数を用意
@@ -268,28 +268,22 @@ else
 		import core.thread;
 
 		auto tg = new ThreadGroup;
-		tg.create = {
-			writeln("dmc_tls_test(1)=", dmc_tls_test());
-		};
-		tg.create = {
-			writeln("dmc_tls_test(2)=", dmc_tls_test());
-		};
-		tg.create = {
-			writeln("dmc_tls_test(3)=", dmc_tls_test());
-		};
+		tg.create = { writeln("dmc_tls_test(1)=", dmc_tls_test()); };
+		tg.create = { writeln("dmc_tls_test(2)=", dmc_tls_test()); };
+		tg.create = { writeln("dmc_tls_test(3)=", dmc_tls_test()); };
 		tg.joinAll();
 	}
-
-
 
 	version (CRuntime_DigitalMars)
 	{
 		import std.stdio;
+
 		writeln("version (CRuntime_DigitalMars)");
 	}
 	else version (CRuntime_Microsoft)
 	{
 		import std.stdio;
+
 		writeln("version (CRuntime_Microsoft)");
 	}
 
