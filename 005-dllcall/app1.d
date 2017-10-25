@@ -11,7 +11,7 @@ extern (C) int add2(int, int);
 extern (C) int test1();
 extern (C) int test2();
 
-/+
+/+ http://www.kmonos.net/alang/d/cpp_interface.html C++とのインターフェイス
 class MyClass
 {
     virtual int add2(int a, int b) { return a + b; }
@@ -21,7 +21,7 @@ class MyClass
 extern "C" MyClass * MyClassNew() { return new MyClass; }
 +/
 
-extern(C++)
+extern(C++) // http://www.kmonos.net/alang/d/cpp_interface.html C++とのインターフェイス
 {
 	interface MyClass
 	{
