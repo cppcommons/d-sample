@@ -1,30 +1,28 @@
-//#ifdef ENABLE_TRACE
-#ifdef _MSC_VER
-#include <windows.h>
-#include <sstream>
-#define trace(x)                             \
-	do                                       \
-	{                                        \
-		std::stringstream s;                 \
-		s << x << '\n';                      \
-		OutputDebugStringA(s.str().c_str()); \
-	} while (0)
-#else
+#include "vcapp1.h"
+
 #include <iostream>
-#define trace(x) std::clog << (x)
-#endif // or std::cerr << (x) << std::flush
-//#else
-//#  define trace(x)
-//#endif
+#include <memory>
+using namespace std;
+class C {
+private:
+	std::string name_;
+	int age_;
+public:
+	C(std::string name, int age) :name_(name), age_(age) {}
+	virtual ~C() {
+		trace(funcsig);
+	}
+	void doit() {
+		trace(funcsig);
+	}
+};
 
-//#include "stdafx.h"
-#include <stdio.h>
-
-int main()
+int main(int argc, char const* argv[])
 {
-	int v1 = 123;
-	double v2 = 456.789;
-	trace("main() v1=" << v1 << " v2=" << v2);
-	trace("main() v1=" << v1 << " v2=" << v2);
+	{
+		auto a = std::make_shared<C>("Foo", 123);
+		a->doit();
+	}
+	// destroy C
 	return 0;
 }
