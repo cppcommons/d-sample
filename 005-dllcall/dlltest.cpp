@@ -279,6 +279,7 @@ QDebug operator<<(QDebug d, const CoVariant &x)
     return d;
 }
 
+#if 0x0
 extern const unsigned char easy_win_libcurl_1[] = {
   0x4d, 0x5a, 0x90, 0x00, 0x03, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0xff, 0xff, 0x00, 0x00, 0xb8, 0x00, 0x00, 0x00
 };
@@ -293,7 +294,7 @@ static dll_unit dll_data_array[] = {
     {easy_win_libcurl_1, 5},
     {0, 0}
 };
-
+#endif
 
 int main(int argc, char *argv[])
 {
