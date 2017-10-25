@@ -32,6 +32,19 @@ extern(C++) // http://www.kmonos.net/alang/d/cpp_interface.html C++とのイン�
 	//void MyClassDelete(ref MyClass c);
 }
 
+/+
+TLS_VARIABLE_DECL int my_thread_local_var = 1234;
+
+extern "C" int dmc_tls_test()
+{
+    my_thread_local_var++;
+    return my_thread_local_var;
+}
++/
+
+extern (C) int dmc_tls_test();
+
+
 int a; // スレッドごとに別々の静的変数を用意
 shared int b; // スレッド間で共有される静的変数を用意
 
@@ -249,6 +262,25 @@ else
 		writeln("total=", total);
 		writeln("total2=", total2);
 	}
+
+	{
+		import std.stdio;
+		import core.thread;
+
+		auto tg = new ThreadGroup;
+		tg.create = {
+			writeln("dmc_tls_test(1)=", dmc_tls_test());
+		};
+		tg.create = {
+			writeln("dmc_tls_test(2)=", dmc_tls_test());
+		};
+		tg.create = {
+			writeln("dmc_tls_test(3)=", dmc_tls_test());
+		};
+		tg.joinAll();
+	}
+
+
 
 	version (CRuntime_DigitalMars)
 	{
