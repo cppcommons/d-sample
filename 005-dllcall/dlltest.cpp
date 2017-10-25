@@ -201,6 +201,8 @@ QByteArray &cos_bytearray_pointer(coid oid);
 #include <iostream>
 #include <string>
 
+#include <boost/variant.hpp>
+
 namespace myns
 {
 
