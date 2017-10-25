@@ -20,3 +20,6 @@ mylib.dll
 *.vcxproj.filters
 *.vcxproj.user
 *.cbproj.local
+__astcache
+*.res
+*.stat
