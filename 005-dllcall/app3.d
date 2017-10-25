@@ -5,7 +5,9 @@ else
 	int main()
 {
 	import std.algorithm : startsWith, endsWith;
+	import std.array : join, split;
 	import std.stdio : stdout, writefln, writeln;
+	import std.stdio : File;
 	import std.digest.crc, std.file, std.zip;
 
 	writeln("start! start!");
@@ -20,13 +22,28 @@ else
 	// iterate over all zip members
 	foreach (name, am; zip.directory)
 	{
-		if (!name.endsWith("/")) continue;
+		string path = ".install/" ~ name;
+		if (path.endsWith("/"))
+		{
+			mkdirRecurse(path);
+			continue;
+		}
+		string[] array = path.split("/");
+		auto fname = array[array.length - 1];
+		array.length--;
+		writeln(array, fname);
+		auto dir_part = array.join("/") ~ "/";
+		writeln("dir_part=", dir_part);
 		// print some data about each member
-		writefln("%10s  %08x  %s", am.expandedSize, am.crc32, name);
+		writefln("%10s  %08x  %s %s", am.expandedSize, am.crc32, name, am.time());
 		assert(am.expandedData.length == 0);
 		// decompress the archive member
 		zip.expand(am);
 		assert(am.expandedData.length == am.expandedSize);
+		mkdirRecurse(dir_part);
+		auto f = File(path, "wb");
+		f.write(am.expandedData);
+		f.close();
 	}
 
 	return 0;
