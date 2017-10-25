@@ -1,16 +1,27 @@
+#include <windows.h>
 #include <stdio.h>
 
-////extern "C" void *get_proc(const char *proc_name);
+// https://github.com/aktokaji/win32loader aaa
 extern "C" int add2(int a, int b);
 extern "C" int test1();
 extern "C" int test2();
 
-#include <string>
 #include <iostream>
+#include <string>
+#include <vector>
 
 int main()
 {
 	std::string s = "abc";
+	std::vector<int> v;
+	v.reserve(1024);
+
+	CRITICAL_SECTION f_csect;
+	InitializeCriticalSection(&f_csect);
+	EnterCriticalSection(&f_csect);
+	LeaveCriticalSection(&f_csect);
+	DeleteCriticalSection(&f_csect);
+
 	std::cout << s << std::endl;
 	int rc2 = test2();
 	printf("rc2=%d\n", rc2);

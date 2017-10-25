@@ -279,23 +279,6 @@ QDebug operator<<(QDebug d, const CoVariant &x)
     return d;
 }
 
-#if 0x0
-extern const unsigned char easy_win_libcurl_1[] = {
-  0x4d, 0x5a, 0x90, 0x00, 0x03, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0xff, 0xff, 0x00, 0x00, 0xb8, 0x00, 0x00, 0x00
-};
-
-struct dll_unit
-{
-    const unsigned char *ptr;
-    long size;
-};
-
-static dll_unit dll_data_array[] = {
-    {easy_win_libcurl_1, 5},
-    {0, 0}
-};
-#endif
-
 int main(int argc, char *argv[])
 {
     UNUSED_PARAMETER(argc);
@@ -376,3 +359,16 @@ int main(int argc, char *argv[])
     return 0;
 }
 #endif /* #ifdef DLLTEST_TEST_MAIN */
+
+#include <iostream>
+#include <memory>
+using namespace std;
+int mainX(int argc, char const* argv[])
+{
+        auto a = std::make_shared<int>(123);
+        cout << a << endl;
+        cout << *a << endl;
+        *a = 456;
+        cout << *a << endl;
+        return 0;
+}
