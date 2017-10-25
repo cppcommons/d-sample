@@ -19,3 +19,4 @@ mylib.dll
 *.VC.VC.opendb
 *.vcxproj.filters
 *.vcxproj.user
+*.cbproj.local
