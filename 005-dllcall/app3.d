@@ -42,7 +42,7 @@ else
 		assert(am.expandedData.length == am.expandedSize);
 		mkdirRecurse(dir_part);
 		auto f = File(path, "wb");
-		f.write(am.expandedData);
+		f.rawWrite(am.expandedData);
 		f.close();
 	}
 
