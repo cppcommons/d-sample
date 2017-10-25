@@ -49,6 +49,16 @@
                 "app2.d",
                 "../../d-lib/pegged-dm32.lib"
             ]
+        },
+        {
+            "name": "app3",
+            "targetType": "executable",
+            "targetName": "app3-dm32",
+            "sourceFiles": [
+                "app3.d",
+                "curl.d",
+                "lib_entry.lib"
+            ]
         }
     ]
 }
