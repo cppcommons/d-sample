@@ -24,6 +24,10 @@ string pkgs = `
 abc;
  //xyz
  /*123*/
+ function ();
+ function (...);
+ function (int32);
+ function (int32, int64);
  function (int32, out int64);
  /*
  this function is ...abc!
@@ -34,21 +38,22 @@ abc;
 
 mixin(grammar(`
 M2Pkgs:
-	Idl			< Def+ eoi
-	Def			< Program / Symbol
-	Symbol		< (!Keywords identifier) :";"
-	Program		< Function
-	Function	< "function" FunArgs :";"
-	FunArgs		< :"(" FunArg* :")"
-	FunArg		< Out? Type
-	Keywords	< "function"
-	Out			< "out"
-	Type		< Int32 / Int64
-	Int32		< "int32"
-	Int64		< "int64"
-	Comment1	<~ "/*" (!"*/" .)* "*/"
-	Comment2	<~ "//" (!endOfLine .)* endOfLine
-	Spacing		<- (blank / "," / Comment1 / Comment2)*
+	Idl				< Def+ eoi
+	Def				< Program / Symbol
+	Symbol			< (!Keywords identifier) :";"
+	Program			< Function
+	Function		< "function" Parameters :";"
+	Parameters		< "(" ParameterList? ")"
+	ParameterList	< "..." / Parameter (:',' Parameter)*
+	Parameter		< Out? Type
+	Keywords		< "function"
+	Out				< "out"
+	Type			< Int32 / Int64
+	Int32			< "int32"
+	Int64			< "int64"
+	Comment1		<~ "/*" (!"*/" .)* "*/"
+	Comment2		<~ "//" (!endOfLine .)* endOfLine
+	Spacing			<- (blank / Comment1 / Comment2)*
 `));
 
 void test(out int a)
@@ -69,8 +74,6 @@ private void cut_unnecessary_nodes(ref ParseTree p, ref string[] names)
 	{
 		processed = false;
 		ParseTree [] new_children;
-		//auto orig_children = &p.children;
-		//p.children.length = 0;
 		foreach (ref child; p.children)
 		{
 			if (!names.canFind(child.name))
@@ -79,46 +82,14 @@ private void cut_unnecessary_nodes(ref ParseTree p, ref string[] names)
 				continue;
 			}
 			writeln("Found(A): ", child.name, " ", p.name);
-			child.matches.length = 0;
 			foreach (ref grand_child; child.children)
 			{
 				writeln("  grand_child.name: ", grand_child.name);
 				new_children ~= grand_child;
 			}
-			//writeln("  new_children: ", new_children);
 			processed = true;
 		}
-		p.children.length = 0;
-		//p.children = new_children;
-		//p.children.length = new_children.length;
-		foreach(new_child; new_children)
-		{
-			p.children ~= new_child;
-		}
-		/*
-		if (p.children.length == 1)
-		{
-			ParseTree child = p.children[0];
-			if (names.canFind(child.name))
-			{
-				p.children.length = 0;
-				foreach (grand_child; child.children)
-				{
-					p.children ~= grand_child;
-				}
-				processed = true;
-			}
-		}
-		for (int i = 0; i < p.children.length; i++)
-		{
-			auto child = p.children[i];
-			if (names.canFind(child.name) && child.children.length == 1)
-			{
-				p.children[i] = child.children[0];
-				processed = true;
-			}
-		}
-		*/
+		p.children = new_children;
 	}
 	foreach (ref child; p.children)
 	{
@@ -155,12 +126,12 @@ void main()
 			writeln("not success!");
 			return;
 		}
-		string[] unnecessary = ["M2Pkgs.Idl", "M2Pkgs.Def", "M2Pkgs.Program", "M2Pkgs.Type"];
+		string[] unnecessary = ["M2Pkgs.Idl", "M2Pkgs.Def", "M2Pkgs.Program", "M2Pkgs.Parameters", "M2Pkgs.ParameterList", "M2Pkgs.Type"];
 		/*p =*/
 		cut_unnecessary_nodes(p, unnecessary);
 		writeln(p);
-		cut_unnecessary_nodes(p, unnecessary);
-		writeln(p);
+		//cut_unnecessary_nodes(p, unnecessary);
+		//writeln(p);
 		////writeln(p.matches.length);
 		for (int i = 0; i < p.children.length; i++)
 		{
