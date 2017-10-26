@@ -1,11 +1,13 @@
 if "%1" equ "clean" goto clean
 
 
-qmake.exe dlltest.pro -spec win32-g++ "CONFIG+=release"
-mingw32-make -f Makefile.Release
+::qmake.exe dlltest.pro -spec win32-g++ "CONFIG+=release"
+::mingw32-make -f Makefile.Release
+qmake -o dlltest.mk dlltest.pro
+mingw32-make -f dlltest.mk.Release
 if %errorlevel% neq 0 ( exit /b )
 
-call app2.bat
+call easy.bat
 
 del lib_entry.lib
 del easy_win_*.obj
