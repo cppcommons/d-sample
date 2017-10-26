@@ -19,24 +19,31 @@ M2Pkgs:
 `));
 +/
 
+string pkgs = `
+abc;
+ //xyz
+ /*123*/
+ function; ttt;
+`;
+
 mixin(grammar(`
 M2Pkgs:
 	Idl			< Def+ eoi
 	Def			< Function / Symbol
-	Symbol		< identifier
-	Function	< "function"
+	Symbol		< identifier :";"
+	Function	< "function" :";"
 	#List     < Elem* / " "*
 	#List     < Elem* eoi
-	List     < Pkg* eoi
-	Elem     < Pkg / :Delim / :Parens
+	#List     < Pkg* eoi
+	#Elem     < Pkg / :Delim / :Parens
 	#Pkg      <- identifier
-	Pkg      <~ (Letter+ "/" Letter+) / Letter+
-	Letter   <- [a-zA-Z0-9]
-	Delim    <- "," / ";"
-	Parens   <~ "/*" (!"*/" .)* "*/"
-	Spacing <- (space / Parens)*
+	#Pkg      <~ (Letter+ "/" Letter+) / Letter+
+	#Letter   <- [a-zA-Z0-9]
+	#Delim    <- "," / ";"
+	Comment1   <~ "/*" (!"*/" .)* "*/"
+	Comment2   <~ "//" (!endOfLine .)* endOfLine
+	Spacing <- (blank / Comment1 / Comment2)*
 `));
-string pkgs = "abc function ttt";
 
 /+
 char[] toString(char* s)
