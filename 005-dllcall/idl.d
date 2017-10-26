@@ -30,7 +30,7 @@ string pkgs = `
  function test(a: char*);
  procedure test(a: int32 dual, b: int64);
  proc test(a: int32 dual, b: int64 out);
- func test(a: int32, b: int64 out) int32;
+ func test(a: int32, b: char * out) int32;
  /*
  this function is ...abc!
  this function is ...abc!
@@ -40,7 +40,7 @@ string pkgs = `
 mixin(grammar(`
 M2Pkgs:
 	Idl				< Def+ eoi
-	Keywords		< FunctionHead / ProcedureHead / InOut / Type
+	Keywords		< FunctionHead / ProcedureHead / Direction / Type
 	Def				< HandleDef / Prototype
 	Ident			< (!Keywords identifier)
 	HandleDef		< "handle" identifier ";"
@@ -52,12 +52,13 @@ M2Pkgs:
 	ReturnValue		< Type
 	Parameters		< "(" ParameterList? ")"
 	ParameterList	< VarArgs / Parameter (',' Parameter)*
-	Parameter		< Name ":" Type InOut?
+	Parameter		< Name ":" Type Direction?
 	Name			< identifier
 	VarArgs			< "..."
-	InOut			< "in" / "out" / "dual"
-	Type			< TypeName PointerMark?
-	TypeName		< "int32" / "int64" / "char"
+	Direction		< "in" / "out" / "dual"
+	Type			< (Primitive PointerMark?) / ManagedType
+	Primitive		< "int32" / "int64" / "byte" / "char" / "real32" / "real64"
+	ManagedType		< "astring" / "ustring" / "wstring" / "buffer8" / "buffer16" / "msgpack" / "json" / "object" / "service"
 	PointerMark		< "*"
 	Comment1		<~ "/*" (!"*/" .)* "*/"
 	Comment2		<~ "//" (!endOfLine .)* endOfLine
