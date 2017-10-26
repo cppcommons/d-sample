@@ -2,6 +2,7 @@ import core.thread;
 import std.conv : to;
 import pegged.grammar;
 
+/+
 mixin(grammar(`
 M2Pkgs:
     #List     < Elem* / " "*
@@ -16,7 +17,28 @@ M2Pkgs:
     Spacing <- (space / Parens / Delim)*
     # dummy
 `));
++/
 
+mixin(grammar(`
+M2Pkgs:
+	Idl			< Def+ eoi
+	Def			< Function / Symbol
+	Symbol		< identifier
+	Function	< "function"
+	#List     < Elem* / " "*
+	#List     < Elem* eoi
+	List     < Pkg* eoi
+	Elem     < Pkg / :Delim / :Parens
+	#Pkg      <- identifier
+	Pkg      <~ (Letter+ "/" Letter+) / Letter+
+	Letter   <- [a-zA-Z0-9]
+	Delim    <- "," / ";"
+	Parens   <~ "/*" (!"*/" .)* "*/"
+	Spacing <- (space / Parens)*
+`));
+string pkgs = "abc function ttt";
+
+/+
 char[] toString(char* s)
 {
     import core.stdc.string : strlen;
@@ -31,6 +53,7 @@ wchar[] toString(wchar* s)
 
     return s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
 }
++/
 
 void main()
 {
@@ -42,7 +65,7 @@ void main()
         import std.string : strip;
 
         //string pkgs = environment.get("MSYS2_PKGS");
-        string pkgs = "abc,xyz";
+        //string pkgs = "abc,xyz";
         writefln("pkgs.length=%d", pkgs.length);
         writefln("pkgs=%s", pkgs);
         if (strip(pkgs) == "")
@@ -79,7 +102,7 @@ void main()
     }
 
     // モジュール生成
-    asModule("arithmetic", "arithmetic", "Arithmetic:
+    asModule("arithmetic", "temp_arithmetic", "Arithmetic:
     Expr     <- Factor AddExpr*
     AddExpr  <- ('+'/'-') Factor
     Factor   <- Primary MulExpr*
