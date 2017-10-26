@@ -30,7 +30,7 @@ string pkgs = `
  function test(a: char*);
  procedure test(a: int32 dual, b: int64);
  proc test(a: int32 dual, b: int64 out);
- func test(a: int32, b: char * out) int32;
+ func test(h: handle archive_t, a: int32, b: char * out) int32;
  /*
  this function is ...abc!
  this function is ...abc!
@@ -56,10 +56,11 @@ M2Pkgs:
 	Name			< identifier
 	VarArgs			< "..."
 	Direction		< "in" / "out" / "dual"
-	Type			< (Primitive PointerMark?) / ManagedType
+	Type			< (Primitive PointerMark?) / ManagedType / HandleType
 	Primitive		< "int32" / "int64" / "byte" / "char" / "real32" / "real64"
-	ManagedType		< "astring" / "ustring" / "wstring" / "buffer8" / "buffer16" / "msgpack" / "json" / "object" / "service"
 	PointerMark		< "*"
+	ManagedType		< "astring" / "ustring" / "wstring" / "buffer8" / "buffer16" / "msgpack" / "json" / "object" / "service"
+	HandleType		< :"handle" identifier
 	Comment1		<~ "/*" (!"*/" .)* "*/"
 	Comment2		<~ "//" (!endOfLine .)* endOfLine
 	Spacing			<- (blank / Comment1 / Comment2)*
