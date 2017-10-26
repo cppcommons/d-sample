@@ -20,24 +20,23 @@ M2Pkgs:
 +/
 
 string pkgs = `
+/*before*/
 abc;
  //xyz
  /*123*/
- function (a b c); ttt;
+ function (a b c)/*abc*/; 
+ tt;/*xyz*/ 
 `;
 
 mixin(grammar(`
 M2Pkgs:
 	Idl			< Def+ eoi
-	Def			<- Program / Symbol
+	Def			< Program / Symbol
 	Symbol		< (!Keywords identifier) :";"
 	Program		< Function
 	Function	< "function" FunArgs :";"
 	FunArgs		< :"(" identifier* :")"
 	Keywords	< "function"
-	#Pkg      <- identifier
-	#Pkg      <~ (Letter+ "/" Letter+) / Letter+
-	#Letter   <- [a-zA-Z0-9]
 	Comment1	<~ "/*" (!"*/" .)* "*/"
 	Comment2	<~ "//" (!endOfLine .)* endOfLine
 	Spacing		<- (blank / Comment1 / Comment2)*
@@ -119,36 +118,15 @@ void main()
 			return;
 		}
 		writeln(p);
-		/+
-		if (p.end != pkgs.length)
-		{
-			writeln("length does not match!");
-			return;
-		}
-		+/
 		writeln(p.matches.length);
-		/+
-        for (int i = 0; i < p.matches.length; i++)
-        {
-            writefln("%d: %s", i, p.matches[i]);
-        }
-		+/
-		/+
-        for (int i = 0; i < root.children.length; i++)
-        {
-            writefln("%d: %s %s", i, root.children[i].name, root.children[i].matches);
-        }
-		for (int i = 0; i < root.children.length; i++)
+		for (int i = 0; i < p.children.length; i++)
 		{
-			writefln("%d: %s %s", i, root.children[i].children[0].name, root.children[i].matches);
-		}
-		+/
-        for (int i = 0; i < p.children.length; i++)
-        {
+			import std.string : replace, strip;
+
 			auto child = p.children[i];
-            writefln("%d: %s %s", i, child.name, child.matches);
-			writeln(child.input[child.begin..child.end]);
-        }
+			writefln("%d: %s %s", i, child.name, child.matches);
+			writeln(strip(child.input[child.begin .. child.end]).replace("*", "+"));
+		}
 	}
 
 	{
