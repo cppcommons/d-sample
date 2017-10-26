@@ -25,12 +25,12 @@ abc;
  //xyz
  /*123*/
  handle archivet;
- function ();
- function (...);
- function (a: int32);
- procedure (a: int32 dual, b: int64);
- proc (a: int32 dual, b: int64 out);
- func (a: int32, b: int64 out) int32;
+ function test();
+ function test(...);
+ function test(a: int32);
+ procedure test(a: int32 dual, b: int64);
+ proc test(a: int32 dual, b: int64 out);
+ func test(a: int32, b: int64 out) int32;
  /*
  this function is ...abc!
  this function is ...abc!
@@ -47,15 +47,18 @@ M2Pkgs:
 	Symbol			< Ident :";"
 	HandleDef		< "handle" identifier :";"
 	Prototype		< Function / Procedure
-	Function		< ("function" / "func") Parameters ReturnValue? :";"
-	Procedure		< ("procedure" / "proc") Parameters :";"
+	Function		< ("function" / "func") Name Parameters ReturnValue? :";"
+	Procedure		< ("procedure" / "proc") Name Parameters :";"
 	ReturnValue		< Type
 	Parameters		< "(" ParameterList? ")"
 	ParameterList	< VarArgs / Parameter (',' Parameter)*
-	Parameter		< ParameterName ":" Type Out?
-	ParameterName	< identifier
+	Parameter		< Name ":" Type InOut?
+	Name			< identifier
 	VarArgs			< "..."
-	Out				< "in" / "out" / "dual"
+	InOut			< In / Out / Dual
+	In				< "in"
+	Out				< "out"
+	Dual			< "dual"
 	Type			< Int32 / Int64
 	Int32			< "int32"
 	Int64			< "int64"
@@ -81,7 +84,7 @@ private void cut_unnecessary_nodes(ref ParseTree p, ref string[] names)
 	while (processed)
 	{
 		processed = false;
-		ParseTree [] new_children;
+		ParseTree[] new_children;
 		foreach (ref child; p.children)
 		{
 			if (!names.canFind(child.name))
@@ -129,7 +132,10 @@ void main()
 		}
 		auto p = M2Pkgs(pkgs);
 		writeln(p);
-		string[] unnecessary = ["M2Pkgs.Idl", "M2Pkgs.Def", "M2Pkgs.Prototype", "M2Pkgs.Parameters", "M2Pkgs.ParameterList", "M2Pkgs.Type"];
+		string[] unnecessary = [
+			"M2Pkgs.Idl", "M2Pkgs.Def", "M2Pkgs.Prototype", "M2Pkgs.Parameters",
+			"M2Pkgs.ParameterList", "M2Pkgs.Type", "M2Pkgs.InOut"
+		];
 		/*p =*/
 		cut_unnecessary_nodes(p, unnecessary);
 		writeln(p);
