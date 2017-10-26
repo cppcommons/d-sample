@@ -29,6 +29,7 @@ abc;
  function (int32);
  function (int32, int64);
  function (int32, out int64);
+ func (int32, out int64) int32;
  /*
  this function is ...abc!
  this function is ...abc!
@@ -42,9 +43,10 @@ M2Pkgs:
 	Def				< Program / Symbol
 	Symbol			< (!Keywords identifier) :";"
 	Program			< Function
-	Function		< "function" Parameters :";"
+	Function		< ("function" / "func") Parameters ReturnValue? :";"
+	ReturnValue		< Type
 	Parameters		< "(" ParameterList? ")"
-	ParameterList	< VarArgs / Parameter (:',' Parameter)*
+	ParameterList	< VarArgs / Parameter (',' Parameter)*
 	Parameter		< Out? Type
 	VarArgs			< "..."
 	Keywords		< "function"
@@ -141,9 +143,9 @@ void main()
 			auto child = p.children[i];
 			auto description = child.input[child.begin .. child.end];
 			description = description.strip();
-			description = description.replace("/*", "");
-			description = description.replace("*/", "");
-			description = description.replace("//", "");
+			//description = description.replace("/*", "");
+			//description = description.replace("*/", "");
+			//description = description.replace("//", "");
 			//writeln(description);
 			foreach (line; description.splitLines)
 			{
