@@ -29,8 +29,9 @@ abc;
 mixin(grammar(`
 M2Pkgs:
 	Idl			< Def+ eoi
-	Def			<- Function / Symbol
+	Def			<- Program / Symbol
 	Symbol		< (!Keywords identifier) :";"
+	Program		< Function
 	Function	< "function" FunArgs :";"
 	FunArgs		< :"(" identifier* :")"
 	Keywords	< "function"
@@ -77,35 +78,41 @@ private ParseTree cut_unnecessary_nodes(ParseTree p, ref string[] names)
 }
 +/
 
-private void cut_unnecessary_nodes(ref ParseTree p, string[] names)
+private void cut_unnecessary_nodes(ref ParseTree p, ref string[] names)
 {
 	import std.algorithm : canFind;
 	import std.stdio : writeln;
 
-	if (p.children.length == 1 && names.canFind(p.children[0].name))
+	bool processed = true;
+	while (processed)
 	{
-		ParseTree only_child = p.children[0];
-		writeln("Found: ", only_child.name);
-		p.children.length = 0;
-		foreach (c; only_child.children)
+		processed = false;
+		if (p.children.length == 1)
 		{
-			//writeln(p.name, p.children);
-			//writeln(only_child.name, ": c=", c);
-			p.children ~= c;
+			ParseTree child = p.children[0];
+			if (names.canFind(child.name))
+			{
+				p.children.length = 0;
+				foreach (grand_child; child.children)
+				{
+					p.children ~= grand_child;
+				}
+				processed = true;
+			}
+		}
+		for (int i = 0; i < p.children.length; i++)
+		{
+			auto child = p.children[i];
+			if (names.canFind(child.name) && child.children.length == 1)
+			{
+				p.children[i] = child.children[0];
+				processed = true;
+			}
 		}
 	}
-	for (int i = 0; i < p.children.length; i++)
+	foreach (child; p.children)
 	{
-		auto c = p.children[i];
-		if (names.canFind(c.name) && c.children.length == 1)
-		{
-			//writeln("Found(2): ", c.name);
-			p.children[i] = c.children[0];
-		}
-	}
-	foreach (c; p.children)
-	{
-		cut_unnecessary_nodes(c, names);
+		cut_unnecessary_nodes(child, names);
 	}
 }
 
@@ -129,7 +136,7 @@ void main()
 		}
 		auto p = M2Pkgs(pkgs);
 		writeln(p);
-		string[] unnecessary = ["M2Pkgs.Idl", "M2Pkgs.Def"];
+		string[] unnecessary = ["M2Pkgs.Idl", "M2Pkgs.Def", "M2Pkgs.Program"];
 		/*p =*/
 		cut_unnecessary_nodes(p, unnecessary);
 		if (!p.successful)
