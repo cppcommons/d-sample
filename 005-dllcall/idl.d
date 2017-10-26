@@ -26,10 +26,10 @@ abc;
  /*123*/
  function ();
  function (...);
- function (int32);
- function (int32, int64);
- function (int32, out int64);
- func (int32, out int64) int32;
+ function (a int32);
+ function (a int32, b int64);
+ function (a int32, out b int64);
+ func (a int32, out b int64) int32;
  /*
  this function is ...abc!
  this function is ...abc!
@@ -40,16 +40,17 @@ abc;
 mixin(grammar(`
 M2Pkgs:
 	Idl				< Def+ eoi
+	Keywords		< "function" "out" "int32" "int64"
 	Def				< Program / Symbol
-	Symbol			< (!Keywords identifier) :";"
+	Ident			< (!Keywords identifier)
+	Symbol			< Ident :";"
 	Program			< Function
 	Function		< ("function" / "func") Parameters ReturnValue? :";"
 	ReturnValue		< Type
 	Parameters		< "(" ParameterList? ")"
 	ParameterList	< VarArgs / Parameter (',' Parameter)*
-	Parameter		< Out? Type
+	Parameter		< Out? Ident Type
 	VarArgs			< "..."
-	Keywords		< "function"
 	Out				< "out"
 	Type			< Int32 / Int64
 	Int32			< "int32"
