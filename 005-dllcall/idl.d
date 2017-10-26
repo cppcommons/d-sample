@@ -122,25 +122,25 @@ void main()
 			return;
 		}
 		writeln(p);
-		writeln(p.matches.length);
+		////writeln(p.matches.length);
 		for (int i = 0; i < p.children.length; i++)
 		{
 			import std.string : replace, splitLines, strip;
 
 			auto child = p.children[i];
-			writefln("%d: %s %s", i, child.name, child.matches);
 			auto description = child.input[child.begin .. child.end];
 			description = description.strip();
-			//description = description.replace("*", "#");
 			description = description.replace("/*", "");
 			description = description.replace("*/", "");
 			description = description.replace("//", "");
-			writeln(description);
+			//writeln(description);
 			foreach (line; description.splitLines)
 			{
 				if (line.strip().length != 0)
-					writeln("// ", line);
+					writeln("//IDL: ", line);
 			}
+			writefln("%d: %s %s", i, child.name, child.matches);
+			writeln();
 		}
 	}
 
