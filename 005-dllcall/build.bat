@@ -9,7 +9,6 @@ if %errorlevel% neq 0 ( exit /b )
 call easy.bat
 
 del lib_entry.lib
-del easy_win_*.obj
 
 setlocal enabledelayedexpansion enableextensions
 set LIST=
@@ -38,6 +37,7 @@ if "%1" neq "keep" (
   del *.mk.Release
 )
 if "%1" equ "clean" (
+  del lib_entry.lib
   rmdir /s /q .dub
   rmdir /s /q debug
   rmdir /s /q release
