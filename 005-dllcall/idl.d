@@ -27,7 +27,7 @@ string pkgs = `
  handle handle_t;
  function test();
  function test(...);
- function test(a: int32);
+ function test(a: char*);
  procedure test(a: int32 dual, b: int64);
  proc test(a: int32 dual, b: int64 out);
  func test(a: int32, b: int64 out) int32;
@@ -56,7 +56,9 @@ M2Pkgs:
 	Name			< identifier
 	VarArgs			< "..."
 	InOut			< "in" / "out" / "dual"
-	Type			< "int32" / "int64"
+	Type			< TypeName PointerMark?
+	TypeName		< "int32" / "int64" / "char"
+	PointerMark		< "*"
 	Comment1		<~ "/*" (!"*/" .)* "*/"
 	Comment2		<~ "//" (!endOfLine .)* endOfLine
 	Spacing			<- (blank / Comment1 / Comment2)*
@@ -106,7 +108,7 @@ private void cut_unnecessary_nodes(ref ParseTree p, ref string[] names)
 void main()
 {
 	import std.stdio;
-	import std.array: join;
+	import std.array : join;
 
 	{
 		//import core.stdc.stdlib: getenv;
@@ -130,7 +132,7 @@ void main()
 		writeln(p);
 		string[] unnecessary = [
 			"M2Pkgs.Idl", "M2Pkgs.Def", "M2Pkgs.Prototype", "M2Pkgs.Parameters",
-			"M2Pkgs.ParameterList", "M2Pkgs.FunctionHead", "M2Pkgs.ProcedureHead"
+			"M2Pkgs.ParameterList", "M2Pkgs.FunctionHead", "M2Pkgs.ProcedureHead", "M2Pkgs.Type"
 		];
 		/*p =*/
 		cut_unnecessary_nodes(p, unnecessary);
