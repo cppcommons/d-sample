@@ -23,7 +23,7 @@ string pkgs = `
 abc;
  //xyz
  /*123*/
- function (); ttt;
+ function (a b c); ttt;
 `;
 
 mixin(grammar(`
@@ -31,7 +31,8 @@ M2Pkgs:
 	Idl			< Def+ eoi
 	Def			< Function / Symbol
 	Symbol		< (!Keywords identifier) :";"
-	Function	< "function" "()" :";"
+	Function	< "function" FunArgs :";"
+	FunArgs		< :"(" identifier* :")"
 	Keywords	< "function"
 	#List     < Elem* / " "*
 	#List     < Elem* eoi
@@ -72,6 +73,9 @@ void main()
         import std.process : environment;
         import std.string : strip;
 
+		auto x = M2Pkgs.Symbol("abc;");
+		writeln(x);
+
         //string pkgs = environment.get("MSYS2_PKGS");
         //string pkgs = "abc,xyz";
         writefln("pkgs.length=%d", pkgs.length);
@@ -98,6 +102,11 @@ void main()
         for (int i = 0; i < p.matches.length; i++)
         {
             writefln("%d: %s", i, p.matches[i]);
+        }
+		auto root = p.children[0];
+        for (int i = 0; i < root.children.length; i++)
+        {
+            writefln("%d: %s %s", i, root.children[i].children[0].name, root.children[i].matches);
         }
     }
 
