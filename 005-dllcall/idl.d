@@ -24,6 +24,7 @@ string pkgs = `
 abc;
  //xyz
  /*123*/
+ handle archivet;
  function ();
  function (...);
  function (a: int32);
@@ -41,9 +42,10 @@ mixin(grammar(`
 M2Pkgs:
 	Idl				< Def+ eoi
 	Keywords		< "function" / Out / Type
-	Def				< Prototype / Symbol
+	Def				< HandleDef / Prototype / Symbol
 	Ident			< (!Keywords identifier)
 	Symbol			< Ident :";"
+	HandleDef		< "handle" identifier :";"
 	Prototype		< Function / Procedure
 	Function		< ("function" / "func") Parameters ReturnValue? :";"
 	Procedure		< ("procedure" / "proc") Parameters :";"
