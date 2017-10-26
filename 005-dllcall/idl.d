@@ -23,15 +23,16 @@ string pkgs = `
 abc;
  //xyz
  /*123*/
- function; ttt;
+ function (); ttt;
 `;
 
 mixin(grammar(`
 M2Pkgs:
 	Idl			< Def+ eoi
 	Def			< Function / Symbol
-	Symbol		< identifier :";"
-	Function	< "function" :";"
+	Symbol		< (!Keywords identifier) :";"
+	Function	< "function" "()" :";"
+	Keywords	< "function"
 	#List     < Elem* / " "*
 	#List     < Elem* eoi
 	#List     < Pkg* eoi
