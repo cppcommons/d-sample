@@ -40,7 +40,7 @@ string pkgs = `
 mixin(grammar(`
 M2Pkgs:
 	Idl				< Def+ eoi
-	Keywords		< "function" / "func" / "procedure" / "proc" / Out / Type
+	Keywords		< FunctionHead / ProcedureHead / InOut / Type
 	Def				< HandleDef / Prototype
 	Ident			< (!Keywords identifier)
 	HandleDef		< "handle" identifier :";"
