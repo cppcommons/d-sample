@@ -26,10 +26,10 @@ abc;
  /*123*/
  function ();
  function (...);
- function (in a int32);
- procedure (dual a int32, b int64);
- proc (a int32, out b int64);
- func (a int32, out b int64) int32;
+ function (a: int32);
+ procedure (a: int32 dual, b: int64);
+ proc (a: int32 dual, b: int64 out);
+ func (a: int32, b: int64 out) int32;
  /*
  this function is ...abc!
  this function is ...abc!
@@ -50,7 +50,7 @@ M2Pkgs:
 	ReturnValue		< Type
 	Parameters		< "(" ParameterList? ")"
 	ParameterList	< VarArgs / Parameter (',' Parameter)*
-	Parameter		< Out? identifier Type
+	Parameter		< ParameterName ":" Type Out?
 	ParameterName	< identifier
 	VarArgs			< "..."
 	Out				< "in" / "out" / "dual"
