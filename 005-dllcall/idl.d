@@ -43,11 +43,11 @@ M2Pkgs:
 	Keywords		< FunctionHead / ProcedureHead / InOut / Type
 	Def				< HandleDef / Prototype
 	Ident			< (!Keywords identifier)
-	HandleDef		< "handle" identifier :";"
+	HandleDef		< "handle" identifier ";"
 	Prototype		< Function / Procedure
-	Function		< FunctionHead Name Parameters ReturnValue? :";"
+	Function		< FunctionHead Name Parameters ReturnValue? ";"
 	FunctionHead	< ("function" / "func")
-	Procedure		< ProcedureHead Name Parameters :";"
+	Procedure		< ProcedureHead Name Parameters ";"
 	ProcedureHead	< ("procedure" / "proc")
 	ReturnValue		< Type
 	Parameters		< "(" ParameterList? ")"
@@ -55,13 +55,8 @@ M2Pkgs:
 	Parameter		< Name ":" Type InOut?
 	Name			< identifier
 	VarArgs			< "..."
-	InOut			< In / Out / Dual
-	In				< "in"
-	Out				< "out"
-	Dual			< "dual"
-	Type			< Int32 / Int64
-	Int32			< "int32"
-	Int64			< "int64"
+	InOut			< "in" / "out" / "dual"
+	Type			< "int32" / "int64"
 	Comment1		<~ "/*" (!"*/" .)* "*/"
 	Comment2		<~ "//" (!endOfLine .)* endOfLine
 	Spacing			<- (blank / Comment1 / Comment2)*
@@ -111,6 +106,7 @@ private void cut_unnecessary_nodes(ref ParseTree p, ref string[] names)
 void main()
 {
 	import std.stdio;
+	import std.array: join;
 
 	{
 		//import core.stdc.stdlib: getenv;
@@ -133,8 +129,8 @@ void main()
 		auto p = M2Pkgs(pkgs);
 		writeln(p);
 		string[] unnecessary = [
-			"M2Pkgs.Idl", "M2Pkgs.Def", "M2Pkgs.Prototype", "M2Pkgs.Parameters", "M2Pkgs.ParameterList",
-			"M2Pkgs.Type", "M2Pkgs.InOut", "M2Pkgs.FunctionHead", "M2Pkgs.ProcedureHead"
+			"M2Pkgs.Idl", "M2Pkgs.Def", "M2Pkgs.Prototype", "M2Pkgs.Parameters",
+			"M2Pkgs.ParameterList", "M2Pkgs.FunctionHead", "M2Pkgs.ProcedureHead"
 		];
 		/*p =*/
 		cut_unnecessary_nodes(p, unnecessary);
@@ -163,7 +159,7 @@ void main()
 				if (line.strip().length != 0)
 					writeln("//IDL: ", line);
 			}
-			writefln("%d: %s %s", i, child.name, child.matches);
+			writefln("%d: %s ==> %s", i, child.name, child.matches.join(" "));
 			writeln();
 		}
 	}
