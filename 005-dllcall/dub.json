@@ -42,11 +42,11 @@
             }
         },
         {
-            "name": "app2",
+            "name": "easy",
             "targetType": "executable",
-            "targetName": "app2-dm32",
+            "targetName": "easy-dm32",
             "sourceFiles": [
-                "app2.d",
+                "easy.d",
                 "../../d-lib/pegged-dm32.lib"
             ]
         },
