@@ -26,8 +26,8 @@ abc;
  /*123*/
  function ();
  function (...);
- function (a int32);
- function (a int32, b int64);
+ function (in a int32);
+ function (dual a int32, b int64);
  function (a int32, out b int64);
  func (a int32, out b int64) int32;
  /*
@@ -40,7 +40,7 @@ abc;
 mixin(grammar(`
 M2Pkgs:
 	Idl				< Def+ eoi
-	Keywords		< "function" "out" "int32" "int64"
+	Keywords		< "function" / Out / Type
 	Def				< Program / Symbol
 	Ident			< (!Keywords identifier)
 	Symbol			< Ident :";"
@@ -49,9 +49,10 @@ M2Pkgs:
 	ReturnValue		< Type
 	Parameters		< "(" ParameterList? ")"
 	ParameterList	< VarArgs / Parameter (',' Parameter)*
-	Parameter		< Out? Ident Type
+	Parameter		< Out? identifier Type
+	ParameterName	< identifier
 	VarArgs			< "..."
-	Out				< "out"
+	Out				< "in" / "out" / "dual"
 	Type			< Int32 / Int64
 	Int32			< "int32"
 	Int64			< "int64"
@@ -125,15 +126,15 @@ void main()
 		}
 		auto p = M2Pkgs(pkgs);
 		writeln(p);
+		string[] unnecessary = ["M2Pkgs.Idl", "M2Pkgs.Def", "M2Pkgs.Program", "M2Pkgs.Parameters", "M2Pkgs.ParameterList", "M2Pkgs.Type"];
+		/*p =*/
+		cut_unnecessary_nodes(p, unnecessary);
+		writeln(p);
 		if (!p.successful)
 		{
 			writeln("not success!");
 			return;
 		}
-		string[] unnecessary = ["M2Pkgs.Idl", "M2Pkgs.Def", "M2Pkgs.Program", "M2Pkgs.Parameters", "M2Pkgs.ParameterList", "M2Pkgs.Type"];
-		/*p =*/
-		cut_unnecessary_nodes(p, unnecessary);
-		writeln(p);
 		//cut_unnecessary_nodes(p, unnecessary);
 		//writeln(p);
 		////writeln(p.matches.length);
