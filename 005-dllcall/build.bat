@@ -1,6 +1,5 @@
 if "%1" equ "clean" goto clean
 
-
 ::qmake.exe dlltest.pro -spec win32-g++ "CONFIG+=release"
 ::mingw32-make -f Makefile.Release
 qmake -o dlltest.mk dlltest.pro
