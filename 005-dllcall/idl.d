@@ -43,26 +43,9 @@ M2Pkgs:
 	Spacing		<- (blank / Comment1 / Comment2)*
 `));
 
-/+
-char[] toString(char* s)
-{
-    import core.stdc.string : strlen;
-
-    return s ? s[0 .. strlen(s)] : cast(char[]) null;
-}
-
-// http://forum.dlang.org/post/c6ojg9$c8p$1@digitaldaemon.com
-wchar[] toString(wchar* s)
-{
-    import core.stdc.wchar_;
-
-    return s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
-}
-+/
-
 void test(out int a)
 {
-	a = 0;
+	a = 123;
 }
 
 private void cut_unnecessary_nodes(ref ParseTree p, ref string[] names)
@@ -114,6 +97,10 @@ void main()
 
 		//string pkgs = environment.get("MSYS2_PKGS");
 		//string pkgs = "abc,xyz";
+
+		int v = 11;
+		test(v);
+		writeln("v=", v);
 		writefln("pkgs.length=%d", pkgs.length);
 		writefln("pkgs=%s", pkgs);
 		if (strip(pkgs) == "")
@@ -132,23 +119,21 @@ void main()
 			return;
 		}
 		writeln(p);
+		/+
 		if (p.end != pkgs.length)
 		{
 			writeln("length does not match!");
 			return;
 		}
+		+/
 		writeln(p.matches.length);
 		/+
         for (int i = 0; i < p.matches.length; i++)
         {
             writefln("%d: %s", i, p.matches[i]);
-        }+/
-		//auto root = p.children[0];
-		/+
-        for (int i = 0; i < root.children.length; i++)
-        {
-			root.children[i] = root.children[i].children[0];
         }
+		+/
+		/+
         for (int i = 0; i < root.children.length; i++)
         {
             writefln("%d: %s %s", i, root.children[i].name, root.children[i].matches);
@@ -158,6 +143,12 @@ void main()
 			writefln("%d: %s %s", i, root.children[i].children[0].name, root.children[i].matches);
 		}
 		+/
+        for (int i = 0; i < p.children.length; i++)
+        {
+			auto child = p.children[i];
+            writefln("%d: %s %s", i, child.name, child.matches);
+			writeln(child.input[child.begin..child.end]);
+        }
 	}
 
 	{
