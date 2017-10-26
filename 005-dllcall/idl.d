@@ -27,8 +27,8 @@ abc;
  function ();
  function (...);
  function (in a int32);
- function (dual a int32, b int64);
- function (a int32, out b int64);
+ procedure (dual a int32, b int64);
+ proc (a int32, out b int64);
  func (a int32, out b int64) int32;
  /*
  this function is ...abc!
@@ -41,11 +41,12 @@ mixin(grammar(`
 M2Pkgs:
 	Idl				< Def+ eoi
 	Keywords		< "function" / Out / Type
-	Def				< Program / Symbol
+	Def				< Prototype / Symbol
 	Ident			< (!Keywords identifier)
 	Symbol			< Ident :";"
-	Program			< Function
+	Prototype		< Function / Procedure
 	Function		< ("function" / "func") Parameters ReturnValue? :";"
+	Procedure		< ("procedure" / "proc") Parameters :";"
 	ReturnValue		< Type
 	Parameters		< "(" ParameterList? ")"
 	ParameterList	< VarArgs / Parameter (',' Parameter)*
@@ -126,7 +127,7 @@ void main()
 		}
 		auto p = M2Pkgs(pkgs);
 		writeln(p);
-		string[] unnecessary = ["M2Pkgs.Idl", "M2Pkgs.Def", "M2Pkgs.Program", "M2Pkgs.Parameters", "M2Pkgs.ParameterList", "M2Pkgs.Type"];
+		string[] unnecessary = ["M2Pkgs.Idl", "M2Pkgs.Def", "M2Pkgs.Prototype", "M2Pkgs.Parameters", "M2Pkgs.ParameterList", "M2Pkgs.Type"];
 		/*p =*/
 		cut_unnecessary_nodes(p, unnecessary);
 		writeln(p);
