@@ -24,7 +24,7 @@ string pkgs = `
 abc;
  //xyz
  /*123*/
- function (a b c);
+ function (int32 int64);
  /*
  this function is ...abc!
  this function is ...abc!
@@ -39,8 +39,11 @@ M2Pkgs:
 	Symbol		< (!Keywords identifier) :";"
 	Program		< Function
 	Function	< "function" FunArgs :";"
-	FunArgs		< :"(" identifier* :")"
+	FunArgs		< :"(" Type* :")"
 	Keywords	< "function"
+	Type		< Int32 / Int64
+	Int32		< "int32"
+	Int64		< "int64"
 	Comment1	<~ "/*" (!"*/" .)* "*/"
 	Comment2	<~ "//" (!endOfLine .)* endOfLine
 	Spacing		<- (blank / Comment1 / Comment2)*
@@ -113,7 +116,7 @@ void main()
 		}
 		auto p = M2Pkgs(pkgs);
 		writeln(p);
-		string[] unnecessary = ["M2Pkgs.Idl", "M2Pkgs.Def", "M2Pkgs.Program"];
+		string[] unnecessary = ["M2Pkgs.Idl", "M2Pkgs.Def", "M2Pkgs.Program", "M2Pkgs.Type"];
 		/*p =*/
 		cut_unnecessary_nodes(p, unnecessary);
 		if (!p.successful)
