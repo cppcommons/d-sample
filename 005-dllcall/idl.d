@@ -29,22 +29,17 @@ abc;
 mixin(grammar(`
 M2Pkgs:
 	Idl			< Def+ eoi
-	Def			< Function / Symbol
+	Def			<- Function / Symbol
 	Symbol		< (!Keywords identifier) :";"
 	Function	< "function" FunArgs :";"
 	FunArgs		< :"(" identifier* :")"
 	Keywords	< "function"
-	#List     < Elem* / " "*
-	#List     < Elem* eoi
-	#List     < Pkg* eoi
-	#Elem     < Pkg / :Delim / :Parens
 	#Pkg      <- identifier
 	#Pkg      <~ (Letter+ "/" Letter+) / Letter+
 	#Letter   <- [a-zA-Z0-9]
-	#Delim    <- "," / ";"
-	Comment1   <~ "/*" (!"*/" .)* "*/"
-	Comment2   <~ "//" (!endOfLine .)* endOfLine
-	Spacing <- (blank / Comment1 / Comment2)*
+	Comment1	<~ "/*" (!"*/" .)* "*/"
+	Comment2	<~ "//" (!endOfLine .)* endOfLine
+	Spacing		<- (blank / Comment1 / Comment2)*
 `));
 
 /+
@@ -64,62 +59,122 @@ wchar[] toString(wchar* s)
 }
 +/
 
+/+
+private ParseTree cut_unnecessary_nodes(ParseTree p, ref string[] names)
+{
+	import std.algorithm : canFind;
+	import std.stdio : writeln;
+
+	if (names.canFind(p.name) && p.children.length == 1)
+	{
+		return p.children[0];
+	}
+	for (int i = 0; i < p.children.length; i++)
+	{
+		p.children[i] = cut_unnecessary_nodes(p.children[i], names);
+	}
+	return p;
+}
++/
+
+private void cut_unnecessary_nodes(ref ParseTree p, string[] names)
+{
+	import std.algorithm : canFind;
+	import std.stdio : writeln;
+
+	if (p.children.length == 1 && names.canFind(p.children[0].name))
+	{
+		ParseTree only_child = p.children[0];
+		writeln("Found: ", only_child.name);
+		p.children.length = 0;
+		foreach (c; only_child.children)
+		{
+			//writeln(p.name, p.children);
+			//writeln(only_child.name, ": c=", c);
+			p.children ~= c;
+		}
+	}
+	for (int i = 0; i < p.children.length; i++)
+	{
+		auto c = p.children[i];
+		if (names.canFind(c.name) && c.children.length == 1)
+		{
+			//writeln("Found(2): ", c.name);
+			p.children[i] = c.children[0];
+		}
+	}
+	foreach (c; p.children)
+	{
+		cut_unnecessary_nodes(c, names);
+	}
+}
+
 void main()
 {
-    import std.stdio;
+	import std.stdio;
 
-    {
-        //import core.stdc.stdlib: getenv;
-        import std.process : environment;
-        import std.string : strip;
+	{
+		//import core.stdc.stdlib: getenv;
+		import std.process : environment;
+		import std.string : strip;
 
-		auto x = M2Pkgs.Symbol("abc;");
-		writeln(x);
-
-        //string pkgs = environment.get("MSYS2_PKGS");
-        //string pkgs = "abc,xyz";
-        writefln("pkgs.length=%d", pkgs.length);
-        writefln("pkgs=%s", pkgs);
-        if (strip(pkgs) == "")
-        {
-            writeln("empty pkgs");
-            return;
-        }
-        auto p = M2Pkgs(pkgs);
-        writeln(p);
-        if (!p.successful)
-        {
-            writeln("not success!");
-            return;
-        }
-        writeln(p);
-        if (p.end != pkgs.length)
-        {
-            writeln("length does not match!");
-            return;
-        }
-        writeln(p.matches.length);
+		//string pkgs = environment.get("MSYS2_PKGS");
+		//string pkgs = "abc,xyz";
+		writefln("pkgs.length=%d", pkgs.length);
+		writefln("pkgs=%s", pkgs);
+		if (strip(pkgs) == "")
+		{
+			writeln("empty pkgs");
+			return;
+		}
+		auto p = M2Pkgs(pkgs);
+		writeln(p);
+		string[] unnecessary = ["M2Pkgs.Idl", "M2Pkgs.Def"];
+		/*p =*/
+		cut_unnecessary_nodes(p, unnecessary);
+		if (!p.successful)
+		{
+			writeln("not success!");
+			return;
+		}
+		writeln(p);
+		if (p.end != pkgs.length)
+		{
+			writeln("length does not match!");
+			return;
+		}
+		writeln(p.matches.length);
+		/+
         for (int i = 0; i < p.matches.length; i++)
         {
             writefln("%d: %s", i, p.matches[i]);
-        }
-		auto root = p.children[0];
+        }+/
+		//auto root = p.children[0];
+		/+
         for (int i = 0; i < root.children.length; i++)
         {
-            writefln("%d: %s %s", i, root.children[i].children[0].name, root.children[i].matches);
+			root.children[i] = root.children[i].children[0];
         }
-    }
+        for (int i = 0; i < root.children.length; i++)
+        {
+            writefln("%d: %s %s", i, root.children[i].name, root.children[i].matches);
+        }
+		for (int i = 0; i < root.children.length; i++)
+		{
+			writefln("%d: %s %s", i, root.children[i].children[0].name, root.children[i].matches);
+		}
+		+/
+	}
 
+	{
+		import std.path;
 
-    {
-        import std.path;
+		string rsrcDir = std.path.expandTilde("~/myresources");
+		writeln(rsrcDir);
+	}
 
-        string rsrcDir = std.path.expandTilde("~/myresources");
-        writeln(rsrcDir);
-    }
-
-    // モジュール生成
-    asModule("arithmetic", "temp_arithmetic", "Arithmetic:
+	// モジュール生成
+	asModule("arithmetic", "temp_arithmetic", "Arithmetic:
     Expr     <- Factor AddExpr*
     AddExpr  <- ('+'/'-') Factor
     Factor   <- Primary MulExpr*
