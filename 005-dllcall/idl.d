@@ -21,10 +21,10 @@ M2Pkgs:
 
 string pkgs = `
 /*before*/
-abc;
  //xyz
  /*123*/
- handle archivet;
+ handle archive_t;
+ handle handle_t;
  function test();
  function test(...);
  function test(a: int32);
@@ -35,20 +35,20 @@ abc;
  this function is ...abc!
  this function is ...abc!
  */ 
- tt;/*xyz*/ 
 `;
 
 mixin(grammar(`
 M2Pkgs:
 	Idl				< Def+ eoi
-	Keywords		< "function" / Out / Type
-	Def				< HandleDef / Prototype / Symbol
+	Keywords		< "function" / "func" / "procedure" / "proc" / Out / Type
+	Def				< HandleDef / Prototype
 	Ident			< (!Keywords identifier)
-	Symbol			< Ident :";"
 	HandleDef		< "handle" identifier :";"
 	Prototype		< Function / Procedure
-	Function		< ("function" / "func") Name Parameters ReturnValue? :";"
-	Procedure		< ("procedure" / "proc") Name Parameters :";"
+	Function		< FunctionHead Name Parameters ReturnValue? :";"
+	FunctionHead	< ("function" / "func")
+	Procedure		< ProcedureHead Name Parameters :";"
+	ProcedureHead	< ("procedure" / "proc")
 	ReturnValue		< Type
 	Parameters		< "(" ParameterList? ")"
 	ParameterList	< VarArgs / Parameter (',' Parameter)*
@@ -133,8 +133,8 @@ void main()
 		auto p = M2Pkgs(pkgs);
 		writeln(p);
 		string[] unnecessary = [
-			"M2Pkgs.Idl", "M2Pkgs.Def", "M2Pkgs.Prototype", "M2Pkgs.Parameters",
-			"M2Pkgs.ParameterList", "M2Pkgs.Type", "M2Pkgs.InOut"
+			"M2Pkgs.Idl", "M2Pkgs.Def", "M2Pkgs.Prototype", "M2Pkgs.Parameters", "M2Pkgs.ParameterList",
+			"M2Pkgs.Type", "M2Pkgs.InOut", "M2Pkgs.FunctionHead", "M2Pkgs.ProcedureHead"
 		];
 		/*p =*/
 		cut_unnecessary_nodes(p, unnecessary);
