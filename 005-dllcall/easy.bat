@@ -9,5 +9,4 @@ if "%BUILD%" equ "1" (
 easy-dm32.exe my_library dlltest.dll 800000
 easy-dm32.exe sqlite sqlite-win-32bit-3200100.dll 800000
 easy-dm32.exe libcurl libcurl.dll 800000
-
 endlocal
