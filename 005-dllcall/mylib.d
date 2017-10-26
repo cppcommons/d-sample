@@ -24,6 +24,10 @@ static ~this()
 	fflush(stdout);
 }
 
+int d_func(int a, int b)
+{
+	return a + b;
+}
 
 extern (C) export int add(int i, int j)
 {
