@@ -43,7 +43,7 @@ M2Pkgs:
 	Keywords		< FunctionHead / ProcedureHead / Direction / Type
 	Def				< HandleDef / Prototype
 	Ident			< (!Keywords identifier)
-	HandleDef		< "handle" identifier ";"
+	HandleDef		< "handle" Name ";"
 	Prototype		< Function / Procedure
 	Function		< FunctionHead Name Parameters ReturnValue? ";"
 	FunctionHead	< ("function" / "func")
@@ -65,6 +65,53 @@ M2Pkgs:
 	Comment2		<~ "//" (!endOfLine .)* endOfLine
 	Spacing			<- (blank / Comment1 / Comment2)*
 `));
+
+//private ParseTree*[] find_named_children(ref ParseTree p, string def_type)
+private ParseTree[] find_named_children(ref ParseTree p, string def_type)
+{
+	import std.stdio : writefln, writeln;
+	import std.string : split;
+
+	ParseTree[] result;
+	foreach (ref child; p.children)
+	{
+		string child_def_type = child.name.split(".")[1];
+		writefln("child_def_type=%s", child_def_type);
+		if (child_def_type == def_type)
+			result ~= child;
+	}
+	return result;
+}
+
+private void gen_cpp_code(string module_prefix, ref ParseTree p)
+{
+	import std.stdio : writefln, writeln;
+	import std.string : split;
+
+	writeln(p.name);
+	writeln(p.name.split(".")[1]);
+	string def_type = p.name.split(".")[1];
+	switch (def_type)
+	{
+	case "HandleDef":
+		writefln("!struct %s%s;", module_prefix, p.children[0].matches[0]);
+		break;
+	case "Function":
+		writeln("!function");
+		ParseTree[] names = find_named_children(p, "Name");
+		writeln("!names=", names);
+		assert(names.length==1);
+		writeln("!function.name=", names[0].matches[0]);
+		ParseTree[] params = find_named_children(p, "Parameter");
+		writeln("!params=", params);
+		break;
+	default:
+		writefln("%s is not supported!", def_type);
+		//break;
+		assert(0);
+	}
+
+}
 
 void test(out int a)
 {
@@ -157,26 +204,20 @@ void main()
 			//description = description.replace("/*", "");
 			//description = description.replace("*/", "");
 			//description = description.replace("//", "");
-			//writeln(description);
 			foreach (line; description.splitLines)
 			{
 				if (line.strip().length != 0)
 					writeln("//IDL: ", line);
 			}
 			writefln("%d: %s ==> %s", i, child.name, child.matches.join(" "));
+			gen_cpp_code("mymodule_", child);
 			writeln();
 		}
 	}
 
-	{
-		import std.path;
-
-		string rsrcDir = std.path.expandTilde("~/myresources");
-		writeln(rsrcDir);
-	}
-
 	// モジュール生成
-	asModule("arithmetic", "temp_arithmetic", "Arithmetic:
+	version (none)
+		asModule("arithmetic", "temp_arithmetic", "Arithmetic:
     Expr     <- Factor AddExpr*
     AddExpr  <- ('+'/'-') Factor
     Factor   <- Primary MulExpr*
