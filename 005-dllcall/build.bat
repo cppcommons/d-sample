@@ -21,7 +21,6 @@ if %errorlevel% neq 0 ( exit /b )
 setlocal enabledelayedexpansion enableextensions
 set LIST=
 for %%x in (easy_win_*.obj) do set LIST=!LIST! %%x
-::for %%x in (entry_*.obj) do set LIST=!LIST! %%x
 C:\dm\bin\lib -c -n -p512 lib_entry.lib myclass.obj %LIST%
 if %errorlevel% neq 0 ( exit /b )
 
