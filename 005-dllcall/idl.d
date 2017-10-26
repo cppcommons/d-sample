@@ -24,7 +24,11 @@ string pkgs = `
 abc;
  //xyz
  /*123*/
- function (a b c)/*abc*/; 
+ function (a b c);
+ /*
+ this function is ...abc!
+ this function is ...abc!
+ */ 
  tt;/*xyz*/ 
 `;
 
@@ -121,11 +125,22 @@ void main()
 		writeln(p.matches.length);
 		for (int i = 0; i < p.children.length; i++)
 		{
-			import std.string : replace, strip;
+			import std.string : replace, splitLines, strip;
 
 			auto child = p.children[i];
 			writefln("%d: %s %s", i, child.name, child.matches);
-			writeln(strip(child.input[child.begin .. child.end]).replace("*", "+"));
+			auto description = child.input[child.begin .. child.end];
+			description = description.strip();
+			//description = description.replace("*", "#");
+			description = description.replace("/*", "");
+			description = description.replace("*/", "");
+			description = description.replace("//", "");
+			writeln(description);
+			foreach (line; description.splitLines)
+			{
+				if (line.strip().length != 0)
+					writeln("// ", line);
+			}
 		}
 	}
 
