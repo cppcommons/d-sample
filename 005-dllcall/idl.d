@@ -60,23 +60,10 @@ wchar[] toString(wchar* s)
 }
 +/
 
-/+
-private ParseTree cut_unnecessary_nodes(ParseTree p, ref string[] names)
+void test(out int a)
 {
-	import std.algorithm : canFind;
-	import std.stdio : writeln;
-
-	if (names.canFind(p.name) && p.children.length == 1)
-	{
-		return p.children[0];
-	}
-	for (int i = 0; i < p.children.length; i++)
-	{
-		p.children[i] = cut_unnecessary_nodes(p.children[i], names);
-	}
-	return p;
+	a = 0;
 }
-+/
 
 private void cut_unnecessary_nodes(ref ParseTree p, ref string[] names)
 {
