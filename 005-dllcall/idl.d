@@ -44,8 +44,9 @@ M2Pkgs:
 	Program			< Function
 	Function		< "function" Parameters :";"
 	Parameters		< "(" ParameterList? ")"
-	ParameterList	< "..." / Parameter (:',' Parameter)*
+	ParameterList	< VarArgs / Parameter (:',' Parameter)*
 	Parameter		< Out? Type
+	VarArgs			< "..."
 	Keywords		< "function"
 	Out				< "out"
 	Type			< Int32 / Int64
@@ -81,10 +82,10 @@ private void cut_unnecessary_nodes(ref ParseTree p, ref string[] names)
 				new_children ~= child;
 				continue;
 			}
-			writeln("Found(A): ", child.name, " ", p.name);
+			////writeln("Found(A): ", child.name, " ", p.name);
 			foreach (ref grand_child; child.children)
 			{
-				writeln("  grand_child.name: ", grand_child.name);
+				////writeln("  grand_child.name: ", grand_child.name);
 				new_children ~= grand_child;
 			}
 			processed = true;
