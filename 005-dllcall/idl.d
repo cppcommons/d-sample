@@ -303,15 +303,12 @@ void main()
 			auto child = p.children[i];
 			auto description = child.input[child.begin .. child.end];
 			description = description.strip();
-			//description = description.replace("/*", "");
-			//description = description.replace("*/", "");
-			//description = description.replace("//", "");
 			foreach (line; description.splitLines)
 			{
 				if (line.strip().length != 0)
 					writeln("//IDL: ", line);
 			}
-			writefln("%d: %s ==> %s", i, child.name, child.matches.join(" "));
+			writefln("%d: %s ==> %s", i, child.name, child.matches.join(" ").strip());
 			//gen_cpp_code("mymodule_", child);
 			writeln();
 		}
