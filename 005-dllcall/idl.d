@@ -70,9 +70,13 @@ string pkgs = `
 /*before*/
  //xyz
  /*123*/
-[doc]
-doc doc doc
-[/doc]
+/+
+first doc
+ doc
+ doc.
++/
+
+// comment
 
  handle archive_t;
  handle handle_t;
@@ -306,7 +310,7 @@ void main()
 			foreach (line; description.splitLines)
 			{
 				if (line.strip().length != 0)
-					writeln("//IDL: ", line);
+					writeln("//EasyIDL: ", line);
 			}
 			writefln("%d: %s ==> %s", i, child.name, child.matches.join(" ").strip());
 			//gen_cpp_code("mymodule_", child);
