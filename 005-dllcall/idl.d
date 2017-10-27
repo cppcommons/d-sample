@@ -79,6 +79,7 @@ string pkgs = `
  func test(json) json;
  func test(msgpack) msgpack;
  func test(a: int32* dual) int32*;
+ func test(a: ustring8 dual, b: mbstring in) ustring32;
  /*
  this function is ...abc!
  this function is ...abc!
@@ -107,10 +108,10 @@ EasyIDL:
 	MsgpackType		< "msgpack"
 	Direction		< "in" / "out" / "dual"
 	Type			< Pointer / Primitive / ManagedType / MsgpackType / JsonType / HandleType # Pointer must come before Primitive
-	Primitive		< "int32" / "int64" / "byte" / "char" / "real32" / "real64"
+	Primitive		< "int32" / "int64" / "byte" / "char" / "wchar" / "real32" / "real64"
 	Pointer		< Primitive ;PointerMark
 	PointerMark		< "*"
-	ManagedType		< "astring" / "ustring" / "wstring" / "buffer8" / "buffer16" / "object" / "service"
+	ManagedType		< "mbstring" / "ustring8" / "ustring16" / "ustring32" / "buffer8" / "buffer16" / "object" / "service"
 	HandleType		< :"handle" identifier
 	Comment1		<~ "/*" (!"*/" .)* "*/"
 	Comment2		<~ "//" (!endOfLine .)* endOfLine
