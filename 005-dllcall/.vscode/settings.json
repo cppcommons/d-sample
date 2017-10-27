@@ -1,5 +1,19 @@
 {
     "files.associations": {
         "xmemory": "cpp"
+    },
+    "editor.fontSize": 16,
+    "editor.detectIndentation": false,
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.renderWhitespace": "all",
+    "[javascript]": {
+      "editor.tabSize": 2
+    },
+    "[json]": {
+      "editor.tabSize": 2
+    },
+    "[d]": {
+      "editor.tabSize": 4
     }
 }
