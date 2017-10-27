@@ -11,10 +11,52 @@ add_definitions(-DUNICODE -D_UNICODE)
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
-find_package(Boost)
+find_package(Boost
+ COMPONENTS
+  atomic
+  bzip2
+  chrono
+  container
+  context
+  coroutine
+  date_time
+  exception
+  fiber
+  filesystem
+  graph
+  iostreams
+  locale
+  log_setup
+  log
+  math_c99f
+  math_c99l
+  math_c99
+  math_tr1f
+  math_tr1l
+  math_tr1
+  prg_exec_monitor
+  program_options
+  python
+  random
+  regex
+  serialization
+  signals
+  system
+  test_exec_monitor
+  thread
+  timer
+  type_erasure
+  unit_test_framework
+  wave
+  wserialization
+  zlib
+  REQUIRED)
 if(NOT Boost_FOUND)
   message(SEND_ERROR "Boost is not found!!")
 endif()
+message(STATUS "** Boost Include: ${Boost_INCLUDE_DIR}")
+message(STATUS "** Boost Libraries: ${Boost_LIBRARY_DIRS}")
+message(STATUS "** Boost Libraries: ${Boost_LIBRARIES}")
 
 ## TEST
 enable_testing()
