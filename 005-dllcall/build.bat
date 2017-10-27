@@ -27,6 +27,17 @@ del main.exe
 C:\dm\bin\dmc -IC:/dm/stlport/stlport main.cpp lib_entry.lib
 if %errorlevel% neq 0 ( exit /b )
 
+goto clean
+setlocal enabledelayedexpansion enableextensions
+set LIST=
+for %%x in (easy_win_my_dll_*.obj) do set LIST=!LIST! %%x
+C:\dm\bin\lib -c -n -p512 my_dll_entry.lib %LIST%
+if %errorlevel% neq 0 ( exit /b )
+
+del main2.exe
+C:\dm\bin\dmc -o main2.exe -IC:/dm/stlport/stlport main.cpp my_dll_entry.lib
+if %errorlevel% neq 0 ( exit /b )
+
 :clean
 
 if "%1" neq "keep" (

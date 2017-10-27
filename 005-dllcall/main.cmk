@@ -63,12 +63,15 @@ enable_testing()
 
 ## Project Specific
 add_definitions(-DTEST_BY_QT)
+add_definitions(-DEASY_WIN_DEBUG)
 
 ## BUILD
 
-file(GLOB TARGET_SOURCES *(.c|*.h|.cpp|.hpp|*.cxx|*.hxx))
+#file(GLOB TARGET_SOURCES *(.c|*.h|.cpp|.hpp|*.cxx|*.hxx))
 #add_executable(${TARGET_NAME} ${TARGET_SOURCES} ${GENERATED_SOURCES})
-add_executable(${TARGET_NAME} main.cpp ${GENERATED_SOURCES})
+#file(GLOB EASY_WIN_SOURCES easy_win_my_dll*(.c|.cpp))
+file(GLOB EASY_WIN_SOURCES easy_win_my_library_*(.c|.cpp))
+add_executable(${TARGET_NAME} main.cpp ${EASY_WIN_SOURCES})
 set_target_properties(${TARGET_NAME} PROPERTIES DEBUG_POSTFIX _d)
 
 add_library(my_dll_static STATIC main_dll.cpp)
