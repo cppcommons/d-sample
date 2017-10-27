@@ -25,7 +25,7 @@ if "%REDO%"=="1" (
   rmdir /s /q %FOLDER%
   mkdir %FOLDER%
   cd %FOLDER%
-  cmake -G "Visual Studio 14 2015" -DCMAKE_CXX_FLAGS_RELEASE="/MT" -DCMAKE_CXX_FLAGS_DEBUG="/MTd" ..
+  cmake -G "Visual Studio 14 2015" -DCMAKE_CXX_FLAGS_RELEASE="/MT" -DCMAKE_CXX_FLAGS_DEBUG="/MTd /ZI" ..
   if %errorlevel% neq 0 ( exit /b )
 )
 
