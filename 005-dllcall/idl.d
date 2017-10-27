@@ -50,12 +50,14 @@ private class EasyClass : EasyFactory
 	{
 		return typeof(this).stringof;
 	}
+
 	override EasyFactory create(pegged.grammar.ParseTree pt)
 	{
 		auto instance = new EasyClass();
 		instance.pt = pt;
 		return instance;
 	}
+
 	void easy_test() const
 	{
 		import std.stdio : writeln;
@@ -86,7 +88,7 @@ doc doc doc
 [doc]
 doc doc doc
 [/doc]
- func test(a: ucstring8 dual, b: mbstring in) ucstring32;
+ func test(a: ucstring8 dual, /*ttt*/ b: mbstring in) ucstring32;
  /*
  this function is ...abc!
  this function is ...abc!
@@ -97,32 +99,35 @@ xxx
 this is end of file.
 `;
 
+//
+// "EasyIDL.Type"
 mixin(grammar(`
 EasyIDL:
-	#Idl				< Def+ EndOfFile
-	Idl				< (Def+ "[eof]"i) / (Def+ eoi)
+	_Idl			< (_Def+ "[eof]"i) / (_Def+ eoi)
 	EndOfFile		<- "[eof]"i / eoi
-	Keywords		< FunctionHead / ProcedureHead / Direction / Type
-	Def				< HandleDef / Prototype
+	Keywords		< FunctionHead / ProcedureHead / Direction / _Type
+	_Def			< Handle / _Prototype
 	Ident			< (!Keywords identifier)
-	HandleDef		< "handle" Name ";"
-	Prototype		< Function / Procedure
-	Function		< FunctionHead Name Parameters ":"? ReturnValue ";"
+	Handle			< "handle" Name ";"
+	_Prototype		< Function / Procedure
+	Function		< ;FunctionHead Name Parameters ":"? ReturnValue ";"
 	FunctionHead	< ("function" / "func")
-	Procedure		< ProcedureHead Name Parameters ";"
+	Procedure		< ;ProcedureHead Name Parameters ";"
 	ProcedureHead	< ("procedure" / "proc")
-	ReturnValue		< Type
-	Parameters		< "(" ParameterList? ")"
-	ParameterList	< VarArgs / JsonType / MsgpackType / Parameter (',' Parameter)*
-	Parameter		< Name ":"? Type Direction?
+	ReturnValue		< _Type
+	Parameters		< "(" _ParameterList? ")"
+	_ParameterList	< VarArgs / JsonType / MsgpackType / Parameter (',' Parameter)*
+	Parameter		< Name ":"? _Type Direction?
 	Name			< identifier
 	VarArgs			< "..."
 	JsonType		< "json"
 	MsgpackType		< "msgpack"
 	Direction		< "in" / "out" / "dual"
-	Type			< Pointer / Primitive / ManagedType / MsgpackType / JsonType / HandleType # Pointer must come before Primitive
-	Primitive		< "int32" / "int64" / "byte" / "char" / "wchar" / "real32" / "real64"
-	Pointer		< Primitive ;PointerMark
+	#_Type			< Pointer / Primitive / ManagedType / MsgpackType / JsonType / HandleType # Pointer must come before Primitive
+	_Type			< Primitive / ManagedType / MsgpackType / JsonType / HandleType
+	#Primitive		< "int32" / "int64" / "byte" / "char" / "wchar" / "real32" / "real64"
+	Primitive		< ("int32" / "int64" / "byte" / "char" / "wchar" / "real32" / "real64") PointerMark?
+	#Pointer		< Primitive ;PointerMark
 	PointerMark		< "*"
 	ManagedType		< "mbstring" / "ansistring" / "ucstring8" / "ucstring16" / "ucstring32" / "array8" / "array16" / "array32" / "array64" / "object" / "service"
 	HandleType		< :"handle" identifier
@@ -206,8 +211,9 @@ void test(out int a)
 
 private void cut_unnecessary_nodes(ref ParseTree p, ref string[] names)
 {
-	import std.algorithm : canFind;
+	import std.algorithm :  /*+canFind,*/ startsWith;
 	import std.stdio : writeln;
+	import std.string : indexOf;
 
 	if (p.children.length == 0)
 		return;
@@ -219,7 +225,7 @@ private void cut_unnecessary_nodes(ref ParseTree p, ref string[] names)
 		ParseTree[] new_children;
 		foreach (ref child; p.children)
 		{
-			if (!names.canFind(child.name))
+			if (child.name.indexOf("._") == -1 /*!names.canFind(child.name)*/ )
 			{
 				new_children ~= child;
 				continue;
@@ -248,7 +254,7 @@ void main()
 	{
 		EasyFactory cl = new EasyClass();
 		writeln("typeof(cl).stringof=", typeof(cl).stringof);
-		auto cl2 = cast(EasyClass)cl;
+		auto cl2 = cast(EasyClass) cl;
 		cl2.easy_test();
 	}
 
@@ -271,13 +277,16 @@ void main()
 			return;
 		}
 		auto p = EasyIDL(pkgs);
+		writeln("(0)", p.name);
+		writeln("(1)", p.children[0].name);
 		writeln(p);
-		string[] unnecessary = [
-			"EasyIDL.Idl", "EasyIDL.Def", "EasyIDL.Prototype", /*"EasyIDL.Parameters",*/
-			"EasyIDL.ParameterList", "EasyIDL.FunctionHead", "EasyIDL.ProcedureHead", "EasyIDL.Type"
+		string[] unnecessary = [//"EasyIDL.Idl", "EasyIDL.Def", "EasyIDL.Prototype", /*"EasyIDL.Parameters",*/
+		//"EasyIDL.ParameterList", "EasyIDL.FunctionHead", "EasyIDL.ProcedureHead", "EasyIDL.Type"
 		];
 		/*p =*/
 		cut_unnecessary_nodes(p, unnecessary);
+		writeln("(2)", p.name);
+		writeln("(3)", p.children[0].name);
 		writeln(p);
 		if (!p.successful)
 		{
