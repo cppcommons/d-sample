@@ -21,7 +21,7 @@ if "%REDO%"=="1" (
   mkdir %FOLDER%
   cd %FOLDER%
   cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_CXX_FLAGS_RELEASE="/MT" -DCMAKE_CXX_FLAGS_DEBUG="/MTd" ^
-                                         -DBOOST_LIBRARYDIR=E:\local\boost_1_61_0\lib32-msvc-14.0 ^
+                                         -DBOOST_LIBRARYDIR=E:\boost_1_65_1\lib64-msvc-14.0 ^
                                          ..
 )
 
