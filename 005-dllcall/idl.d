@@ -1,4 +1,4 @@
-import pegged.grammar;
+import pegged.grammar; // https://github.com/PhilippeSigaud/Pegged/wiki
 
 /+
 import std.stdio; 
@@ -40,6 +40,8 @@ void main() {
 private abstract class EasyFactory
 {
 	abstract string className();
+	abstract EasyFactory create(pegged.grammar.ParseTree);
+	pegged.grammar.ParseTree pt;
 }
 
 private class EasyClass : EasyFactory
@@ -47,6 +49,12 @@ private class EasyClass : EasyFactory
 	override string className()
 	{
 		return typeof(this).stringof;
+	}
+	override EasyFactory create(pegged.grammar.ParseTree pt)
+	{
+		auto instance = new EasyClass();
+		instance.pt = pt;
+		return instance;
 	}
 	void easy_test() const
 	{
@@ -68,6 +76,9 @@ string pkgs = `
  procedure test(a: int32 dual, b: int64);
  proc test(a: int32 dual, b: int64 out);
  func test(h: handle archive_t, a: int32, b: char * out) int32;
+ func test(json) json;
+ func test(msgpack) msgpack;
+ func test(a: int32* dual) int32*;
  /*
  this function is ...abc!
  this function is ...abc!
@@ -75,7 +86,7 @@ string pkgs = `
 `;
 
 mixin(grammar(`
-M2Pkgs:
+EasyIDL:
 	Idl				< Def+ eoi
 	Keywords		< FunctionHead / ProcedureHead / Direction / Type
 	Def				< HandleDef / Prototype
@@ -88,17 +99,18 @@ M2Pkgs:
 	ProcedureHead	< ("procedure" / "proc")
 	ReturnValue		< Type
 	Parameters		< "(" ParameterList? ")"
-	ParameterList	< VarArgs / Parameter (',' Parameter)*
+	ParameterList	< VarArgs / JsonType / MsgpackType / Parameter (',' Parameter)*
 	Parameter		< Name ":"? Type Direction?
 	Name			< identifier
 	VarArgs			< "..."
+	JsonType		< "json"
+	MsgpackType		< "msgpack"
 	Direction		< "in" / "out" / "dual"
-	Type			< PointerType / PrimitiveType / ManagedType / HandleType # PointerType must come before PrimitiveType
-	PrimitiveType	< Primitive
+	Type			< Pointer / Primitive / ManagedType / MsgpackType / JsonType / HandleType # Pointer must come before Primitive
 	Primitive		< "int32" / "int64" / "byte" / "char" / "real32" / "real64"
-	PointerType		< Primitive PointerMark?
+	Pointer		< Primitive ;PointerMark
 	PointerMark		< "*"
-	ManagedType		< "astring" / "ustring" / "wstring" / "buffer8" / "buffer16" / "msgpack" / "json" / "object" / "service"
+	ManagedType		< "astring" / "ustring" / "wstring" / "buffer8" / "buffer16" / "object" / "service"
 	HandleType		< :"handle" identifier
 	Comment1		<~ "/*" (!"*/" .)* "*/"
 	Comment2		<~ "//" (!endOfLine .)* endOfLine
@@ -243,11 +255,11 @@ void main()
 			writeln("empty pkgs");
 			return;
 		}
-		auto p = M2Pkgs(pkgs);
+		auto p = EasyIDL(pkgs);
 		writeln(p);
 		string[] unnecessary = [
-			"M2Pkgs.Idl", "M2Pkgs.Def", "M2Pkgs.Prototype", "M2Pkgs.Parameters",
-			"M2Pkgs.ParameterList", "M2Pkgs.FunctionHead", "M2Pkgs.ProcedureHead", "M2Pkgs.Type"
+			"EasyIDL.Idl", "EasyIDL.Def", "EasyIDL.Prototype", /*"EasyIDL.Parameters",*/
+			"EasyIDL.ParameterList", "EasyIDL.FunctionHead", "EasyIDL.ProcedureHead", "EasyIDL.Type"
 		];
 		/*p =*/
 		cut_unnecessary_nodes(p, unnecessary);
