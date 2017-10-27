@@ -439,7 +439,7 @@ static HMEMORYMODULE MemoryLoadLibraryEx(const void *data,
     result->headers->OptionalHeader.ImageBase = (POINTER_TYPE)code;
 
     // copy sections from DLL file block to new memory location
-    CopySections(data, old_header, result);
+    CopySections((const unsigned char *)data, old_header, result);
 
     // adjust base address of imported data
     locationDelta = (size_t)(code - old_header->OptionalHeader.ImageBase);
