@@ -68,6 +68,10 @@ string pkgs = `
 /*before*/
  //xyz
  /*123*/
+[doc]
+doc doc doc
+[/doc]
+
  handle archive_t;
  handle handle_t;
  function test() : char*;
@@ -79,16 +83,25 @@ string pkgs = `
  func test(json) json;
  func test(msgpack) msgpack;
  func test(a: int32* dual) int32*;
- func test(a: ustring8 dual, b: mbstring in) ustring32;
+[doc]
+doc doc doc
+[/doc]
+ func test(a: ucstring8 dual, b: mbstring in) ucstring32;
  /*
  this function is ...abc!
  this function is ...abc!
- */ 
+ */
+[eof]
+aaa bbb
+xxx
+this is end of file.
 `;
 
 mixin(grammar(`
 EasyIDL:
-	Idl				< Def+ eoi
+	#Idl				< Def+ EndOfFile
+	Idl				< (Def+ "[eof]"i) / (Def+ eoi)
+	EndOfFile		<- "[eof]"i / eoi
 	Keywords		< FunctionHead / ProcedureHead / Direction / Type
 	Def				< HandleDef / Prototype
 	Ident			< (!Keywords identifier)
@@ -111,11 +124,12 @@ EasyIDL:
 	Primitive		< "int32" / "int64" / "byte" / "char" / "wchar" / "real32" / "real64"
 	Pointer		< Primitive ;PointerMark
 	PointerMark		< "*"
-	ManagedType		< "mbstring" / "ustring8" / "ustring16" / "ustring32" / "buffer8" / "buffer16" / "object" / "service"
+	ManagedType		< "mbstring" / "ansistring" / "ucstring8" / "ucstring16" / "ucstring32" / "array8" / "array16" / "array32" / "array64" / "object" / "service"
 	HandleType		< :"handle" identifier
 	Comment1		<~ "/*" (!"*/" .)* "*/"
 	Comment2		<~ "//" (!endOfLine .)* endOfLine
-	Spacing			<- (blank / Comment1 / Comment2)*
+	Comment3		<~ "[doc]"i (!"[/doc]"i .)* "[/doc]"i
+	Spacing			<- (blank / Comment1 / Comment2 / Comment3)*
 `));
 
 private string get_def_type(ref ParseTree p)
@@ -289,7 +303,7 @@ void main()
 					writeln("//IDL: ", line);
 			}
 			writefln("%d: %s ==> %s", i, child.name, child.matches.join(" "));
-			gen_cpp_code("mymodule_", child);
+			//gen_cpp_code("mymodule_", child);
 			writeln();
 		}
 	}
