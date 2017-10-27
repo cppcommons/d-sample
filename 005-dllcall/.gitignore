@@ -30,3 +30,5 @@ __astcache
 temp_*
 mylib.di
 .qmake.stash
+*.bld
+CMakeLists.txt
