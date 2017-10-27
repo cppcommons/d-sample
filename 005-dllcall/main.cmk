@@ -61,7 +61,7 @@ message(STATUS "** Boost Libraries: ${Boost_LIBRARIES}")
 ## TEST
 enable_testing()
 
-# Project Specific
+## Project Specific
 add_definitions(-DTEST_BY_QT)
 
 ## BUILD
@@ -71,10 +71,13 @@ file(GLOB TARGET_SOURCES *(.c|*.h|.cpp|.hpp|*.cxx|*.hxx))
 add_executable(${TARGET_NAME} main.cpp ${GENERATED_SOURCES})
 set_target_properties(${TARGET_NAME} PROPERTIES DEBUG_POSTFIX _d)
 
-#get_target_property(_exeFile ${TARGET_NAME} LOCATION)
+add_library(my_dll_static STATIC main_dll.cpp)
+add_library(my_dll SHARED main_dll.cpp)
 
+## Boost
 include_directories(${Boost_INCLUDE_DIR})
 target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
 
+## TEST
 #add_test(NAME Test1 COMMAND ${TARGET_NAME} 1.7.0)
 add_test(NAME Test2 COMMAND ${TARGET_NAME} 1.8.0_91)

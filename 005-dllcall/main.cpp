@@ -58,13 +58,11 @@ int main()
     v.push_back ( 3 );
     v.push_back ( 4 );
     vector<int>::iterator it = boost::find(v, 3);
-    cout << *it << endl;
+    trace(*it);
 
     std::string s = "abc";
     std::cout << s << std::endl;
     trace(funcsig << " s=" << s);
-    //#define trace(x) do { std::stringstream s; s << x << '\n'; OutputDebugStringA(s.str().c_str()); } while (0)
-    //do { std::stringstream s; s << "s=" << s.c_str() << '\n'; OutputDebugStringA(s.str().c_str()); } while (0);
 
     std::vector<int> v2;
 	v2.reserve(1024);
