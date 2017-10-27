@@ -1,23 +1,60 @@
-import core.thread;
-import std.conv : to;
 import pegged.grammar;
 
 /+
-mixin(grammar(`
-M2Pkgs:
-    #List     < Elem* / " "*
-    #List     < Elem* eoi
-    List     < Pkg* eoi
-    Elem     < Pkg / :Delim / :Parens
-    #Pkg      <- identifier
-    Pkg      <~ (Letter+ "/" Letter+) / Letter+
-    Letter   <- [a-zA-Z0-9]
-    Delim    <- "," / ";"
-    Parens   <~ "(" (!")" .)* ")"
-    Spacing <- (space / Parens / Delim)*
-    # dummy
-`));
+import std.stdio; 
+import std.string; 
+import std.datetime; 
+ 
+abstract class Person { 
+   int birthYear, birthDay, birthMonth; 
+   string name; 
+   
+   int getAge() { 
+      SysTime sysTime = Clock.currTime(); 
+      return sysTime.year - birthYear; 
+   } 
+   abstract void print(); 
+}
+class Employee : Person { 
+   int empID;  
+   
+   override void print() { 
+      writeln("The employee details are as follows:"); 
+      writeln("Emp ID: ", this.empID); 
+      writeln("Emp Name: ", this.name); 
+      writeln("Age: ",this.getAge); 
+   } 
+} 
+
+void main() { 
+   Employee emp = new Employee(); 
+   emp.empID = 101; 
+   emp.birthYear = 1980; 
+   emp.birthDay = 10; 
+   emp.birthMonth = 10; 
+   emp.name = "Emp1"; 
+   emp.print(); 
+}
 +/
+
+private abstract class EasyFactory
+{
+	abstract string className();
+}
+
+private class EasyClass : EasyFactory
+{
+	override string className()
+	{
+		return typeof(this).stringof;
+	}
+	void easy_test() const
+	{
+		import std.stdio : writeln;
+
+		writeln("easy_test()!");
+	}
+}
 
 string pkgs = `
 /*before*/
@@ -25,9 +62,9 @@ string pkgs = `
  /*123*/
  handle archive_t;
  handle handle_t;
- function test();
- function test(...);
- function test(a: char*);
+ function test() : char*;
+ function test(...):real32;
+ function test(a char*):int64*;
  procedure test(a: int32 dual, b: int64);
  proc test(a: int32 dual, b: int64 out);
  func test(h: handle archive_t, a: int32, b: char * out) int32;
@@ -45,14 +82,14 @@ M2Pkgs:
 	Ident			< (!Keywords identifier)
 	HandleDef		< "handle" Name ";"
 	Prototype		< Function / Procedure
-	Function		< FunctionHead Name Parameters ReturnValue? ";"
+	Function		< FunctionHead Name Parameters ":"? ReturnValue ";"
 	FunctionHead	< ("function" / "func")
 	Procedure		< ProcedureHead Name Parameters ";"
 	ProcedureHead	< ("procedure" / "proc")
 	ReturnValue		< Type
 	Parameters		< "(" ParameterList? ")"
 	ParameterList	< VarArgs / Parameter (',' Parameter)*
-	Parameter		< Name ":" Type Direction?
+	Parameter		< Name ":"? Type Direction?
 	Name			< identifier
 	VarArgs			< "..."
 	Direction		< "in" / "out" / "dual"
@@ -180,6 +217,13 @@ void main()
 {
 	import std.stdio;
 	import std.array : join;
+
+	{
+		EasyFactory cl = new EasyClass();
+		writeln("typeof(cl).stringof=", typeof(cl).stringof);
+		auto cl2 = cast(EasyClass)cl;
+		cl2.easy_test();
+	}
 
 	{
 		//import core.stdc.stdlib: getenv;
