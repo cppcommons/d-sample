@@ -44,16 +44,30 @@ void sub()
 
 CoMutex mutex;
 
+#include <iostream>
+#include <vector>
+#include <boost/range/algorithm.hpp>
+
+using namespace std;
+
 int main()
 {
-	std::string s = "abc";
+    vector<int> v;
+    v.push_back ( 1 );
+    v.push_back ( 2 );
+    v.push_back ( 3 );
+    v.push_back ( 4 );
+    vector<int>::iterator it = boost::find(v, 3);
+    cout << *it << endl;
+
+    std::string s = "abc";
     std::cout << s << std::endl;
     trace(funcsig << " s=" << s);
     //#define trace(x) do { std::stringstream s; s << x << '\n'; OutputDebugStringA(s.str().c_str()); } while (0)
     //do { std::stringstream s; s << "s=" << s.c_str() << '\n'; OutputDebugStringA(s.str().c_str()); } while (0);
 
-    std::vector<int> v;
-	v.reserve(1024);
+    std::vector<int> v2;
+	v2.reserve(1024);
 
     mutex.lock();
     mutex.unlock();

@@ -26,13 +26,16 @@ if "%REDO%"=="1" (
   mkdir %FOLDER%
   cd %FOLDER%
   cmake -G "Visual Studio 14 2015" -DCMAKE_CXX_FLAGS_RELEASE="/MT" -DCMAKE_CXX_FLAGS_DEBUG="/MTd" ..
+  if %errorlevel% neq 0 ( exit /b )
 )
 
 cd /d %SCRIPT_CURRENT_DIR%
 cd %FOLDER%
 
 cmake --build . --config Release
+if %errorlevel% neq 0 ( exit /b )
 
 ctest -C Release -V
+if %errorlevel% neq 0 ( exit /b )
 
 endlocal
