@@ -1,3 +1,4 @@
+// https://www.mm2d.net/main/legacy/c/c-05.html
 #include <stdio.h>
 #include <time.h>
 void hoge();
