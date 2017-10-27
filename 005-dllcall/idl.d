@@ -56,8 +56,10 @@ M2Pkgs:
 	Name			< identifier
 	VarArgs			< "..."
 	Direction		< "in" / "out" / "dual"
-	Type			< (Primitive PointerMark?) / ManagedType / HandleType
+	Type			< PointerType / PrimitiveType / ManagedType / HandleType # PointerType must come before PrimitiveType
+	PrimitiveType	< Primitive
 	Primitive		< "int32" / "int64" / "byte" / "char" / "real32" / "real64"
+	PointerType		< Primitive PointerMark?
 	PointerMark		< "*"
 	ManagedType		< "astring" / "ustring" / "wstring" / "buffer8" / "buffer16" / "msgpack" / "json" / "object" / "service"
 	HandleType		< :"handle" identifier
@@ -66,7 +68,13 @@ M2Pkgs:
 	Spacing			<- (blank / Comment1 / Comment2)*
 `));
 
-//private ParseTree*[] find_named_children(ref ParseTree p, string def_type)
+private string get_def_type(ref ParseTree p)
+{
+	import std.string : split;
+
+	return p.name.split(".")[1];
+}
+
 private ParseTree[] find_named_children(ref ParseTree p, string def_type)
 {
 	import std.stdio : writefln, writeln;
@@ -75,7 +83,7 @@ private ParseTree[] find_named_children(ref ParseTree p, string def_type)
 	ParseTree[] result;
 	foreach (ref child; p.children)
 	{
-		string child_def_type = child.name.split(".")[1];
+		string child_def_type = child.get_def_type();
 		writefln("child_def_type=%s", child_def_type);
 		if (child_def_type == def_type)
 			result ~= child;
@@ -90,7 +98,7 @@ private void gen_cpp_code(string module_prefix, ref ParseTree p)
 
 	writeln(p.name);
 	writeln(p.name.split(".")[1]);
-	string def_type = p.name.split(".")[1];
+	string def_type = p.get_def_type();
 	switch (def_type)
 	{
 	case "HandleDef":
@@ -100,10 +108,24 @@ private void gen_cpp_code(string module_prefix, ref ParseTree p)
 		writeln("!function");
 		ParseTree[] names = find_named_children(p, "Name");
 		writeln("!names=", names);
-		assert(names.length==1);
+		assert(names.length == 1);
 		writeln("!function.name=", names[0].matches[0]);
 		ParseTree[] params = find_named_children(p, "Parameter");
 		writeln("!params=", params);
+		foreach (ref param; params)
+		{
+			auto param_type = param.children[1];
+			string param_type_label = param_type.get_def_type();
+			writeln("!param_type_label=", param_type_label);
+			switch (param_type_label)
+			{
+			case "PointerType":
+				writefln("!PointerType: %s*", param_type.children[0].matches[0]);
+				break;
+			default:
+				break;
+			}
+		}
 		break;
 	default:
 		writefln("%s is not supported!", def_type);
