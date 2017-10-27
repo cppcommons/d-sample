@@ -7,7 +7,7 @@ void main()
     int i, j;
     int times = 1000;
     writeln("hello!");
-    setbuf(stdout, null);
+    //setbuf(stdout, null);
     fprintf(stdout, "stdout\n");
     printf("0%%       50%%       100%%\n");
     printf("+---------+---------+\n");
