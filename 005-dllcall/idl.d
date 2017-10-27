@@ -106,7 +106,8 @@ EasyIDL:
 	_Idl			< (_Def+ "[eof]"i) / (_Def+ eoi)
 	EndOfFile		<- "[eof]"i / eoi
 	Keywords		< FunctionHead / ProcedureHead / Direction / _Type
-	_Def			< Handle / _Prototype
+	#_Def			< Handle / _Prototype
+	_Def			< Handle / _Prototype / EasyDoc
 	Ident			< (!Keywords identifier)
 	Handle			< "handle" Name ";"
 	_Prototype		< Function / Procedure
@@ -123,18 +124,17 @@ EasyIDL:
 	JsonType		< "json"
 	MsgpackType		< "msgpack"
 	Direction		< "in" / "out" / "dual"
-	#_Type			< Pointer / Primitive / ManagedType / MsgpackType / JsonType / HandleType # Pointer must come before Primitive
 	_Type			< Primitive / ManagedType / MsgpackType / JsonType / HandleType
-	#Primitive		< "int32" / "int64" / "byte" / "char" / "wchar" / "real32" / "real64"
 	Primitive		< ("int32" / "int64" / "byte" / "char" / "wchar" / "real32" / "real64") PointerMark?
 	#Pointer		< Primitive ;PointerMark
 	PointerMark		< "*"
 	ManagedType		< "mbstring" / "ansistring" / "ucstring8" / "ucstring16" / "ucstring32" / "array8" / "array16" / "array32" / "array64" / "object" / "service"
 	HandleType		< :"handle" identifier
+	EasyDoc			<~ (:"/+" (!"+/" .)* :"+/") / (:"[doc]"i (!"[/doc]"i .)* :"[/doc]"i)
 	Comment1		<~ "/*" (!"*/" .)* "*/"
-	Comment2		<~ "//" (!endOfLine .)* endOfLine
-	Comment3		<~ "[doc]"i (!"[/doc]"i .)* "[/doc]"i
-	Spacing			<- (blank / Comment1 / Comment2 / Comment3)*
+	Comment2		<~ "//" (!endOfLine .)* :endOfLine
+	#Spacing			<- (blank / Comment1 / Comment2 / Comment3)*
+	Spacing			<- (blank / Comment1 / Comment2)*
 `));
 
 private string get_def_type(ref ParseTree p)
