@@ -1,0 +1,34 @@
+/*before*/
+ //xyz
+ /*123*/
+/+
+first doc
+ doc
+ doc.
++/
+
+// comment
+
+ handle archive_t;
+ handle handle_t;
+ function test() : char*;
+ function test(...):real32;
+ function test(a char*):int64*;
+ procedure test(a: int32 dual, b: int64);
+ proc test(a: int32 dual, b: int64 out);
+ func test(h: handle archive_t, a: int32, b: char * out) int32;
+ func test(json) json;
+ func test(msgpack) msgpack;
+ func test(a: int32* dual) int32*;
+[doc]
+doc doc doc
+[/doc]
+ func test(a: ucstring8 dual, /*ttt*/ b: mbstring in) ucstring32;
+ /*
+ this function is ...abc!
+ this function is ...abc!
+ */
+[eof]
+aaa bbb
+xxx
+this is end of file.

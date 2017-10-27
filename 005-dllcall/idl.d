@@ -330,7 +330,7 @@ void main()
     Number   <~ [0-9]+
     Variable <- identifier
 ");
-
+    writeln("kanji=漢字");
 }
 
 /+
