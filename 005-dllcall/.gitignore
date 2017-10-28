@@ -1,3 +1,4 @@
+./dub.json
 _*
 *___*
 Makefile*
@@ -38,3 +39,4 @@ CMakeLists.txt
 *.depend
 emake.cbp
 emake.xml
+!edub.exe

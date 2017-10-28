@@ -5,6 +5,5 @@ if %errorlevel% neq 0 (
     start codeblocks edub.cbp
     exit /b )
 edub.exe
-set BASENAME=apps
-edub.exe %BASENAME%.json build
+edub.exe apps.json build :app1
 endlocal
