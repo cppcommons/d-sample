@@ -1,11 +1,12 @@
 module main;
 import std.algorithm : startsWith, endsWith;
-import std.file : copy, setTimes, FileException, PreserveAttributes;
+import std.file : copy, remove, setTimes, FileException, PreserveAttributes;
 import std.path : baseName, extension;
 import std.process : execute, executeShell;
 import std.stdio;
 import std.typecons : Yes, No;
 import std.datetime.systime : Clock;
+import std.process : pipeProcess, wait, Redirect;
 
 int main(string[] args)
 {
@@ -28,6 +29,15 @@ int main(string[] args)
     {
         writefln("Copy failure: %s", project_file_name);
     }
+    try
+    {
+        if (exists("dub.selections.json"))
+            remove("dub.selections.json");
+    }
+    catch (FileException ex)
+    {
+        writefln("Remove failure: dub.selections.json", project_file_name);
+    }
     string[] dub_cmdline;
     dub_cmdline ~= "dub";
     for (int i = 2; i < args.length; i++)
@@ -35,9 +45,8 @@ int main(string[] args)
         dub_cmdline ~= args[i];
     }
     writeln(dub_cmdline);
-    auto cmd = execute(dub_cmdline);
-    write(cmd.output);
-    writeln("cmd.status=", cmd.status);
-    return cmd.status;
-    return 0;
+    auto pipes = pipeProcess(dub_cmdline, Redirect.stdout | Redirect.stderr);
+    foreach (line; pipes.stdout.byLine)
+        writeln(line);
+    return wait(pipes.pid);
 }
