@@ -125,8 +125,7 @@ extern "C" void *easy_win_%s_get_proc_address(const char *proc_name);
 class ExportedFunctions
 {
   public:
-	unsigned char opcodes[16];
-    void export_fun(const char *name, unsigned char *opcodes)
+    void export_fun(const char *name, unsigned char opcodes[])
     {
 		void *jmpdest = easy_win_%s_get_proc_address(name);
 		opcodes[0] = 0xFF;
