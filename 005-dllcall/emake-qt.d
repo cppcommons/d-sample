@@ -7,6 +7,8 @@ import std.stdio;
 import std.typecons : Yes, No;
 import std.datetime.systime : Clock;
 
+import emake_common : emake_run_command;
+
 int main(string[] args)
 {
     writeln(args.length);
@@ -93,11 +95,12 @@ CONFIG -= app_bundle
         return cmd.status;
     cmdLine = ["mingw32-make", "-f", makefile_name ~ ".Release"];
     writeln(cmdLine);
-    cmd = execute(cmdLine);
-    write(cmd.output);
-    writeln("cmd.status=", cmd.status);
-    if (cmd.status != 0)
-        return cmd.status;
+    int rc = emake_run_command(cmdLine);
+    //cmd = execute(cmdLine);
+    //write(cmd.output);
+    writeln("cmd.status=", rc);
+    if (rc != 0)
+        return rc;
     try
     {
         copy("./release/" ~ project_base_name ~ ".exe",
