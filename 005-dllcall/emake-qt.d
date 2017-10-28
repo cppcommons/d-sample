@@ -1,14 +1,11 @@
 module main;
-
 import std.algorithm : startsWith, endsWith;
-import std.file : copy, FileException;
+import std.file : copy, setTimes, FileException, PreserveAttributes;
 import std.path : baseName, extension;
 import std.process : execute, executeShell;
 import std.stdio;
-
-//import std.conv : to;
-//import std.stdio : writeln, stdout;
-//import std.string : splitLines;
+import std.typecons : Yes, No;
+import std.datetime.systime : Clock;
 
 int main(string[] args)
 {
@@ -103,7 +100,10 @@ CONFIG -= app_bundle
         return cmd.status;
     try
     {
-        copy("./release/" ~ project_base_name ~ ".exe", project_base_name ~ ".exe");
+        copy("./release/" ~ project_base_name ~ ".exe",
+                project_base_name ~ ".exe", No.preserveAttributes);
+        auto currentTime = Clock.currTime();
+        setTimes(project_base_name ~ ".exe", currentTime, currentTime);
         writefln("Copy successful: %s", project_base_name ~ ".exe");
     }
     catch (FileException ex)
