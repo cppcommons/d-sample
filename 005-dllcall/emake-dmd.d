@@ -114,7 +114,8 @@ int main(string[] args)
         opt.tag.attr[opt_name] = opt_value;
     }
 
-    add_option(project, "title", exe_base_name);
+    //add_option(project, "title", exe_base_name);
+    add_option(project, "title", project_base_name);
     /* <Option compiler="dmd" /> */
     add_option(project, "compiler", "dmd");
 
@@ -125,22 +126,20 @@ int main(string[] args)
     Target targetDebug;
     targetDebug.title = "Debug";
     targetDebug.output = exe_base_name ~= "_d";
-    targetDebug.object_output = "obj/Debug/";
+    targetDebug.object_output = project_base_name ~ ".bin/obj/Debug/";
     targetDebug.type = "1";
     targetDebug.compiler = "dmd";
     targetDebug.compiler_options = ["-g", "-debug"];
     put_build_target(build, targetDebug);
-    /+
-    private struct Target
-    {
-        string title;
-        string output;
-        string object_output;
-        string type;
-        string compiler;
-        string[] compiler_options;
-    }
-+/
+
+    Target targetRelease;
+    targetRelease.title = "Release";
+    targetRelease.output = exe_base_name;
+    targetRelease.object_output = project_base_name ~ ".bin/obj/Release/";
+    targetRelease.type = "1";
+    targetRelease.compiler = "dmd";
+    targetRelease.compiler_options = ["-O"];
+    put_build_target(build, targetRelease);
 
     foreach (file_name; file_name_list)
     {
