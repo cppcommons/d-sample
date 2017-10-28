@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+    <FileVersion major="1" minor="6" />
+    <Project>
+        <Option title="idl" />
+        <Option compiler="dmd" />
+        <Build>
+            <Target title="Debug">
+                <Option output="idl_d" prefix_auto="1" extension_auto="1" />
+                <Option object_output="idl.bin/dmd-obj/Debug/" />
+                <Option type="1" />
+                <Option compiler="dmd" />
+                <Compiler>
+                    <Add option="-g" />
+                    <Add option="-debug" />
+                    <Add directory="../../d-lib" />
+                </Compiler>
+                <Linker>
+                    <Add library="../../d-lib/pegged-dm32.lib" />
+                </Linker>
+            </Target>
+            <Target title="Release">
+                <Option output="idl" prefix_auto="1" extension_auto="1" />
+                <Option object_output="idl.bin/dmd-obj/Release/" />
+                <Option type="1" />
+                <Option compiler="dmd" />
+                <Compiler>
+                    <Add option="-O" />
+                    <Add directory="../../d-lib" />
+                </Compiler>
+                <Linker>
+                    <Add library="../../d-lib/pegged-dm32.lib" />
+                </Linker>
+            </Target>
+        </Build>
+        <Unit filename="idl.d" />
+    </Project>
+</CodeBlocks_project_file>

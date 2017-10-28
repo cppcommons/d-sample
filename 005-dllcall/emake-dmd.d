@@ -19,6 +19,7 @@ private struct Target
     string type;
     string compiler;
     string[] compiler_options;
+    string[] lib_file_list;
 }
 
 private void put_build_target(ref Element elem, Target record)
@@ -41,15 +42,35 @@ private void put_build_target(ref Element elem, Target record)
     opt = new Element("Option");
     target ~= opt;
     opt.tag.attr["compiler"] = record.compiler;
-    auto compiler = new Element("Compiler");
-    target ~= compiler;
     if (record.compiler_options.length > 0)
     {
+        auto compiler = new Element("Compiler");
+        target ~= compiler;
         foreach (compiler_option; record.compiler_options)
         {
             auto add = new Element("Add");
             compiler ~= add;
-            add.tag.attr["option"] = compiler_option;
+            if (compiler_option.startsWith("-I"))
+            {
+                // <Add directory="../../d-lib" />
+                add.tag.attr["directory"] = compiler_option[2 .. $];
+            }
+            else
+            {
+                add.tag.attr["option"] = compiler_option;
+            }
+        }
+    }
+    if (record.lib_file_list.length > 0)
+    {
+        auto linker = new Element("Linker");
+        target ~= linker;
+        foreach (lib_file; record.lib_file_list)
+        {
+            auto add = new Element("Add");
+            linker ~= add;
+            // <Add library="../../d-lib/pegged-dm32.lib"
+            add.tag.attr["library"] = lib_file;
         }
     }
 }
@@ -74,9 +95,23 @@ int main(string[] args)
     string project_base_name = baseName(project_file_name, project_file_ext);
     writefln("project_base_name=%s", project_base_name);
     string[] file_name_list;
+    string[] import_dir_list;
+    string[] lib_file_list;
     for (int i = 2; i < args.length; i++)
     {
-        //writefln("%d=%s", i, args[i]);
+        // <Add directory="../../d-lib" />
+        if (args[i].startsWith("-I"))
+        {
+            //import_dir_list ~= args[i][2..$];
+            import_dir_list ~= args[i];
+            continue;
+        }
+        string file_name_ext = extension(args[i]);
+        if (file_name_ext == ".lib")
+        {
+            lib_file_list ~= args[i];
+            continue;
+        }
         file_name_list ~= args[i];
     }
 
@@ -117,6 +152,11 @@ int main(string[] args)
     targetDebug.type = "1";
     targetDebug.compiler = "dmd";
     targetDebug.compiler_options = ["-g", "-debug"];
+    foreach (import_dir; import_dir_list)
+    {
+        targetDebug.compiler_options ~= import_dir;
+    }
+    targetDebug.lib_file_list = lib_file_list;
     put_build_target(build, targetDebug);
 
     Target targetRelease;
@@ -126,6 +166,11 @@ int main(string[] args)
     targetRelease.type = "1";
     targetRelease.compiler = "dmd";
     targetRelease.compiler_options = ["-O"];
+    foreach (import_dir; import_dir_list)
+    {
+        targetRelease.compiler_options ~= import_dir;
+    }
+    targetRelease.lib_file_list = lib_file_list;
     put_build_target(build, targetRelease);
 
     foreach (file_name; file_name_list)
