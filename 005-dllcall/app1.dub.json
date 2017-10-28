@@ -1,0 +1,16 @@
+{
+  "name": "app1",
+  "targetType": "executable",
+  "targetName": "app1-dm32",
+  "sourceFiles": [
+      "app1.d",
+      "curl.d",
+      "lib_entry.lib"
+  ],
+  "dependencies": {
+      "d2sqlite3": "~master"
+  },
+  "subConfigurations": {
+      "d2sqlite3": "without-lib"
+  }
+}
