@@ -42,15 +42,6 @@
             }
         },
         {
-            "name": "easy",
-            "targetType": "executable",
-            "targetName": "easy-dm32",
-            "sourceFiles": [
-                "easy.d",
-                "../../d-lib/pegged-dm32.lib"
-            ]
-        },
-        {
             "name": "app3",
             "targetType": "executable",
             "targetName": "app3-dm32",
