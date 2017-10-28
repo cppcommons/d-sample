@@ -26,6 +26,7 @@
 			</Target>
 		</Build>
 		<Unit filename="edub.d" />
+		<Unit filename="emake_common.d" />
 		<Extensions>
 			<code_completion />
 			<envvars />

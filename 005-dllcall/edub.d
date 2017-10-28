@@ -9,6 +9,9 @@ import std.typecons : Yes, No;
 import std.datetime.systime : Clock;
 import std.process : pipeProcess, wait, Redirect;
 
+import emake_common : emake_run_command;
+
+
 int main(string[] args)
 {
     //writeln(args.length);
@@ -51,10 +54,11 @@ int main(string[] args)
         dub_cmdline ~= args[i];
     }
     writeln(dub_cmdline);
-    auto pipes = pipeProcess(dub_cmdline, Redirect.stdout | Redirect.stderr);
-    foreach (line; pipes.stdout.byLine)
-        writeln(line);
-    int rc = wait(pipes.pid);
+    int rc = emake_run_command(dub_cmdline);
+    //auto pipes = pipeProcess(dub_cmdline, Redirect.stdout | Redirect.stderr);
+    //foreach (line; pipes.stdout.byLine)
+    //    writeln(line);
+    //int rc = wait(pipes.pid);
     try
     {
         if (exists("dub.selections.json"))
