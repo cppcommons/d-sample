@@ -27,11 +27,31 @@ private void put_build_target(ref Element elem, Target record)
     auto target = new Element("Target");
     elem ~= target;
     target.tag.attr["title"] = record.title;
-    auto output = new Element("Option");
-    target ~= output;
-    output.tag.attr["output"] = record.output;
-    output.tag.attr["prefix_auto"] = "1";
-    output.tag.attr["extension_auto"] = "1";
+    auto opt = new Element("Option");
+    target ~= opt;
+    opt.tag.attr["output"] = record.output;
+    opt.tag.attr["prefix_auto"] = "1";
+    opt.tag.attr["extension_auto"] = "1";
+    opt = new Element("Option");
+    target ~= opt;
+    opt.tag.attr["object_output"] = record.object_output;
+    opt = new Element("Option");
+    target ~= opt;
+    opt.tag.attr["type"] = record.type;
+    opt = new Element("Option");
+    target ~= opt;
+    opt.tag.attr["compiler"] = record.compiler;
+    auto compiler = new Element("Compiler");
+    target ~= compiler;
+    if (record.compiler_options.length > 0)
+    {
+        foreach (compiler_option; record.compiler_options)
+        {
+            auto add = new Element("Add");
+            compiler ~= add;
+            add.tag.attr["option"] = compiler_option;
+        }
+    }
 }
 
 int main(string[] args)
@@ -105,8 +125,12 @@ int main(string[] args)
     Target targetDebug;
     targetDebug.title = "Debug";
     targetDebug.output = exe_base_name ~= "_d";
+    targetDebug.object_output = "obj/Debug/";
+    targetDebug.type = "1";
+    targetDebug.compiler = "dmd";
+    targetDebug.compiler_options = ["-g", "-debug"];
     put_build_target(build, targetDebug);
-/+
+    /+
     private struct Target
     {
         string title;
