@@ -101,25 +101,6 @@ else
 
 extern "C" void *easy_win_%s_get_proc_address(const char *proc_name);
 
-class ExportedFunction
-{
-  public:
-	unsigned char opcodes[16];
-	explicit ExportedFunction(const char *name)
-	{
-#ifdef EASY_WIN_DEBUG
-		printf("ExportedFunction(const char *name): %%s\n", name);
-#endif /* EASY_WIN_DEBUG */
-		void *jmpdest = easy_win_%s_get_proc_address(name);
-		opcodes[0] = 0xFF;
-		opcodes[1] = 0x25;
-		*reinterpret_cast<DWORD *>(opcodes + 2) = reinterpret_cast<DWORD>(opcodes + 6);
-		*reinterpret_cast<DWORD *>(opcodes + 6) = reinterpret_cast<DWORD>(jmpdest);
-	}
-};
-
-#define export_fun(X) extern "C" ExportedFunction X(#X)
-
 `, identifier, identifier);
     auto dmd = execute(["pexports", args[2]]);
     //if (dmd.status != 0) writeln("Compilation failed:\n", dmd.output);
@@ -137,10 +118,36 @@ class ExportedFunction
         {
             if (line.startsWith("LIBRARY ") || line == "EXPORTS" || line.endsWith(" DATA"))
                 continue;
-            //writeln("LINE: ", line);
-            //stdout.writef("export_fun(%s);\n", line);
-            file2.writef("export_fun(%s);\n", line);
+            //file2.writef("extern \"C\" unsigned char %s[16];\n", line);
+            file2.writef("extern \"C\" unsigned char %s[16] = {0};\n", line);
         }
+        file2.writef(`
+class ExportedFunctions
+{
+  public:
+	unsigned char opcodes[16];
+    void export_fun(const char *name, unsigned char *opcodes)
+    {
+		void *jmpdest = easy_win_%s_get_proc_address(name);
+		opcodes[0] = 0xFF;
+		opcodes[1] = 0x25;
+		*reinterpret_cast<DWORD *>(opcodes + 2) = reinterpret_cast<DWORD>(opcodes + 6);
+		*reinterpret_cast<DWORD *>(opcodes + 6) = reinterpret_cast<DWORD>(jmpdest);
+    }
+	explicit ExportedFunctions()
+	{
+`, identifier);
+        foreach (line; lines)
+        {
+            if (line.startsWith("LIBRARY ") || line == "EXPORTS" || line.endsWith(" DATA"))
+                continue;
+            file2.writef("        export_fun(\"%s\", %s);\n", line, line);
+            //file2.writef("        export_fun(\"%s\", _%s);\n", line, line);
+        }
+        file2.write(`    }
+};
+static ExportedFunctions _initializer_;
+        `);
     }
     file2.close();
     write_memory_module();
