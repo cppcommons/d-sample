@@ -1,1 +1,1 @@
-dub build :app1 
+edub apps.json build :app1 
