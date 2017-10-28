@@ -23,7 +23,9 @@ if "%REDO%"=="1" (
   rmdir /s /q %FOLDER%
   mkdir %FOLDER%
   cd %FOLDER%
-  cmake -G "MinGW Makefiles" -DCMAKE_C_COMPILER="gcc" -DCMAKE_CXX_COMPILER="g++" ..
+  rem cmake -G "MinGW Makefiles" -DCMAKE_C_COMPILER="gcc" -DCMAKE_CXX_COMPILER="g++" ..
+  cmake -G "CodeLite - MinGW Makefiles" -DCMAKE_C_COMPILER="gcc" -DCMAKE_CXX_COMPILER="g++" -DCMAKE_EXE_LINKER_FLAGS="-static" -DCMAKE_SHARED_LINKER_FLAGS="-static" ..
+  rem cmake -G "CodeBlocks - MinGW Makefiles" -DCMAKE_C_COMPILER="gcc" -DCMAKE_CXX_COMPILER="g++" ..
   if %errorlevel% neq 0 ( exit /b )
 )
 
