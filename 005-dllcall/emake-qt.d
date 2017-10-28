@@ -7,7 +7,7 @@ import std.stdio;
 import std.typecons : Yes, No;
 import std.datetime.systime : Clock;
 
-import emake_common : emake_run_command;
+import emake_common;
 
 int main(string[] args)
 {
@@ -47,6 +47,7 @@ int main(string[] args)
         if (file_name_ext.startsWith(".c"))
             source_list ~= file_name;
     }
+    string exe_base_name = remove_surrounding_underscore(project_base_name);
     File file1 = File(project_file_name, "w");
     file1.writef(`QT += core xml
 QT -= gui
@@ -56,7 +57,7 @@ TEMPLATE = app
 CONFIG += c++14
 CONFIG += console
 CONFIG -= app_bundle
-`, project_base_name);
+`, exe_base_name);
     if (header_list.length > 0)
     {
         file1.writeln();
@@ -103,11 +104,11 @@ CONFIG -= app_bundle
         return rc;
     try
     {
-        copy("./release/" ~ project_base_name ~ ".exe",
-                project_base_name ~ ".exe", No.preserveAttributes);
+        copy("./release/" ~ exe_base_name ~ ".exe",
+                exe_base_name ~ ".exe", No.preserveAttributes);
         auto currentTime = Clock.currTime();
-        setTimes(project_base_name ~ ".exe", currentTime, currentTime);
-        writefln("Copy successful: %s", project_base_name ~ ".exe");
+        setTimes(exe_base_name ~ ".exe", currentTime, currentTime);
+        writefln("Copy successful: %s", exe_base_name ~ ".exe");
     }
     catch (FileException ex)
     {
