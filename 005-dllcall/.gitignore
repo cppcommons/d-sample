@@ -32,3 +32,6 @@ mylib.di
 .qmake.stash
 *.bld
 CMakeLists.txt
+*.layout
+emake.cbp
+emake.xml

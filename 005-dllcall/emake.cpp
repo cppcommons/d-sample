@@ -125,9 +125,10 @@ void setExtentions(QDomDocument &doc, QDomElement &elem)
 
 int main()
 {
-    QString g_title = "cbtest2";
+    //QString g_title = "emake_test";
 
     QDomDocument doc;
+    QStringList opts;
 
     QDomElement root = doc.createElement("CodeBlocks_project_file");
     doc.appendChild(root);
@@ -142,11 +143,23 @@ int main()
 
     QDomElement optTitle = doc.createElement("Option");
 
-    ////project.appendChild(createOptElement(doc, "title", g_title)); // <Option title="cbtest2" />
+    ////project.appendChild(createOptElement(doc, "title", g_title)); // <Option title="emake_test" />
 
-    setElementOption1(doc, project, "title", g_title); // <Option title="cbtest2" />
-    setElementOption1(doc, project, "pch_mode", "2"); // <Option pch_mode="2" />
+    setElementOption1(doc, project, "title", "emake_test"); // <Option title="emake_test" />
     setElementOption1(doc, project, "compiler", "dmc"); // <Option compiler="dmc" />
+
+    //<Compiler>
+    //    <Add option="-w-" />
+    //    <Add option="-Ae" />
+    //</Compiler>
+    opts.clear();
+    opts.append("-w-");
+    opts.append("-Ae");
+    setCompilerOpts(doc, project, opts);
+
+    // <Unit filename="main.cpp" />
+    appendElementWithAttr1(doc, project, "Unit", "filename", "main.cpp");
+    appendElementWithAttr1(doc, project, "Unit", "filename", "common.h");
 
     QDomElement build = doc.createElement("Build");
     project.appendChild(build);
@@ -155,9 +168,9 @@ int main()
     QDomElement targetDebug = createElementWithAttr1(doc, "Target", "title", "Debug");
     build.appendChild(targetDebug);
 
-    // <Option output="bin/Release/cbtest2" prefix_auto="1" extension_auto="1" />
+    // <Option output="bin/Release/emake_test" prefix_auto="1" extension_auto="1" />
     setElementOption3(doc, targetDebug,
-                      "output", "bin/Release/cbtest2",
+                      "output", "bin/Release/emake_test",
                       "prefix_auto", "1",
                       "extension_auto", "1");
 
@@ -173,7 +186,6 @@ int main()
     //<Compiler>
     //    <Add option="-o" />
     //</Compiler>
-    QStringList opts;
     opts.clear();
     opts.append("-o");
     setCompilerOpts(doc, targetDebug, opts);
@@ -182,31 +194,18 @@ int main()
     //    <Add option="-w-" />
     //    <Add option="-Ae" />
     //</Compiler>
-    opts.clear();
-    opts.append("-w-");
-    opts.append("-Ae");
-    setCompilerOpts(doc, project, opts);
+    //opts.clear();
+    //opts.append("-w-");
+    //opts.append("-Ae");
+    //setCompilerOpts(doc, project, opts);
 
     // <Unit filename="main.cpp" />
-    appendElementWithAttr1(doc, project, "Unit", "filename", "main.cpp");
+    //appendElementWithAttr1(doc, project, "Unit", "filename", "main.cpp");
+    //appendElementWithAttr1(doc, project, "Unit", "filename", "common.h");
 
     setExtentions(doc, project);
 
-#if 0x0
-    QDomElement hoge = doc.createElement("opamp");//opampという要素を生成
-    QDomElement piyo = doc.createElement("number");//numberという要素を生成
-    QDomText number = doc.createTextNode("10");//numberに登録するTextを生成。テキストの内容は"10"
-
-    //QDomAttr attr = doc.createAttribute("title");
-    piyo.setAttribute("title", "1234ABC");
-    //number.attributes().setNamedItem()
-
-    root.appendChild(hoge);//root要素にhoge(つまりopamp)を追加
-    hoge.appendChild(piyo); //hogeにpiyoを追加。(つまりnumber)
-    piyo.appendChild(number);//piyoにテキストを追加(number)
-#endif
-
-    QFile file("emake.xml");//保存するファイルを設定
+    QFile file("emake.cbp");//保存するファイルを設定
     file.open(QIODevice::WriteOnly);
 
     QTextStream out(&file);//ストリームを開いて
