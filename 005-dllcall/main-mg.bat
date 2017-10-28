@@ -10,22 +10,24 @@ for /f "delims=\ tokens=*" %%z in ("%SCRIPT%") do (
 cd /d %SCRIPT_CURRENT_DIR%
 copy main.cmk CMakeLists.txt
 
-set PATH=
-set PATH=%PATH%;C:\Program Files\CMake\bin
-set PATH=%PATH%;%SystemRoot%\System32
+::set PATH=
+::set PATH=%PATH%;C:\Program Files\CMake\bin
+::set PATH=%PATH%;%SystemRoot%\System32
+set PATH=PATH=C:\Windows\system32;e:\opt\opt.m32\mingw32\qt5-static\bin;e:\opt\opt.m32\mingw32\bin;e:\opt\cmake-3.9.4-win64-x64\bin
 
-set BOOST_ROOT=E:\boost_1_65_1
-set FOLDER=main.bld
+::set BOOST_ROOT=E:\boost_1_65_1
+set FOLDER=main-mg.bld
 
 set REDO=0
 if "%1" equ "redo" set REDO=1
 if not exist %FOLDER% set REDO=1
 
 if "%REDO%"=="1" (
+  call easy.bat
   rmdir /s /q %FOLDER%
   mkdir %FOLDER%
   cd %FOLDER%
-  cmake -G "Visual Studio 14 2015" -DCMAKE_CXX_FLAGS_RELEASE="/MT" -DCMAKE_CXX_FLAGS_DEBUG="/MTd /ZI" ..
+  cmake -G "MinGW Makefiles" -DCMAKE_C_COMPILER="gcc" -DCMAKE_CXX_COMPILER="g++" ..
   if %errorlevel% neq 0 ( exit /b )
 )
 

@@ -70,11 +70,11 @@ int main()
     std::vector<int> v2;
 	v2.reserve(1024);
 
-    mutex.lock();
-    mutex.unlock();
+    //mutex.lock();
+    //mutex.unlock();
 //#ifndef TEST_BY_QT
     printf("add2(): %d\n", add2(111, 222));
-int rc2 = test2();
+    int rc2 = test2();
 	printf("rc2=%d\n", rc2);
 	rc2 = test2();
 	printf("rc2=%d\n", rc2);
