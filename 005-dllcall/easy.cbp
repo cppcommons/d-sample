@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+    <FileVersion major="1" minor="6" />
+    <Project>
+        <Option title="easy" />
+        <Option compiler="dmd" />
+        <Build>
+            <Target title="Debug">
+                <Option output="easy_d" prefix_auto="1" extension_auto="1" />
+                <Option object_output="easy.bin/dmd-obj/Debug/" />
+                <Option type="1" />
+                <Option compiler="dmd" />
+                <Compiler>
+                    <Add option="-g" />
+                    <Add option="-debug" />
+                </Compiler>
+            </Target>
+            <Target title="Release">
+                <Option output="easy" prefix_auto="1" extension_auto="1" />
+                <Option object_output="easy.bin/dmd-obj/Release/" />
+                <Option type="1" />
+                <Option compiler="dmd" />
+                <Compiler>
+                    <Add option="-O" />
+                </Compiler>
+            </Target>
+        </Build>
+        <Unit filename="easy.d" />
+    </Project>
+</CodeBlocks_project_file>

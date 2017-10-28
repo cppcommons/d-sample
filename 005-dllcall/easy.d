@@ -16,7 +16,7 @@ else
     //printf("args.length=%d\n", args.length);
     if (args.length < 3 || args.length > 4)
     {
-        printf("app2 <identifier> <dll-path> [<unit-size>]");
+        printf("easy <identifier> <dll-path> [<unit-size>]");
         return 1;
     }
 
