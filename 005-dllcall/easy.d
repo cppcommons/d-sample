@@ -101,6 +101,12 @@ else
 
 extern "C" void *easy_win_%s_get_proc_address(const char *proc_name);
 
+#ifdef __MINGW32__
+#define EXPORT_OPCODES
+#else
+#define EXPORT_OPCODES extern "C"
+#endif
+
 `, identifier, identifier);
     auto dmd = execute(["pexports", args[2]]);
     //if (dmd.status != 0) writeln("Compilation failed:\n", dmd.output);
@@ -118,8 +124,8 @@ extern "C" void *easy_win_%s_get_proc_address(const char *proc_name);
         {
             if (line.startsWith("LIBRARY ") || line == "EXPORTS" || line.endsWith(" DATA"))
                 continue;
-            //file2.writef("extern \"C\" unsigned char %s[16];\n", line);
-            file2.writef("extern \"C\" unsigned char %s[16] = {0};\n", line);
+            //file2.writef("extern \"C\" unsigned char %s[16] = {0};\n", line);
+            file2.writef("EXPORT_OPCODES unsigned char %s[16] = {0};\n", line);
         }
         file2.writef(`
 class ExportedFunctions
@@ -168,7 +174,13 @@ private void write_unit(string identifier, int index, ubyte[] bytes, ulong unit_
     +/
     auto fname = format!"easy_win_%s_%d_codedata.c"(identifier, index + 1);
     auto f = File(fname, "w");
-    f.writef("extern const unsigned char easy_win_%s_%d[] = {\n", identifier, index + 1);
+    f.write(`#ifdef __MINGW32__
+#define EXPORT_UNIT
+#else
+#define EXPORT_UNIT extern
+#endif
+`);
+    f.writef("EXPORT_UNIT const unsigned char easy_win_%s_%d[] = {\n", identifier, index + 1);
     int first = true;
     int count = 0;
     foreach (ub; bytes)
