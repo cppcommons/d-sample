@@ -1,7 +1,9 @@
 module main;
 
 import std.algorithm : startsWith, endsWith;
+import std.file : copy;
 import std.path : baseName, extension;
+import std.process : execute, executeShell;
 import std.stdio;
 
 //import std.conv : to;
@@ -83,5 +85,22 @@ CONFIG -= app_bundle
         file1.writeln();
     }
     file1.close();
+    string makefile_name = project_base_name ~ ".mk";
+    string[] cmdLine = ["qmake", "-o", makefile_name, project_file_name];
+    writeln(cmdLine);
+    auto cmd = execute(cmdLine);
+    //if (dmd.status != 0) writeln("Compilation failed:\n", dmd.output);
+    write(cmd.output);
+    writeln("cmd.status=", cmd.status);
+    if (cmd.status != 0)
+        return cmd.status;
+    cmdLine = ["mingw32-make", "-f", makefile_name ~ ".Release"];
+    writeln(cmdLine);
+    cmd = execute(cmdLine);
+    write(cmd.output);
+    writeln("cmd.status=", cmd.status);
+    if (cmd.status != 0)
+        return cmd.status;
+    copy("./release/" ~ project_base_name ~ ".exe", project_base_name ~ ".exe");
     return 0;
 }
