@@ -24,7 +24,7 @@ if "%REDO%"=="1" (
   mkdir %FOLDER%
   cd %FOLDER%
   rem cmake -G "MinGW Makefiles" -DCMAKE_C_COMPILER="gcc" -DCMAKE_CXX_COMPILER="g++" ..
-  cmake -G "CodeLite - MinGW Makefiles" -DCMAKE_C_COMPILER="gcc" -DCMAKE_CXX_COMPILER="g++" -DCMAKE_EXE_LINKER_FLAGS="-static" -DCMAKE_SHARED_LINKER_FLAGS="-static" ..
+  cmake -G "CodeLite - MinGW Makefiles" -DCMAKE_C_COMPILER="gcc" -DCMAKE_CXX_COMPILER="g++" -DCMAKE_CFLAGS="-g" -DCMAKE_CXXFLAGS="-g" -DCMAKE_EXE_LINKER_FLAGS="-static" -DCMAKE_SHARED_LINKER_FLAGS="-static" ..
   rem cmake -G "CodeBlocks - MinGW Makefiles" -DCMAKE_C_COMPILER="gcc" -DCMAKE_CXX_COMPILER="g++" ..
   if %errorlevel% neq 0 ( exit /b )
 )
@@ -37,5 +37,7 @@ if %errorlevel% neq 0 ( exit /b )
 
 ctest -C Release -V
 if %errorlevel% neq 0 ( exit /b )
+
+start myapp.workspace
 
 endlocal
