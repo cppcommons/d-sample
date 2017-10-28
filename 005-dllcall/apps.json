@@ -51,18 +51,6 @@
             ]
         },
         {
-            "name": "idl",
-            "targetType": "executable",
-            "targetName": "idl-dm32",
-            "sourceFiles": [
-                "idl.d",
-                "../../d-lib/pegged-dm32.lib"
-            ],
-            "importPaths": [
-                "../../d-lib"
-            ]
-        },
-        {
             "name": "app3",
             "targetType": "executable",
             "targetName": "app3-dm32",
