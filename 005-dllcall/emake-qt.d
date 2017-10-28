@@ -1,7 +1,7 @@
 module main;
 
 import std.algorithm : startsWith, endsWith;
-import std.file : copy;
+import std.file : copy, FileException;
 import std.path : baseName, extension;
 import std.process : execute, executeShell;
 import std.stdio;
@@ -101,6 +101,14 @@ CONFIG -= app_bundle
     writeln("cmd.status=", cmd.status);
     if (cmd.status != 0)
         return cmd.status;
-    copy("./release/" ~ project_base_name ~ ".exe", project_base_name ~ ".exe");
+    try
+    {
+        copy("./release/" ~ project_base_name ~ ".exe", project_base_name ~ ".exe");
+        writefln("Copy successful: %s", project_base_name ~ ".exe");
+    }
+    catch (FileException ex)
+    {
+        writefln("Copy failure: %s", project_base_name ~ ".exe");
+    }
     return 0;
 }
