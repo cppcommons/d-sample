@@ -20,6 +20,7 @@ private struct Target
     string compiler;
     string[] compiler_options;
     string[] lib_file_list;
+    string[] debug_arguments;
 }
 
 private void put_build_target(ref Element elem, Target record)
@@ -42,6 +43,12 @@ private void put_build_target(ref Element elem, Target record)
     opt = new Element("Option");
     target ~= opt;
     opt.tag.attr["compiler"] = record.compiler;
+    if (record.debug_arguments.length > 0)
+    {
+        opt = new Element("Option");
+        target ~= opt;
+        opt.tag.attr["parameters"] = record.debug_arguments.join(" ");
+    }
     if (record.compiler_options.length > 0)
     {
         auto compiler = new Element("Compiler");
@@ -97,8 +104,14 @@ int main(string[] args)
     string[] file_name_list;
     string[] import_dir_list;
     string[] lib_file_list;
+    string[] debug_arguments;
     for (int i = 2; i < args.length; i++)
     {
+        if (args[i] == "--")
+        {
+            debug_arguments = args[i + 1 .. $];
+            break;
+        }
         // <Add directory="../../d-lib" />
         if (args[i].startsWith("-I"))
         {
@@ -157,6 +170,7 @@ int main(string[] args)
         targetDebug.compiler_options ~= import_dir;
     }
     targetDebug.lib_file_list = lib_file_list;
+    targetDebug.debug_arguments = debug_arguments;
     put_build_target(build, targetDebug);
 
     Target targetRelease;
@@ -171,6 +185,7 @@ int main(string[] args)
         targetRelease.compiler_options ~= import_dir;
     }
     targetRelease.lib_file_list = lib_file_list;
+    targetRelease.debug_arguments = debug_arguments;
     put_build_target(build, targetRelease);
 
     foreach (file_name; file_name_list)

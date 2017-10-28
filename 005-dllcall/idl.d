@@ -1,39 +1,39 @@
 import pegged.grammar; // https://github.com/PhilippeSigaud/Pegged/wiki
 
 /+
-import std.stdio; 
-import std.string; 
-import std.datetime; 
- 
-abstract class Person { 
-   int birthYear, birthDay, birthMonth; 
-   string name; 
-   
-   int getAge() { 
-      SysTime sysTime = Clock.currTime(); 
-      return sysTime.year - birthYear; 
-   } 
-   abstract void print(); 
-}
-class Employee : Person { 
-   int empID;  
-   
-   override void print() { 
-      writeln("The employee details are as follows:"); 
-      writeln("Emp ID: ", this.empID); 
-      writeln("Emp Name: ", this.name); 
-      writeln("Age: ",this.getAge); 
-   } 
-} 
+import std.stdio;
+import std.string;
+import std.datetime;
 
-void main() { 
-   Employee emp = new Employee(); 
-   emp.empID = 101; 
-   emp.birthYear = 1980; 
-   emp.birthDay = 10; 
-   emp.birthMonth = 10; 
-   emp.name = "Emp1"; 
-   emp.print(); 
+abstract class Person {
+   int birthYear, birthDay, birthMonth;
+   string name;
+
+   int getAge() {
+      SysTime sysTime = Clock.currTime();
+      return sysTime.year - birthYear;
+   }
+   abstract void print();
+}
+class Employee : Person {
+   int empID;
+
+   override void print() {
+      writeln("The employee details are as follows:");
+      writeln("Emp ID: ", this.empID);
+      writeln("Emp Name: ", this.name);
+      writeln("Age: ",this.getAge);
+   }
+}
+
+void main() {
+   Employee emp = new Employee();
+   emp.empID = 101;
+   emp.birthYear = 1980;
+   emp.birthDay = 10;
+   emp.birthMonth = 10;
+   emp.name = "Emp1";
+   emp.print();
 }
 +/
 
@@ -249,10 +249,15 @@ private void cut_unnecessary_nodes(ref ParseTree p, ref string[] names)
     }
 }
 
-void main()
+void main(string[] args)
 {
     import std.stdio;
     import std.array : join;
+
+    foreach(arg; args)
+    {
+        writeln(arg);
+    }
 
     {
         EasyFactory cl = new EasyClass();

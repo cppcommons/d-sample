@@ -1,5 +1,5 @@
 setlocal
-emake-dmd idl.exe -I../../d-lib idl.d ../../d-lib/pegged-dm32.lib
+emake-dmd idl.exe -I../../d-lib idl.d ../../d-lib/pegged-dm32.lib -- idl-test.txt A B C
 start /w codeblocks --target=Release --build idl.cbp
 if %errorlevel% neq 0 (
     echo Build Failed!

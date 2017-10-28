@@ -10,6 +10,7 @@
                 <Option object_output="idl.bin/dmd-obj/Debug/" />
                 <Option type="1" />
                 <Option compiler="dmd" />
+                <Option parameters="idl-test.txt A B C" />
                 <Compiler>
                     <Add option="-g" />
                     <Add option="-debug" />
@@ -24,6 +25,7 @@
                 <Option object_output="idl.bin/dmd-obj/Release/" />
                 <Option type="1" />
                 <Option compiler="dmd" />
+                <Option parameters="idl-test.txt A B C" />
                 <Compiler>
                     <Add option="-O" />
                     <Add directory="../../d-lib" />
