@@ -1,9 +1,9 @@
 module main;
 import std.algorithm : startsWith, endsWith;
-import std.file : copy, remove, setTimes, FileException, PreserveAttributes;
+import std.file : copy, exists, rename, remove, setTimes, FileException, PreserveAttributes;
 import std.path : baseName, extension;
 import std.process : execute, executeShell;
-import std.stdio;
+import std.stdio : writefln, writeln;
 import std.typecons : Yes, No;
 import std.datetime.systime : Clock;
 import std.process : pipeProcess, wait, Redirect;
@@ -48,5 +48,14 @@ int main(string[] args)
     auto pipes = pipeProcess(dub_cmdline, Redirect.stdout | Redirect.stderr);
     foreach (line; pipes.stdout.byLine)
         writeln(line);
-    return wait(pipes.pid);
+    int rc = wait(pipes.pid);
+    try
+    {
+        if (exists("dub.selections.json"))
+            rename("dub.selections.json", project_file_name ~ ".selections");
+    }
+    catch (FileException ex)
+    {
+    }
+    return rc;
 }
