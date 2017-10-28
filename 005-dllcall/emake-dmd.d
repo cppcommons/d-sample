@@ -126,7 +126,7 @@ int main(string[] args)
     Target targetDebug;
     targetDebug.title = "Debug";
     targetDebug.output = exe_base_name ~ "_d";
-    targetDebug.object_output = project_base_name ~ ".bin/obj/Debug/";
+    targetDebug.object_output = project_base_name ~ ".bin/dmd-obj/Debug/";
     targetDebug.type = "1";
     targetDebug.compiler = "dmd";
     targetDebug.compiler_options = ["-g", "-debug"];
@@ -135,7 +135,7 @@ int main(string[] args)
     Target targetRelease;
     targetRelease.title = "Release";
     targetRelease.output = exe_base_name;
-    targetRelease.object_output = project_base_name ~ ".bin/obj/Release/";
+    targetRelease.object_output = project_base_name ~ ".bin/dmd-obj/Release/";
     targetRelease.type = "1";
     targetRelease.compiler = "dmd";
     targetRelease.compiler_options = ["-O"];
