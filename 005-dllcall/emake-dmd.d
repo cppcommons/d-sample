@@ -125,7 +125,7 @@ int main(string[] args)
 
     Target targetDebug;
     targetDebug.title = "Debug";
-    targetDebug.output = exe_base_name ~= "_d";
+    targetDebug.output = exe_base_name ~ "_d";
     targetDebug.object_output = project_base_name ~ ".bin/obj/Debug/";
     targetDebug.type = "1";
     targetDebug.compiler = "dmd";

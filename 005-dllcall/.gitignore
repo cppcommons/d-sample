@@ -41,3 +41,4 @@ CMakeLists.txt
 emake.cbp
 emake.xml
 !edub.exe
+!emake-qt.exe

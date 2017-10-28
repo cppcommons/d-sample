@@ -1,4 +1,5 @@
 setlocal
+emake-dmd emake-qt.exe emake-qt.d emake_common.d
 start /w codeblocks --target=Release --build emake-qt.cbp
 if %errorlevel% neq 0 (
     echo Build Failed!
