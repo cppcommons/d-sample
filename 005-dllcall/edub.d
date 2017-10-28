@@ -1,6 +1,7 @@
 module main;
 import std.algorithm : startsWith, endsWith;
-import std.file : copy, exists, rename, remove, setTimes, FileException, PreserveAttributes;
+import std.file : copy, exists, rename, remove, setTimes, FileException,
+    PreserveAttributes;
 import std.path : baseName, extension;
 import std.process : execute, executeShell;
 import std.stdio : writefln, writeln;
@@ -10,14 +11,14 @@ import std.process : pipeProcess, wait, Redirect;
 
 int main(string[] args)
 {
-    writeln(args.length);
+    //writeln(args.length);
     if (args.length < 2)
     {
         writefln("Usage: edub PROJECT.json [build/run]");
         return 1;
     }
     string project_file_name = args[1];
-    writefln("project_file_name=%s", project_file_name);
+    //writefln("project_file_name=%s", project_file_name);
     try
     {
         copy(project_file_name, "dub.json", Yes.preserveAttributes);
@@ -28,6 +29,7 @@ int main(string[] args)
     catch (FileException ex)
     {
         writefln("Copy failure: %s", project_file_name);
+        return 1;
     }
     try
     {
@@ -36,7 +38,11 @@ int main(string[] args)
     }
     catch (FileException ex)
     {
-        writefln("Remove failure: dub.selections.json", project_file_name);
+        //writefln("Remove failure: dub.selections.json", project_file_name);
+    }
+    if (args.length == 2)
+    {
+        return 0;
     }
     string[] dub_cmdline;
     dub_cmdline ~= "dub";
