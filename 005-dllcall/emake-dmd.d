@@ -54,25 +54,42 @@ int main(string[] args)
     File file1 = File(project_base_name ~ ".cbp", "w");
     file1.writeln(`<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>`);
 
-    auto doc = new Document(new Tag("catalog"));
+    auto doc = new Document(new Tag("CodeBlocks_project_file"));
+    /* 	<FileVersion major="1" minor="6" /> */
+    auto fileVersion = new Element("FileVersion");
+    doc ~= fileVersion;
+    fileVersion.tag.attr["major"] = "1";
+    fileVersion.tag.attr["minor"] = "6";
+    /* <Project> */
+    auto project = new Element("Project");
+    doc ~= project;
+    /* <Option title="emake-dmd" /> */
+    void add_option(ref Element elem, string opt_name, string opt_value)
+    {
+        auto opt = new Element("Option");
+        elem ~= opt;
+        opt.tag.attr[opt_name] = opt_value;
+    }
+    add_option(project, "title", "emake-dmd");
+
     //foreach(book;books)
     {
         auto element = new Element("book");
+        doc ~= element;
         element.tag.attr["id"] = "book.id";
 
-        element ~= new Element("author",      "book.author");
-        element ~= new Element("title",       "book.title");
-        element ~= new Element("genre",       "book.genre");
-        element ~= new Element("price",       "book.price");
-        element ~= new Element("publish-date","book.pubDate");
+        element ~= new Element("author", "book.author");
+        element ~= new Element("title", "book.title");
+        element ~= new Element("genre", "book.genre");
+        element ~= new Element("price", "book.price");
+        element ~= new Element("publish-date", "book.pubDate");
         element ~= new Element("description", "book.description");
 
-        doc ~= element;
+        //doc ~= element;
     }
 
     // Pretty-print
-    writefln(join(doc.pretty(3),"\n"));
-
+    writefln(join(doc.pretty(4), "\n"));
 
     file1.close();
     return 0;
