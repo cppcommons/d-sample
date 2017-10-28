@@ -11,6 +11,29 @@ import std.string;
 
 import emake_common;
 
+private struct Target
+{
+    string title;
+    string output;
+    string object_output;
+    string type;
+    string compiler;
+    string[] compiler_options;
+}
+
+private void put_build_target(ref Element elem, Target record)
+{
+    /* <Target title="Debug"> */
+    auto target = new Element("Target");
+    elem ~= target;
+    target.tag.attr["title"] = record.title;
+    auto output = new Element("Option");
+    target ~= output;
+    output.tag.attr["output"] = record.output;
+    output.tag.attr["prefix_auto"] = "1";
+    output.tag.attr["extension_auto"] = "1";
+}
+
 int main(string[] args)
 {
     writeln(args.length);
@@ -71,13 +94,29 @@ int main(string[] args)
         opt.tag.attr[opt_name] = opt_value;
     }
 
-    add_option(project, "title", "emake-dmd");
+    add_option(project, "title", exe_base_name);
     /* <Option compiler="dmd" /> */
     add_option(project, "compiler", "dmd");
 
     /* <Build> */
     auto build = new Element("Build");
     project ~= build;
+
+    Target targetDebug;
+    targetDebug.title = "Debug";
+    targetDebug.output = exe_base_name ~= "_d";
+    put_build_target(build, targetDebug);
+/+
+    private struct Target
+    {
+        string title;
+        string output;
+        string object_output;
+        string type;
+        string compiler;
+        string[] compiler_options;
+    }
++/
 
     foreach (file_name; file_name_list)
     {
