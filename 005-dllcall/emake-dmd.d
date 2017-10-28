@@ -70,27 +70,27 @@ int main(string[] args)
         elem ~= opt;
         opt.tag.attr[opt_name] = opt_value;
     }
+
     add_option(project, "title", "emake-dmd");
+    /* <Option compiler="dmd" /> */
+    add_option(project, "compiler", "dmd");
 
-    //foreach(book;books)
+    /* <Build> */
+    auto build = new Element("Build");
+    project ~= build;
+
+    foreach (file_name; file_name_list)
     {
-        auto element = new Element("book");
-        doc ~= element;
-        element.tag.attr["id"] = "book.id";
-
-        element ~= new Element("author", "book.author");
-        element ~= new Element("title", "book.title");
-        element ~= new Element("genre", "book.genre");
-        element ~= new Element("price", "book.price");
-        element ~= new Element("publish-date", "book.pubDate");
-        element ~= new Element("description", "book.description");
-
-        //doc ~= element;
+        /* <Unit filename="emake-dmd.d" /> */
+        auto unit = new Element("Unit");
+        project ~= unit;
+        unit.tag.attr["filename"] = file_name;
     }
 
     // Pretty-print
     writefln(join(doc.pretty(4), "\n"));
 
+    file1.write(join(doc.pretty(4), "\n"));
     file1.close();
     return 0;
 }
