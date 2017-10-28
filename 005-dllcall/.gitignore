@@ -33,5 +33,6 @@ mylib.di
 *.bld
 CMakeLists.txt
 *.layout
+*.depend
 emake.cbp
 emake.xml

@@ -8,7 +8,7 @@ CONFIG += c++14
 CONFIG += console
 CONFIG -= app_bundle
 
-DESTDIR = .
+#DESTDIR = .
 
 HEADERS += common.h
 SOURCES += emake.cpp
