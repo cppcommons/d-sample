@@ -6,7 +6,7 @@ qmake -o dlltest.mk dlltest.pro
 mingw32-make -f dlltest.mk.Release
 if %errorlevel% neq 0 ( exit /b )
 
-call easy.bat
+call easy-mk.bat
 
 del lib_entry.lib
 

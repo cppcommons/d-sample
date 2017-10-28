@@ -62,11 +62,10 @@ int main(string[] args)
         writefln("Usage: emake-dmd PROJECT.exe source1.d source2.d ...");
         return 1;
     }
-    writefln("Hello World\n");
     string project_file_name = args[1];
-    writefln("project_file_name=%s", project_file_name);
+    //writefln("project_file_name=%s", project_file_name);
     string project_file_ext = extension(project_file_name);
-    writefln("project_file_ext=%s", project_file_ext);
+    //writefln("project_file_ext=%s", project_file_ext);
     if (project_file_ext != ".exe")
     {
         writefln("Project file name is invalid: %s", project_file_name);
@@ -77,22 +76,10 @@ int main(string[] args)
     string[] file_name_list;
     for (int i = 2; i < args.length; i++)
     {
-        writefln("%d=%s", i, args[i]);
+        //writefln("%d=%s", i, args[i]);
         file_name_list ~= args[i];
     }
-    string[] header_list;
-    string[] source_list;
-    /+
-    foreach (file_name; file_name_list)
-    {
-        string file_name_ext = extension(file_name);
-        writeln(file_name, " ", file_name_ext);
-        if (file_name_ext.startsWith(".h"))
-            header_list ~= file_name;
-        if (file_name_ext.startsWith(".c"))
-            source_list ~= file_name;
-    }
-    +/
+
     string exe_base_name = remove_surrounding_underscore(project_base_name);
     File file1 = File(project_base_name ~ ".cbp", "w");
     file1.writeln(`<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>`);
