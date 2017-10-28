@@ -1,2 +1,6 @@
 start /w codeblocks --target=Release --build emake-qt.cbp
-emake-qt.exe emake-gcc.pro emake.cpp common.h
+if %errorlevel% neq 0 (
+    echo Build Failed!
+    exit /b )
+emake-qt.exe
+emake-qt.exe _emake-gcc.pro emake.cpp common.h
