@@ -1,0 +1,9 @@
+{
+  "name": "easy",
+  "targetType": "executable",
+  "targetName": "easy-dm32",
+  "sourceFiles": [
+    "easy.d",
+    "../../d-lib/pegged-dm32.lib"
+  ]
+}
