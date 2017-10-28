@@ -11,7 +11,7 @@ CONFIG -= app_bundle
 DESTDIR = .
 
 HEADERS += common.h
-SOURCES += main.cpp
+SOURCES += emake.cpp
 
 #DEFINES += TEST_BY_QT=1
 
