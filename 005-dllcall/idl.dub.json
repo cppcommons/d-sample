@@ -1,0 +1,12 @@
+{
+  "name": "idl",
+  "targetType": "executable",
+  "targetName": "idl-dm32",
+  "sourceFiles": [
+    "idl.d",
+    "../../d-lib/pegged-dm32.lib"
+  ],
+  "importPaths": [
+    "../../d-lib"
+  ]
+}
