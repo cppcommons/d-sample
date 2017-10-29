@@ -44,16 +44,16 @@ void sub()
 
 CoMutex mutex;
 
-//#ifdef _MSC_VER
+#ifdef _MSC_VER
 #include <iostream>
 #include <vector>
 #include <boost/range/algorithm.hpp>
 using namespace std;
-//#endif
+#endif
 
 int main()
 {
-//#ifdef _MSC_VER
+#ifdef _MSC_VER
     vector<int> v;
     v.push_back ( 1 );
     v.push_back ( 2 );
@@ -61,7 +61,7 @@ int main()
     v.push_back ( 4 );
     vector<int>::iterator it = boost::find(v, 3);
     trace(*it);
-//#endif
+#endif
 
     std::string s = "abc";
     std::cout << s << std::endl;

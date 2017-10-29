@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+    <FileVersion major="1" minor="6" />
+    <Project>
+        <Option title="main" />
+        <Option compiler="dmc" />
+        <Build>
+            <Target title="Debug">
+                <Option output="main_d" prefix_auto="1" extension_auto="1" />
+                <Option object_output="main.bin/dmc-obj/Debug/" />
+                <Option type="1" />
+                <Option compiler="dmc" />
+                <Option createDefFile="1" />
+                <Compiler>
+                    <Add option="-w-" />
+                    <Add option="-Ae" />
+                    <Add option="-g" />
+                    <Add directory="C:/dm/stlport/stlport" />
+                </Compiler>
+                <Linker>
+                    <Add library="lib_entry.lib" />
+                </Linker>
+            </Target>
+            <Target title="Release">
+                <Option output="main" prefix_auto="1" extension_auto="1" />
+                <Option object_output="main.bin/dmc-obj/Release/" />
+                <Option type="1" />
+                <Option compiler="dmc" />
+                <Option createDefFile="1" />
+                <Compiler>
+                    <Add option="-w-" />
+                    <Add option="-Ae" />
+                    <Add option="-o" />
+                    <Add directory="C:/dm/stlport/stlport" />
+                </Compiler>
+                <Linker>
+                    <Add library="lib_entry.lib" />
+                </Linker>
+            </Target>
+        </Build>
+        <Unit filename="main.cpp" />
+    </Project>
+</CodeBlocks_project_file>
