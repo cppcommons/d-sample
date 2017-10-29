@@ -1,6 +1,6 @@
 setlocal
-emake-dmd easy.exe easy.d
-start /w codeblocks --target=Release --build easy.cbp
+emake-dmd build=release easy.exe easy.d
+::start /w codeblocks --target=Release --build easy.cbp
 if %errorlevel% neq 0 (
     echo Build Failed!
     start codeblocks easy.cbp
