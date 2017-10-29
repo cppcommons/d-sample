@@ -53,15 +53,15 @@ class EmakeCommand
         case "generate", "-":
             header_parse[0] = "generate";
             this.command_type = header_parse;
-            args = args[1..$];
+            args = args[1 .. $];
             break;
         case "build":
             this.command_type = header_parse;
-            args = args[1..$];
+            args = args[1 .. $];
             break;
         case "run":
             this.command_type = header_parse;
-            args = args[1..$];
+            args = args[1 .. $];
             break;
         default:
             this.command_type = ["generate", "release"];
@@ -204,7 +204,8 @@ int main(string[] args)
 {
     writeln(args.length);
     auto emake_cmd = new EmakeCommand("dmd", args);
-    if (!emake_cmd.isValid()) return 1;
+    if (!emake_cmd.isValid())
+        return 1;
 
     writefln("Command type: %s", emake_cmd.command_type);
 
@@ -280,5 +281,23 @@ int main(string[] args)
 
     file1.write(join(doc.pretty(4), "\n"));
     file1.close();
+
+    switch (emake_cmd.command_type[0])
+    {
+    case "generate":
+        break;
+    case "build", "run":
+        string[] cb_command = [
+            "cmd", "/c", "start", "/w", "codeblocks", "--target=Release",
+            "--build", emake_cmd.project_base_name ~ ".cbp"
+        ];
+        writeln(cb_command);
+        int rc = emake_run_command(cb_command);
+        return rc;
+        break;
+    default:
+        break;
+    }
+
     return 0;
 }
