@@ -1,5 +1,6 @@
 dub.json
 *.selections
+*.save-failed
 _*
 *___*
 Makefile*
