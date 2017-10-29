@@ -52,12 +52,15 @@ class EmakeCommand
         {
         case "generate", "-":
             header_parse[0] = "generate";
+            this.command_type = header_parse;
             args = args[1..$];
             break;
         case "build":
+            this.command_type = header_parse;
             args = args[1..$];
             break;
         case "run":
+            this.command_type = header_parse;
             args = args[1..$];
             break;
         default:
@@ -202,52 +205,9 @@ int main(string[] args)
     writeln(args.length);
     auto emake_cmd = new EmakeCommand("dmd", args);
     if (!emake_cmd.isValid()) return 1;
-    /+
-    if (args.length < 3)
-    {
-        writefln("Usage: emake-dmd PROJECT.exe source1.d source2.d ...");
-        return 1;
-    }
-    string project_file_name = args[1];
-    //writefln("project_file_name=%s", project_file_name);
-    string project_file_ext = extension(project_file_name);
-    //writefln("project_file_ext=%s", project_file_ext);
-    if (project_file_ext != ".exe")
-    {
-        writefln("Project file name is invalid: %s", project_file_name);
-        return 1;
-    }
-    string project_base_name = baseName(project_file_name, project_file_ext);
-    writefln("project_base_name=%s", project_base_name);
-    string[] file_name_list;
-    string[] import_dir_list;
-    string[] lib_file_list;
-    string[] debug_arguments;
-    for (int i = 2; i < args.length; i++)
-    {
-        if (args[i] == "--")
-        {
-            debug_arguments = args[i + 1 .. $];
-            break;
-        }
-        // <Add directory="../../d-lib" />
-        if (args[i].startsWith("-I"))
-        {
-            //import_dir_list ~= args[i][2..$];
-            import_dir_list ~= args[i];
-            continue;
-        }
-        string file_name_ext = extension(args[i]);
-        if (file_name_ext == ".lib")
-        {
-            lib_file_list ~= args[i];
-            continue;
-        }
-        file_name_list ~= args[i];
-    }
 
-    string exe_base_name = remove_surrounding_underscore(project_base_name);
-    +/
+    writefln("Command type: %s", emake_cmd.command_type);
+
     File file1 = File(emake_cmd.project_base_name ~ ".cbp", "w");
     file1.writeln(`<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>`);
 
