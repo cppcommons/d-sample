@@ -192,7 +192,7 @@ int main(string[] args)
         break;
     case "build", "run":
         string[] cb_command = [
-            "cmd", "/c", "start", "/w", "codeblocks", "--target=Release",
+            "cmd", "/c", "start", "/w", "codeblocks", "--no-batch-window-close", "--target=Release",
             "--build", emake_cmd.project_base_name ~ ".cbp"
         ];
         writeln(cb_command);
