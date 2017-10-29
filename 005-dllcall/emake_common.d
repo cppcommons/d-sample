@@ -109,12 +109,14 @@ class EmakeCommand
         //writefln("project_file_name=%s", project_file_name);
         this.project_file_ext = extension(this.project_file_name);
         //writefln("project_file_ext=%s", project_file_ext);
+        /+
         if (this.project_file_ext != ".exe")
         {
             writefln("Project file name is invalid: %s", project_file_name);
             this.valid = false;
             return;
         }
+        +/
         this.project_base_name = baseName(this.project_file_name, this.project_file_ext);
         for (int i = 0; i < args.length; i++)
         {

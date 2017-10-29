@@ -121,11 +121,32 @@ int main(string[] args)
     auto build = new Element("Build");
     project ~= build;
 
+    string get_build_type_number(string ext)
+    {
+        writefln("get_build_type_number(): ext=%s", ext);
+        string number = "";
+        switch (emake_cmd.project_file_ext)
+        {
+        case ".exe":
+            number = "1";
+            break;
+        case ".lib":
+            number = "2";
+            break;
+        case ".dll":
+            number = "3";
+            break;
+        default:
+            break;
+        }
+        return number;
+    }
+
     Target targetDebug;
     targetDebug.title = "Debug";
     targetDebug.output = emake_cmd.exe_base_name ~ "_d";
     targetDebug.object_output = emake_cmd.project_base_name ~ ".bin/dmd-obj/Debug/";
-    targetDebug.type = "1";
+    targetDebug.type = get_build_type_number(emake_cmd.project_file_ext); //"1";
     targetDebug.compiler = "dmd";
     targetDebug.compiler_options = ["-g", "-debug"];
     foreach (import_dir; emake_cmd.import_dir_list)
@@ -140,7 +161,7 @@ int main(string[] args)
     targetRelease.title = "Release";
     targetRelease.output = emake_cmd.exe_base_name;
     targetRelease.object_output = emake_cmd.project_base_name ~ ".bin/dmd-obj/Release/";
-    targetRelease.type = "1";
+    targetRelease.type = get_build_type_number(emake_cmd.project_file_ext); //"1";
     targetRelease.compiler = "dmd";
     targetRelease.compiler_options = ["-O"];
     foreach (import_dir; emake_cmd.import_dir_list)
