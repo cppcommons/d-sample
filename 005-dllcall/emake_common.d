@@ -24,6 +24,8 @@ int emake_run_command(string[] dub_cmdline)
     foreach (line; pipes.stdout.byLine)
         writeln(line);
     int rc = wait(pipes.pid);
+    foreach (line; pipes.stderr.byLine)
+        writeln(line);
     return rc;
 }
 
