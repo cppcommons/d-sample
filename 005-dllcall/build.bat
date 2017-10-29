@@ -15,20 +15,23 @@ del lib_entry.lib
 ::for %%x in (easy_win_*.c) do set LIST=!LIST! %%x
 ::for %%x in (easy_win_*.cpp) do set LIST=!LIST! %%x
 ::C:\dm\bin\dmc -c myclass.cpp %LIST%
-::if %errorlevel% neq 0 ( exit /b )
+eshell C:\dm\bin\dmc -c myclass.cpp easy_win_*.c*
+if %errorlevel% neq 0 ( exit /b )
 
 ::setlocal enabledelayedexpansion enableextensions
 ::set LIST=
 ::for %%x in (easy_win_*.obj) do set LIST=!LIST! %%x
 ::C:\dm\bin\lib -c -n -p512 lib_entry.lib myclass.obj %LIST%
-emake-cpp build ___lib_entry.lib myclass.cpp easy_win_*.c* -LINK=-p512
+::emake-cpp build ___lib_entry.lib myclass.cpp easy_win_*.c* -LINK=-p512
+eshell C:\dm\bin\lib -c -n -p512 lib_entry.lib myclass.obj easy_win_*.obj
 if %errorlevel% neq 0 ( exit /b )
 
 ::exit /b
 
 del main.exe
 ::C:\dm\bin\dmc -IC:/dm/stlport/stlport main.cpp lib_entry.lib
-emake-cpp build main.exe -IC:/dm/stlport/stlport main.cpp lib_entry.lib
+::emake-cpp build main.exe -IC:/dm/stlport/stlport main.cpp lib_entry.lib
+eshell C:\dm\bin\dmc -IC:/dm/stlport/stlport main.cpp lib_entry.lib
 if %errorlevel% neq 0 ( exit /b )
 
 :clean

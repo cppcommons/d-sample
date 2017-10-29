@@ -21,6 +21,6 @@
       "editor.tabSize": 4
     },
     "terminal.integrated.env.windows": {
-      "PATH": "E:\\opt\\bin32;C:\\Windows\\system32;C:\\Program Files\\Microsoft VS Code\\bin;C:\\D\\dmd2\\windows\\bin;e:\\opt\\opt.m32\\mingw32\\qt5-static\\bin;e:\\opt\\opt.m32\\mingw32\\bin;e:\\opt\\opt.m32\\usr\\bin;E:\\opt\\cmake-3.9.4-win64-x64\\bin;E:/opt/codeblocks-16.01-nosetup;C:/Program Files/CodeLite;E:\\d-dev\\1022.cmder\\vendor\\git-for-windows\\bin;C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin"
+      "PATH": "E:\\opt\\bin32;C:\\Windows\\system32;C:\\Program Files\\Microsoft VS Code\\bin;C:\\D\\dmd2\\windows\\bin;e:\\opt\\opt.m32\\mingw32\\qt5-static\\bin;e:\\opt\\opt.m32\\mingw32\\bin;e:\\opt\\opt.m32\\usr\\bin;E:\\opt\\cmake-3.9.4-win64-x64\\bin;E:/opt/codeblocks-16.01-nosetup;C:/Program Files/CodeLite;E:\\opt\\coedit.3update4.win32;E:\\d-dev\\1022.cmder\\vendor\\git-for-windows\\bin;C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin"
     }
 }
