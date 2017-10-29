@@ -1,11 +1,6 @@
 setlocal
 emake-dmd build=release easy.exe easy.d
-::start /w codeblocks --target=Release --build easy.cbp
-if %errorlevel% neq 0 (
-    echo Build Failed!
-    start codeblocks easy.cbp
-    exit /b )
-echo Build Successful!
+if %errorlevel% neq 0 ( exit /b )
 easy.exe my_library dlltest.dll 800000
 easy.exe sqlite sqlite-win-32bit-3200100.dll 800000
 easy.exe libcurl libcurl.dll 800000

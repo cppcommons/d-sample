@@ -116,7 +116,6 @@ class EmakeCommand
             return;
         }
         this.project_base_name = baseName(this.project_file_name, this.project_file_ext);
-        writefln("project_base_name=%s", this.project_base_name);
         for (int i = 0; i < args.length; i++)
         {
             if (args[i] == "--")

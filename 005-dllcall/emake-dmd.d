@@ -176,7 +176,16 @@ int main(string[] args)
         ];
         writeln(cb_command);
         int rc = emake_run_command(cb_command);
-        return rc;
+        if (rc != 0)
+        {
+            cb_command = ["cmd", "/c", "start", "codeblocks", emake_cmd.project_base_name ~ ".cbp"];
+            writeln(cb_command);
+            /* rc = */
+            emake_run_command(cb_command);
+            writeln("Build Failed!");
+            return rc;
+        }
+        writeln("Build Successful!");
         break;
     default:
         break;
