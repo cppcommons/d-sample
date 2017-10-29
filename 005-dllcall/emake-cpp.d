@@ -33,6 +33,7 @@ private struct Target
     string compiler;
     string[] compiler_options;
     string[] lib_file_list;
+    string[] linker_flags;
     string[] debug_arguments;
 }
 
@@ -84,7 +85,26 @@ private void put_build_target(ref Element elem, Target record)
             }
         }
     }
-    if (record.lib_file_list.length > 0)
+    if (record.lib_file_list.length > 0 || record.linker_flags.length > 0)
+    {
+        auto linker = new Element("Linker");
+        target ~= linker;
+        foreach (lib_file; record.lib_file_list)
+        {
+            auto add = new Element("Add");
+            linker ~= add;
+            // <Add library="../../d-lib/pegged-dm32.lib"
+            add.tag.attr["library"] = lib_file;
+        }
+        foreach (linker_flag; record.linker_flags)
+        {
+            auto add = new Element("Add");
+            linker ~= add;
+            // <Add option="-p512"
+            add.tag.attr["option"] = linker_flag;
+        }
+    }
+    if (record.linker_flags.length > 0)
     {
         auto linker = new Element("Linker");
         target ~= linker;
@@ -169,6 +189,7 @@ int main(string[] args)
         targetDebug.compiler_options ~= import_dir;
     }
     targetDebug.lib_file_list = emake_cmd.lib_file_list;
+    targetDebug.linker_flags = emake_cmd.linker_flags;
     targetDebug.debug_arguments = emake_cmd.debug_arguments;
     put_build_target(build, targetDebug);
 
@@ -184,6 +205,7 @@ int main(string[] args)
         targetRelease.compiler_options ~= import_dir;
     }
     targetRelease.lib_file_list = emake_cmd.lib_file_list;
+    targetRelease.linker_flags = emake_cmd.linker_flags;
     targetRelease.debug_arguments = emake_cmd.debug_arguments;
     put_build_target(build, targetRelease);
 

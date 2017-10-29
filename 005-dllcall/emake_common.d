@@ -56,6 +56,7 @@ class EmakeCommand
     string[] file_name_list;
     string[] import_dir_list;
     string[] lib_file_list;
+    string[] linker_flags;
     string[] debug_arguments;
     string exe_base_name;
 
@@ -124,6 +125,12 @@ class EmakeCommand
             {
                 debug_arguments = args[i + 1 .. $];
                 break;
+            }
+            if (args[i].startsWith("-LINK="))
+            {
+                //import_dir_list ~= args[i][2..$];
+                linker_flags ~= args[i][6..$];
+                continue;
             }
             // <Add directory="../../d-lib" />
             if (args[i].startsWith("-I"))
