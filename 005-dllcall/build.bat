@@ -21,7 +21,7 @@ del lib_entry.lib
 ::set LIST=
 ::for %%x in (easy_win_*.obj) do set LIST=!LIST! %%x
 ::C:\dm\bin\lib -c -n -p512 lib_entry.lib myclass.obj %LIST%
-emake-cpp build lib_entry.lib myclass.cpp easy_win_*.c* -LINK=-p512
+emake-cpp build ___lib_entry.lib myclass.cpp easy_win_*.c* -LINK=-p512
 if %errorlevel% neq 0 ( exit /b )
 
 ::exit /b
