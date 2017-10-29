@@ -1,6 +1,7 @@
 module main;
 import std.algorithm : startsWith, endsWith;
-import std.file : copy, setTimes, FileException, PreserveAttributes;
+import std.file : copy, dirEntries, setTimes, FileException, PreserveAttributes,
+    SpanMode;
 import std.path : baseName, extension;
 import std.process : execute, executeShell;
 import std.stdio;
@@ -11,6 +12,17 @@ import std.string;
 import std.array : split;
 
 import emake_common;
+
+string[] listdir(string pathname)
+{
+    import std.algorithm;
+    import std.array;
+    import std.file;
+    import std.path;
+
+    return std.file.dirEntries(pathname, SpanMode.shallow)
+        .filter!(a => a.isFile).map!(a => std.path.baseName(a.name)).array;
+}
 
 private struct Target
 {
@@ -177,10 +189,18 @@ int main(string[] args)
 
     foreach (file_name; emake_cmd.file_name_list)
     {
-        /* <Unit filename="emake-dmd.d" /> */
-        auto unit = new Element("Unit");
-        project ~= unit;
-        unit.tag.attr["filename"] = file_name;
+        writefln("file_name=%s", file_name);
+        stdout.flush();
+        //auto dFiles = dirEntries("", "*.{d,di}", SpanMode.shallow);
+        auto dFiles = dirEntries("", file_name, SpanMode.shallow);
+        foreach (d; dFiles)
+        {
+            writeln(file_name, "==>", d.name);
+            /* <Unit filename="emake-dmd.d" /> */
+            auto unit = new Element("Unit");
+            project ~= unit;
+            unit.tag.attr["filename"] = d.name;
+        }
     }
 
     // Pretty-print
@@ -200,8 +220,8 @@ int main(string[] args)
             "--build", emake_cmd.project_base_name ~ ".cbp"
         ];+/
         string[] cb_command = [
-            "cmd", "/c", "start", "/w", "codeblocks", "/na", "/nd", "--target=Release",
-            "--build", emake_cmd.project_base_name ~ ".cbp"
+            "cmd", "/c", "start", "/w", "codeblocks", "/na", "/nd",
+            "--target=Release", "--build", emake_cmd.project_base_name ~ ".cbp"
         ];
         writeln(cb_command);
         int rc = emake_run_command(cb_command);
