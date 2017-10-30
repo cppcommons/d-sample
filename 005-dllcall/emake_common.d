@@ -9,11 +9,11 @@ string remove_surrounding_underscore(string s)
 {
     while (s.startsWith("_"))
     {
-        s = s[1..$];
+        s = s[1 .. $];
     }
     while (s.endsWith("_"))
     {
-        s = s[0..$-1];
+        s = s[0 .. $ - 1];
     }
     return s;
 }
@@ -55,12 +55,12 @@ class EmakeCommand
     string project_file_name;
     string project_file_ext;
     string project_base_name;
+    string exe_base_name;
     string[] file_name_list;
     string[] import_dir_list;
     string[] lib_file_list;
     string[] linker_flags;
     string[] debug_arguments;
-    string exe_base_name;
 
     bool check_command_type()
     {
@@ -70,6 +70,10 @@ class EmakeCommand
         {
         case "generate", "-":
             header_parse[0] = "generate";
+            this.command_type = header_parse;
+            args = args[1 .. $];
+            break;
+        case "edit":
             this.command_type = header_parse;
             args = args[1 .. $];
             break;
@@ -83,6 +87,7 @@ class EmakeCommand
             break;
         default:
             this.command_type = ["generate", "release"];
+            return false;
             break;
         }
         return true;
@@ -95,13 +100,14 @@ class EmakeCommand
         args = args[1 .. $];
         if (args.length < 3)
         {
-            writefln("Usage: %s PROJECT.exe source1 source2 ...", prog_name);
+            writefln("Usage: %s COMMAND PROJECT.exe source1 source2 ...", prog_name);
             this.valid = false;
             return;
         }
 
         if (!check_command_type())
         {
+            writefln("Invalid command!");
             this.valid = false;
             return;
         }
@@ -121,6 +127,7 @@ class EmakeCommand
         }
         +/
         this.project_base_name = baseName(this.project_file_name, this.project_file_ext);
+        this.exe_base_name = remove_surrounding_underscore(project_base_name);
         for (int i = 0; i < args.length; i++)
         {
             if (args[i] == "--")
@@ -131,14 +138,20 @@ class EmakeCommand
             if (args[i].startsWith("-LINK="))
             {
                 //import_dir_list ~= args[i][2..$];
-                linker_flags ~= args[i][6..$];
+                linker_flags ~= args[i][6 .. $];
+                continue;
+            }
+            if (args[i].startsWith("-L="))
+            {
+                //import_dir_list ~= args[i][2..$];
+                linker_flags ~= args[i][3 .. $];
                 continue;
             }
             // <Add directory="../../d-lib" />
             if (args[i].startsWith("-I"))
             {
-                //import_dir_list ~= args[i][2..$];
-                import_dir_list ~= args[i];
+                import_dir_list ~= args[i][2..$];
+                //import_dir_list ~= args[i];
                 continue;
             }
             string file_name_ext = extension(args[i]);
@@ -149,7 +162,5 @@ class EmakeCommand
             }
             file_name_list ~= args[i];
         }
-
-        this.exe_base_name = remove_surrounding_underscore(project_base_name);
     }
 }
