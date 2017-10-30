@@ -145,34 +145,26 @@ int main(string[] args)
 
     Target targetDebug;
     targetDebug.title = "Debug";
+    //targetDebug.output = emake_cmd.project_file_name ~ ".bin/" ~ emake_cmd.exe_base_name ~ "_d";
     targetDebug.output = emake_cmd.exe_base_name ~ "_d";
     targetDebug.object_output = emake_cmd.project_file_name ~ ".bin/dmd-obj/Debug/";
     targetDebug.type = get_build_type_number(emake_cmd.project_file_ext); //"1";
     targetDebug.compiler = "dmd";
     targetDebug.compiler_options = ["-g", "-debug"];
     targetDebug.import_dir_list = emake_cmd.import_dir_list;
-    /+
-    foreach (import_dir; emake_cmd.import_dir_list)
-    {
-        targetDebug.compiler_options ~= import_dir;
-    }+/
     targetDebug.lib_file_list = emake_cmd.lib_file_list;
     targetDebug.debug_arguments = emake_cmd.debug_arguments;
     put_build_target(build, targetDebug);
 
     Target targetRelease;
     targetRelease.title = "Release";
+    //targetRelease.output = emake_cmd.project_file_name ~ ".bin/" ~ emake_cmd.exe_base_name ~ "_r";
     targetRelease.output = emake_cmd.exe_base_name;
     targetRelease.object_output = emake_cmd.project_file_name ~ ".bin/dmd-obj/Release/";
     targetRelease.type = get_build_type_number(emake_cmd.project_file_ext); //"1";
     targetRelease.compiler = "dmd";
     targetRelease.compiler_options = ["-O"];
     targetRelease.import_dir_list = emake_cmd.import_dir_list;
-    /+
-    foreach (import_dir; emake_cmd.import_dir_list)
-    {
-        targetRelease.compiler_options ~= import_dir;
-    }+/
     targetRelease.lib_file_list = emake_cmd.lib_file_list;
     targetRelease.debug_arguments = emake_cmd.debug_arguments;
     put_build_target(build, targetRelease);
@@ -196,33 +188,26 @@ int main(string[] args)
     case "generate":
         break;
     case "edit":
-        string[] cb_command = [
-            "cmd", "/c", "start", "/w", "codeblocks", emake_cmd.project_file_name ~ ".cbp"
-        ];
+        string[] cb_command = ["codeblocks", //"/na", "/nd",
+            emake_cmd.project_file_name ~ ".cbp"];
         writeln(cb_command);
-        /* int rc = */
-        emake_run_command(cb_command);
+        execute(cb_command);
         break;
     case "build", "run":
-        /+
         string[] cb_command = [
-            "cmd", "/c", "start", "/w", "codeblocks", "--no-batch-window-close", "--target=Release",
-            "--build", emake_cmd.project_file_name ~ ".cbp"
-        ];+/
-        string[] cb_command = [
-            "cmd", "/c", "start", "/w", "codeblocks", "/na", "/nd",
+            "codeblocks", //"/na", "/nd",
             "--target=Release", "--build", emake_cmd.project_file_name ~ ".cbp"
         ];
         writeln(cb_command);
-        int rc = emake_run_command(cb_command);
-        if (rc != 0)
+        auto ret = execute(cb_command);
+        writeln(ret.output);
+        if (ret.status != 0)
         {
-            cb_command = ["cmd", "/c", "start", "codeblocks", emake_cmd.project_file_name ~ ".cbp"];
-            writeln(cb_command);
-            /* rc = */
-            emake_run_command(cb_command);
             writeln("Build Failed!");
-            return rc;
+            cb_command = ["codeblocks", emake_cmd.project_file_name ~ ".cbp"];
+            writeln(cb_command);
+            execute(cb_command);
+            return ret.status;
         }
         writeln("Build Successful!");
         break;
