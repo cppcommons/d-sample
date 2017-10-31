@@ -13,6 +13,27 @@ import std.xml;
 import std.string;
 import std.array : split;
 
+string get_build_type_number(string ext)
+{
+    writefln("get_build_type_number(): ext=%s", ext);
+    string number = "";
+    switch (ext)
+    {
+    case ".exe":
+        number = "1";
+        break;
+    case ".lib":
+        number = "2";
+        break;
+    case ".dll":
+        number = "3";
+        break;
+    default:
+        break;
+    }
+    return number;
+}
+
 class CodeblocksProject
 {
     EmakeCommand emake_cmd;
@@ -76,27 +97,6 @@ int main(string[] args)
     /* <Build> */
     auto build = new Element("Build");
     project ~= build;
-
-    string get_build_type_number(string ext)
-    {
-        writefln("get_build_type_number(): ext=%s", ext);
-        string number = "";
-        switch (emake_cmd.project_file_ext)
-        {
-        case ".exe":
-            number = "1";
-            break;
-        case ".lib":
-            number = "2";
-            break;
-        case ".dll":
-            number = "3";
-            break;
-        default:
-            break;
-        }
-        return number;
-    }
 
     Target targetDebug;
     targetDebug.title = "Debug";
