@@ -13,6 +13,30 @@ import std.xml;
 import std.string;
 import std.array : split;
 
+class CodeblocksProject
+{
+    EmakeCommand emake_cmd;
+    Document doc;
+
+    this(EmakeCommand emake_cmd)
+    {
+        this.emake_cmd = emake_cmd;
+        this.doc = new Document(new Tag("CodeBlocks_project_file"));
+    }
+
+    ~this()
+    {
+    }
+
+    void save_to_file(string file_path)
+    {
+        File file1 = File(emake_cmd.project_file_name ~ ".cbp", "w");
+        file1.writeln(`<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>`);
+        file1.write(join(this.doc.pretty(4), "\n"));
+        file1.close();
+    }
+}
+
 int main(string[] args)
 {
     ////writeln(args.length);
@@ -22,18 +46,19 @@ int main(string[] args)
 
     writefln("Command type: %s", emake_cmd.command_type);
 
-    File file1 = File(emake_cmd.project_file_name ~ ".cbp", "w");
-    file1.writeln(`<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>`);
+    //File file1 = File(emake_cmd.project_file_name ~ ".cbp", "w");
+    //file1.writeln(`<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>`);
 
-    auto doc = new Document(new Tag("CodeBlocks_project_file"));
+    auto cbp = new CodeblocksProject(emake_cmd);
+    //auto doc = new Document(new Tag("CodeBlocks_project_file"));
     /* 	<FileVersion major="1" minor="6" /> */
     auto fileVersion = new Element("FileVersion");
-    doc ~= fileVersion;
+    cbp.doc ~= fileVersion;
     fileVersion.tag.attr["major"] = "1";
     fileVersion.tag.attr["minor"] = "6";
     /* <Project> */
     auto project = new Element("Project");
-    doc ~= project;
+    cbp.doc ~= project;
     /* <Option title="emake-dmd" /> */
     void add_option(ref Element elem, string opt_name, string opt_value)
     {
@@ -110,8 +135,9 @@ int main(string[] args)
     // Pretty-print
     //writefln(join(doc.pretty(4), "\n"));
 
-    file1.write(join(doc.pretty(4), "\n"));
-    file1.close();
+    cbp.save_to_file(emake_cmd.project_file_name ~ ".cbp");
+    //file1.write(join(cbp.doc.pretty(4), "\n"));
+    //file1.close();
 
     switch (emake_cmd.command_type[0])
     {
