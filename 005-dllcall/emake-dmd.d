@@ -46,7 +46,7 @@ int main(string[] args)
     writeln("emake_cmd.project_file_name=", emake_cmd.project_file_name);
     add_option(project, "title", emake_cmd.project_file_name);
     /* <Option compiler="dmd" /> */
-    add_option(project, "compiler", "dmd");
+    add_option(project, "compiler", emake_cmd.compiler_type);
 
     /* <Build> */
     auto build = new Element("Build");
@@ -79,7 +79,7 @@ int main(string[] args)
     targetDebug.output = emake_cmd.exe_base_name ~ "_d";
     targetDebug.object_output = emake_cmd.project_file_name ~ ".bin/dmd-obj/Debug/";
     targetDebug.type = get_build_type_number(emake_cmd.project_file_ext); //"1";
-    targetDebug.compiler = "dmd";
+    targetDebug.compiler = emake_cmd.compiler_type;
     targetDebug.compiler_options = ["-g", "-debug"];
     targetDebug.import_dir_list = emake_cmd.import_dir_list;
     targetDebug.lib_file_list = emake_cmd.lib_file_list;
@@ -92,7 +92,7 @@ int main(string[] args)
     targetRelease.output = emake_cmd.exe_base_name;
     targetRelease.object_output = emake_cmd.project_file_name ~ ".bin/dmd-obj/Release/";
     targetRelease.type = get_build_type_number(emake_cmd.project_file_ext); //"1";
-    targetRelease.compiler = "dmd";
+    targetRelease.compiler = emake_cmd.compiler_type;
     targetRelease.compiler_options = ["-O"];
     targetRelease.import_dir_list = emake_cmd.import_dir_list;
     targetRelease.lib_file_list = emake_cmd.lib_file_list;
