@@ -52,6 +52,13 @@ class CodeblocksProject
 	{
 	}
 
+	void add_build_target(string target_title, string output,
+			string object_output, string[] compiler_options)
+	{
+		put_build_target(this.build, this.emake_cmd, target_title, output,
+				object_output, compiler_options);
+	}
+
 	void save_to_file(string file_path)
 	{
 		File file1 = File(emake_cmd.project_file_name ~ ".cbp", "w");
@@ -65,7 +72,6 @@ int main(string[] args)
 {
 	import std.format : format;
 
-	////writeln(args.length);
 	auto emake_cmd = new EmakeCommand("dmd", args);
 	if (!emake_cmd.isValid())
 		return 1;
@@ -74,16 +80,10 @@ int main(string[] args)
 
 	auto cbp = new CodeblocksProject(emake_cmd);
 
-	/+
-	/* <Build> */
-	auto build = new Element("Build");
-	cbp.project ~= build;
-	+/
-
-	put_build_target(cbp.build, emake_cmd, "Debug", emake_cmd.exe_base_name ~ "_d",
+	cbp.add_build_target("Debug", emake_cmd.exe_base_name ~ "_d",
 			emake_cmd.project_file_name ~ ".bin/dmd-obj/Debug/", ["-g", "-debug"]);
 
-	put_build_target(cbp.build, emake_cmd, "Release", emake_cmd.exe_base_name,
+	cbp.add_build_target("Release", emake_cmd.exe_base_name,
 			emake_cmd.project_file_name ~ ".bin/dmd-obj/Release/", ["-O"]);
 
 	cbp.save_to_file(emake_cmd.project_file_name ~ ".cbp");
