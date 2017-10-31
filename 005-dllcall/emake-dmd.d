@@ -24,7 +24,6 @@ class CodeblocksProject
 	{
 		this.emake_cmd = emake_cmd;
 		this.doc = new Document(new Tag("CodeBlocks_project_file"));
-		//auto doc = new Document(new Tag("CodeBlocks_project_file"));
 		/* 	<FileVersion major="1" minor="6" /> */
 		auto fileVersion = new Element("FileVersion");
 		this.doc ~= fileVersion;
@@ -55,7 +54,7 @@ class CodeblocksProject
 	void add_build_target(string target_title, string output,
 			string object_output, string[] compiler_options)
 	{
-		put_build_target(this.build, this.emake_cmd, target_title, output,
+		this.build.put_build_target(this.emake_cmd, target_title, output,
 				object_output, compiler_options);
 	}
 
