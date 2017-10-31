@@ -6,4 +6,4 @@ copy emake-dmd.exe E:\opt\bin32\
 ::emake-dmd edit x.exe a.d -IC:\test\import
 del x.exe.cbp
 rmdir /s /q x.exe.bin
-emake-dmd build x.exe a.d -IC:\test\import
+emake-dmd build x.exe a.d -IC:\test\import -- a b c

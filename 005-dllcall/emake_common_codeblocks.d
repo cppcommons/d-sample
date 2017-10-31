@@ -17,6 +17,13 @@ struct Target
     string[] debug_arguments;
 }
 
+void add_option(ref Element elem, string opt_name, string opt_value)
+{
+    auto opt = new Element("Option");
+    elem ~= opt;
+    opt.tag.attr[opt_name] = opt_value;
+}
+
 void put_build_target(ref Element elem, Target record)
 {
     /* <Target title="Debug"> */
@@ -28,20 +35,32 @@ void put_build_target(ref Element elem, Target record)
     opt.tag.attr["output"] = record.output;
     opt.tag.attr["prefix_auto"] = "1";
     opt.tag.attr["extension_auto"] = "1";
+    target.add_option("object_output", record.object_output);
+    /+
     opt = new Element("Option");
     target ~= opt;
     opt.tag.attr["object_output"] = record.object_output;
+    +/
+    target.add_option("type", record.type);
+    /+
     opt = new Element("Option");
     target ~= opt;
     opt.tag.attr["type"] = record.type;
+    +/
+    target.add_option("compiler", record.compiler);
+    /+
     opt = new Element("Option");
     target ~= opt;
     opt.tag.attr["compiler"] = record.compiler;
+    +/
     if (record.debug_arguments.length > 0)
     {
+        target.add_option("parameters", record.debug_arguments.join(" "));
+        /+
         opt = new Element("Option");
         target ~= opt;
         opt.tag.attr["parameters"] = record.debug_arguments.join(" ");
+        +/
     }
     if (record.compiler_options.length > 0 || record.import_dir_list.length > 0)
     {

@@ -43,6 +43,12 @@ class CodeblocksProject
     {
         this.emake_cmd = emake_cmd;
         this.doc = new Document(new Tag("CodeBlocks_project_file"));
+        //auto doc = new Document(new Tag("CodeBlocks_project_file"));
+        /* 	<FileVersion major="1" minor="6" /> */
+        auto fileVersion = new Element("FileVersion");
+        this.doc ~= fileVersion;
+        fileVersion.tag.attr["major"] = "1";
+        fileVersion.tag.attr["minor"] = "6";
     }
 
     ~this()
@@ -71,22 +77,10 @@ int main(string[] args)
     //file1.writeln(`<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>`);
 
     auto cbp = new CodeblocksProject(emake_cmd);
-    //auto doc = new Document(new Tag("CodeBlocks_project_file"));
-    /* 	<FileVersion major="1" minor="6" /> */
-    auto fileVersion = new Element("FileVersion");
-    cbp.doc ~= fileVersion;
-    fileVersion.tag.attr["major"] = "1";
-    fileVersion.tag.attr["minor"] = "6";
     /* <Project> */
     auto project = new Element("Project");
     cbp.doc ~= project;
     /* <Option title="emake-dmd" /> */
-    void add_option(ref Element elem, string opt_name, string opt_value)
-    {
-        auto opt = new Element("Option");
-        elem ~= opt;
-        opt.tag.attr[opt_name] = opt_value;
-    }
 
     //add_option(project, "title", exe_base_name);
     writeln("emake_cmd.project_file_name=", emake_cmd.project_file_name);
