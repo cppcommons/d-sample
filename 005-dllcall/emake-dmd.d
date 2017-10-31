@@ -33,6 +33,9 @@ class CodeblocksProject
 		/* <Project> */
 		this.project = new Element("Project");
 		this.doc ~= this.project;
+		writeln("emake_cmd.project_file_name=", this.emake_cmd.project_file_name);
+		this.project.put_option("title", this.emake_cmd.project_file_name);
+		this.project.put_option("compiler", this.emake_cmd.compiler_type);
 	}
 
 	~this()
@@ -63,18 +66,12 @@ int main(string[] args)
 	//file1.writeln(`<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>`);
 
 	auto cbp = new CodeblocksProject(emake_cmd);
-	/+
-	/* <Project> */
-	auto project = new Element("Project");
-	cbp.doc ~= project;
-	+/
 
-	/* <Option title="emake-dmd" /> */
-	//put_option(project, "title", exe_base_name);
+	/+
 	writeln("emake_cmd.project_file_name=", emake_cmd.project_file_name);
 	put_option(cbp.project, "title", emake_cmd.project_file_name);
-	/* <Option compiler="dmd" /> */
 	put_option(cbp.project, "compiler", emake_cmd.compiler_type);
+	+/
 
 	foreach (file_name; emake_cmd.file_name_list)
 	{
