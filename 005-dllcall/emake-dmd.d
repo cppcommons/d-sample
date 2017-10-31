@@ -146,17 +146,14 @@ int main(string[] args)
 	case "generate":
 		break;
 	case "edit":
-		string[] cb_command = ["codeblocks", //"/na", "/nd",
-			emake_cmd.project_file_name ~ ".cbp"];
+		string[] cb_command = ["codeblocks", emake_cmd.project_file_name ~ ".cbp"];
 		writeln(cb_command);
 		execute(cb_command);
 		break;
 	case "build", "run":
 		string[] cb_command = [
-			"codeblocks", //"/na", "/nd",
-			format!"--target=%s"(emake_cmd.command_type[1] == "release"
-				? "Release" : "Debug"), //"--target=Release",
-			"--build", emake_cmd.project_file_name ~ ".cbp"
+			"codeblocks", "--build", format!"--target=%s"(emake_cmd.command_type[1] == "release"
+				? "Release" : "Debug"), emake_cmd.project_file_name ~ ".cbp"
 		];
 		writeln(cb_command);
 		auto ret = execute(cb_command);
