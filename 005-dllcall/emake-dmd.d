@@ -13,64 +13,6 @@ import std.xml;
 import std.string;
 import std.array : split;
 
-private void put_build_target(ref Element elem, Target record)
-{
-    /* <Target title="Debug"> */
-    auto target = new Element("Target");
-    elem ~= target;
-    target.tag.attr["title"] = record.title;
-    auto opt = new Element("Option");
-    target ~= opt;
-    opt.tag.attr["output"] = record.output;
-    opt.tag.attr["prefix_auto"] = "1";
-    opt.tag.attr["extension_auto"] = "1";
-    opt = new Element("Option");
-    target ~= opt;
-    opt.tag.attr["object_output"] = record.object_output;
-    opt = new Element("Option");
-    target ~= opt;
-    opt.tag.attr["type"] = record.type;
-    opt = new Element("Option");
-    target ~= opt;
-    opt.tag.attr["compiler"] = record.compiler;
-    if (record.debug_arguments.length > 0)
-    {
-        opt = new Element("Option");
-        target ~= opt;
-        opt.tag.attr["parameters"] = record.debug_arguments.join(" ");
-    }
-    if (record.compiler_options.length > 0 || record.import_dir_list.length > 0)
-    {
-        auto compiler = new Element("Compiler");
-        target ~= compiler;
-        foreach (compiler_option; record.compiler_options)
-        {
-            auto add = new Element("Add");
-            compiler ~= add;
-            add.tag.attr["option"] = compiler_option;
-        }
-        foreach (import_dir; record.import_dir_list)
-        {
-            auto add = new Element("Add");
-            compiler ~= add;
-            // <Add directory="../../d-lib" />
-            add.tag.attr["directory"] = import_dir;
-        }
-    }
-    if (record.lib_file_list.length > 0)
-    {
-        auto linker = new Element("Linker");
-        target ~= linker;
-        foreach (lib_file; record.lib_file_list)
-        {
-            auto add = new Element("Add");
-            linker ~= add;
-            // <Add library="../../d-lib/pegged-dm32.lib"
-            add.tag.attr["library"] = lib_file;
-        }
-    }
-}
-
 int main(string[] args)
 {
     ////writeln(args.length);
