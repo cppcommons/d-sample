@@ -73,3 +73,41 @@ void register_build_target(Element elem, Target record)
 		}
 	}
 }
+
+void put_build_target(Element elem, EmakeCommand emake_cmd, string target_title,
+		string output, string object_output, string[] compiler_options)
+{
+	Target target;
+	target.title = target_title;
+	target.output = output;
+	target.object_output = object_output;
+	target.type = get_build_type_number(emake_cmd.project_file_ext);
+	target.compiler = emake_cmd.compiler_type;
+	target.compiler_options = compiler_options;
+	target.import_dir_list = emake_cmd.import_dir_list;
+	target.lib_file_list = emake_cmd.lib_file_list;
+	target.debug_arguments = emake_cmd.debug_arguments;
+	elem.register_build_target(target);
+}
+
+private string get_build_type_number(string ext)
+{
+	import std.stdio : writefln;
+	writefln("get_build_type_number(): ext=%s", ext);
+	string number = "";
+	switch (ext)
+	{
+	case ".exe":
+		number = "1";
+		break;
+	case ".lib":
+		number = "2";
+		break;
+	case ".dll":
+		number = "3";
+		break;
+	default:
+		break;
+	}
+	return number;
+}
