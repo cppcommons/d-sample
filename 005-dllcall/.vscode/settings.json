@@ -1,27 +1,28 @@
 {
-    "files.associations": {
-      "xmemory": "cpp",
-      "streambuf": "c"
-    },
-    "terminal.integrated.shell.windows": "C:\\Windows\\System32\\cmd.exe",
-    "terminal.integrated.fontSize": 20,
-    "editor.fontSize": 20,
-    "editor.detectIndentation": false,
-    "editor.tabSize": 4,
-    "editor.insertSpaces": true,
-    "editor.renderWhitespace": "all",
-    "editor.wordWrap": "on",
-    "[javascript]": {
-      "editor.tabSize": 2
-    },
-    "[json]": {
-      "editor.tabSize": 2
-    },
-    "[d]": {
-      "editor.tabSize": 4
-    },
-    "terminal.integrated.env.windows": {
-      "GOOS": "windows", "GOARCH": "386",
-      "PATH": "c:\\go\\bin;E:\\opt\\bin32;C:\\Windows\\system32;C:\\Program Files\\Microsoft VS Code\\bin;C:\\D\\dmd2\\windows\\bin;e:\\opt\\opt.m32\\mingw32\\qt5-static\\bin;e:\\opt\\opt.m32\\mingw32\\bin;e:\\opt\\opt.m32\\usr\\bin;E:\\opt\\cmake-3.9.4-win64-x64\\bin;E:/opt/codeblocks-16.01-nosetup;C:/Program Files/CodeLite;E:\\opt\\coedit.3update4.win32;E:\\d-dev\\1022.cmder\\vendor\\git-for-windows\\bin;C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin"
-    }
+	"files.associations": {
+		"xmemory": "cpp",
+		"streambuf": "c"
+	},
+	"terminal.integrated.shell.windows": "C:\\Windows\\System32\\cmd.exe",
+	"terminal.integrated.fontSize": 20,
+	"editor.fontSize": 20,
+	"editor.detectIndentation": false,
+	"editor.tabSize": 4,
+	"editor.insertSpaces": false,
+	"editor.renderWhitespace": "all",
+	"editor.wordWrap": "on",
+	"[javascript]": {
+		"editor.tabSize": 2
+	},
+	"[json]": {
+		"editor.tabSize": 2
+	},
+	"[d]": {
+		"editor.tabSize": 4
+	},
+	"terminal.integrated.env.windows": {
+		"GOOS": "windows",
+		"GOARCH": "386",
+		"PATH": "c:\\go\\bin;E:\\opt\\bin32;C:\\Windows\\system32;C:\\Program Files\\Microsoft VS Code\\bin;C:\\D\\dmd2\\windows\\bin;e:\\opt\\opt.m32\\mingw32\\qt5-static\\bin;e:\\opt\\opt.m32\\mingw32\\bin;e:\\opt\\opt.m32\\usr\\bin;E:\\opt\\cmake-3.9.4-win64-x64\\bin;E:/opt/codeblocks-16.01-nosetup;C:/Program Files/CodeLite;E:\\opt\\coedit.3update4.win32;E:\\d-dev\\1022.cmder\\vendor\\git-for-windows\\bin;C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin"
+	}
 }
