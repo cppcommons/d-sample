@@ -1,4 +1,7 @@
 dub.json
+*.exe.cbp
+*.dll.cbp
+*.lib.cbp
 *.selections
 *.save-failed
 _*

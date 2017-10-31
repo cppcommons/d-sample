@@ -1,4 +1,7 @@
 module main;
+import emake_common;
+import emake_common_codeblocks;
+
 import std.algorithm : startsWith, endsWith;
 import std.file : copy, setTimes, FileException, PreserveAttributes;
 import std.path : baseName, extension;
@@ -9,21 +12,6 @@ import std.datetime.systime : Clock;
 import std.xml;
 import std.string;
 import std.array : split;
-
-import emake_common;
-
-private struct Target
-{
-    string title;
-    string output;
-    string object_output;
-    string type;
-    string compiler;
-    string[] compiler_options;
-    string[] import_dir_list;
-    string[] lib_file_list;
-    string[] debug_arguments;
-}
 
 private void put_build_target(ref Element elem, Target record)
 {
