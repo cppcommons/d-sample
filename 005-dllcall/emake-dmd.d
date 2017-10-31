@@ -43,6 +43,9 @@ class CodeblocksProject
 			this.project ~= unit;
 			unit.tag.attr["filename"] = file_name;
 		}
+		/* <Build> */
+		this.build = new Element("Build");
+		this.project ~= this.build;
 	}
 
 	~this()
@@ -72,23 +75,15 @@ int main(string[] args)
 	auto cbp = new CodeblocksProject(emake_cmd);
 
 	/+
-	foreach (file_name; emake_cmd.file_name_list)
-	{
-		/* <Unit filename="emake-dmd.d" /> */
-		auto unit = new Element("Unit");
-		cbp.project ~= unit;
-		unit.tag.attr["filename"] = file_name;
-	}
-	+/
-
 	/* <Build> */
 	auto build = new Element("Build");
 	cbp.project ~= build;
+	+/
 
-	put_build_target(build, emake_cmd, "Debug", emake_cmd.exe_base_name ~ "_d",
+	put_build_target(cbp.build, emake_cmd, "Debug", emake_cmd.exe_base_name ~ "_d",
 			emake_cmd.project_file_name ~ ".bin/dmd-obj/Debug/", ["-g", "-debug"]);
 
-	put_build_target(build, emake_cmd, "Release", emake_cmd.exe_base_name,
+	put_build_target(cbp.build, emake_cmd, "Release", emake_cmd.exe_base_name,
 			emake_cmd.project_file_name ~ ".bin/dmd-obj/Release/", ["-O"]);
 
 	cbp.save_to_file(emake_cmd.project_file_name ~ ".cbp");
