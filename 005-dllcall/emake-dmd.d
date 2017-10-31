@@ -66,6 +66,8 @@ class CodeblocksProject
 
 int main(string[] args)
 {
+	import std.format : format;
+
 	////writeln(args.length);
 	auto emake_cmd = new EmakeCommand("dmd", args);
 	if (!emake_cmd.isValid())
@@ -87,6 +89,14 @@ int main(string[] args)
 	put_option(project, "title", emake_cmd.project_file_name);
 	/* <Option compiler="dmd" /> */
 	put_option(project, "compiler", emake_cmd.compiler_type);
+
+	foreach (file_name; emake_cmd.file_name_list)
+	{
+		/* <Unit filename="emake-dmd.d" /> */
+		auto unit = new Element("Unit");
+		project ~= unit;
+		unit.tag.attr["filename"] = file_name;
+	}
 
 	/* <Build> */
 	auto build = new Element("Build");
@@ -114,6 +124,7 @@ int main(string[] args)
 	put_build_target(build, "Release", emake_cmd.exe_base_name,
 			emake_cmd.project_file_name ~ ".bin/dmd-obj/Release/", ["-O"]);
 
+	/+
 	foreach (file_name; emake_cmd.file_name_list)
 	{
 		/* <Unit filename="emake-dmd.d" /> */
@@ -121,6 +132,7 @@ int main(string[] args)
 		project ~= unit;
 		unit.tag.attr["filename"] = file_name;
 	}
+	+/
 
 	// Pretty-print
 	//writefln(join(doc.pretty(4), "\n"));
@@ -142,7 +154,9 @@ int main(string[] args)
 	case "build", "run":
 		string[] cb_command = [
 			"codeblocks", //"/na", "/nd",
-			"--target=Release", "--build", emake_cmd.project_file_name ~ ".cbp"
+			format!"--target=%s"(emake_cmd.command_type[1] == "release"
+				? "Release" : "Debug"), //"--target=Release",
+			"--build", emake_cmd.project_file_name ~ ".cbp"
 		];
 		writeln(cb_command);
 		auto ret = execute(cb_command);

@@ -64,8 +64,17 @@ class EmakeCommand
 
 	bool check_command_type()
 	{
+		import std.uni: toLower;
 		string header = this.args[0];
 		string[] header_parse = header.split("=");
+		for (int i=0; i<header_parse.length; i++)
+		{
+			header_parse[i] = toLower(header_parse[i]);
+		}
+		if (header_parse.length<2)
+		{
+			header_parse ~= "release";
+		}
 		switch (header_parse[0])
 		{
 		case "generate", "-":
