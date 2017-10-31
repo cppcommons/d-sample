@@ -92,39 +92,27 @@ int main(string[] args)
 	auto build = new Element("Build");
 	project ~= build;
 
-	void put_build_target(Element elem, string target_title, string output, // = emake_cmd.exe_base_name ~ "_d";
-			string object_output, // = emake_cmd.project_file_name ~ ".bin/dmd-obj/Debug/";
-			string[] compiler_options // = ["-g", "-debug"];
-	)
+	void put_build_target(Element elem, string target_title, string output,
+			string object_output, string[] compiler_options)
 	{
-
+		Target target;
+		target.title = target_title;
+		target.output = output;
+		target.object_output = object_output;
+		target.type = get_build_type_number(emake_cmd.project_file_ext);
+		target.compiler = emake_cmd.compiler_type;
+		target.compiler_options = compiler_options;
+		target.import_dir_list = emake_cmd.import_dir_list;
+		target.lib_file_list = emake_cmd.lib_file_list;
+		target.debug_arguments = emake_cmd.debug_arguments;
+		elem.register_build_target(target);
 	}
 
-	Target targetDebug;
-	targetDebug.title = "Debug";
-	//targetDebug.output = emake_cmd.project_file_name ~ ".bin/" ~ emake_cmd.exe_base_name ~ "_d";
-	targetDebug.output = emake_cmd.exe_base_name ~ "_d";
-	targetDebug.object_output = emake_cmd.project_file_name ~ ".bin/dmd-obj/Debug/";
-	targetDebug.type = get_build_type_number(emake_cmd.project_file_ext);
-	targetDebug.compiler = emake_cmd.compiler_type;
-	targetDebug.compiler_options = ["-g", "-debug"];
-	targetDebug.import_dir_list = emake_cmd.import_dir_list;
-	targetDebug.lib_file_list = emake_cmd.lib_file_list;
-	targetDebug.debug_arguments = emake_cmd.debug_arguments;
-	build.register_build_target(targetDebug);
+	put_build_target(build, "Debug", emake_cmd.exe_base_name ~ "_d",
+			emake_cmd.project_file_name ~ ".bin/dmd-obj/Debug/", ["-g", "-debug"]);
 
-	Target targetRelease;
-	targetRelease.title = "Release";
-	//targetRelease.output = emake_cmd.project_file_name ~ ".bin/" ~ emake_cmd.exe_base_name ~ "_r";
-	targetRelease.output = emake_cmd.exe_base_name;
-	targetRelease.object_output = emake_cmd.project_file_name ~ ".bin/dmd-obj/Release/";
-	targetRelease.type = get_build_type_number(emake_cmd.project_file_ext);
-	targetRelease.compiler = emake_cmd.compiler_type;
-	targetRelease.compiler_options = ["-O"];
-	targetRelease.import_dir_list = emake_cmd.import_dir_list;
-	targetRelease.lib_file_list = emake_cmd.lib_file_list;
-	targetRelease.debug_arguments = emake_cmd.debug_arguments;
-	build.register_build_target(targetRelease);
+	put_build_target(build, "Release", emake_cmd.exe_base_name,
+			emake_cmd.project_file_name ~ ".bin/dmd-obj/Release/", ["-O"]);
 
 	foreach (file_name; emake_cmd.file_name_list)
 	{
