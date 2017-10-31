@@ -17,6 +17,8 @@ class CodeblocksProject
 {
 	EmakeCommand emake_cmd;
 	Document doc;
+	Element project;
+	Element build;
 
 	this(EmakeCommand emake_cmd)
 	{
@@ -28,6 +30,9 @@ class CodeblocksProject
 		this.doc ~= fileVersion;
 		fileVersion.tag.attr["major"] = "1";
 		fileVersion.tag.attr["minor"] = "6";
+		/* <Project> */
+		this.project = new Element("Project");
+		this.doc ~= this.project;
 	}
 
 	~this()
@@ -58,28 +63,30 @@ int main(string[] args)
 	//file1.writeln(`<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>`);
 
 	auto cbp = new CodeblocksProject(emake_cmd);
+	/+
 	/* <Project> */
 	auto project = new Element("Project");
 	cbp.doc ~= project;
-	/* <Option title="emake-dmd" /> */
+	+/
 
+	/* <Option title="emake-dmd" /> */
 	//put_option(project, "title", exe_base_name);
 	writeln("emake_cmd.project_file_name=", emake_cmd.project_file_name);
-	put_option(project, "title", emake_cmd.project_file_name);
+	put_option(cbp.project, "title", emake_cmd.project_file_name);
 	/* <Option compiler="dmd" /> */
-	put_option(project, "compiler", emake_cmd.compiler_type);
+	put_option(cbp.project, "compiler", emake_cmd.compiler_type);
 
 	foreach (file_name; emake_cmd.file_name_list)
 	{
 		/* <Unit filename="emake-dmd.d" /> */
 		auto unit = new Element("Unit");
-		project ~= unit;
+		cbp.project ~= unit;
 		unit.tag.attr["filename"] = file_name;
 	}
 
 	/* <Build> */
 	auto build = new Element("Build");
-	project ~= build;
+	cbp.project ~= build;
 
 	put_build_target(build, emake_cmd, "Debug", emake_cmd.exe_base_name ~ "_d",
 			emake_cmd.project_file_name ~ ".bin/dmd-obj/Debug/", ["-g", "-debug"]);
