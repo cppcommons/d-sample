@@ -33,7 +33,7 @@ int main(string[] args)
 		//else
 		//	x = to!int(code.str);
 		writeln(`jsonObj["name"]=`, jsonObj["name"]);
-		
+
 	}
 	if (const(JSONValue)* nameX = "nameX" in jsonObj)
 	{
@@ -43,19 +43,24 @@ int main(string[] args)
 		//	x = to!int(code.str);
 		writeln(`jsonObj["nameX"]=`, jsonObj["nameX"]);
 	}
-	if (const(JSONValue)* sourceFiles = "sourceFiles" in jsonObj)
+	//if (const(JSONValue)* sourceFiles = "sourceFiles" in jsonObj)
+	if (JSONValue* sourceFiles = cast(JSONValue*)("sourceFiles" in jsonObj))
 	{
 		if (sourceFiles.type() == JSON_TYPE.ARRAY)
 		{
-			auto sourceFilesArray = sourceFiles.array;
-			for (int i=0; i<sourceFilesArray.length; i++)
+			//JSONValue[] *sourceFilesArray = &(sourceFiles.array);
+			for (int i=0; i<sourceFiles.array.length; i++)
 			{
-				auto val = sourceFilesArray[i];
+				auto val = sourceFiles.array[i];
 				if (val.type() != JSON_TYPE.STRING) continue;
 				string abs_path = val.str;
 				if (!isAbsolute(abs_path)) abs_path = absolutePath(abs_path);
 				abs_path = abs_path.replace("\\", "/");
 				writefln("%d: %s", i, abs_path);
+				sourceFiles.array[i] = JSONValue(abs_path);
+				//JSONValue[] x;
+				//sourceFiles.array = x;
+				//sourceFiles.array ~= JSONValue(abs_path);
 			}
 		}
 		//if (code.type() == JSON_TYPE.INTEGER)
@@ -63,7 +68,7 @@ int main(string[] args)
 		//else
 		//	x = to!int(code.str);
 		writeln(`jsonObj["sourceFiles"]=`, jsonObj["sourceFiles"]);
-		
+
 	}
 	//writeln(jsonObj["name"]);
 	//writeln(jsonObj["nameX"]);
