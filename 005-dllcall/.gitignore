@@ -4,6 +4,8 @@ dub.json
 *.lib.cbp
 *.selections
 *.save-failed
+/dlangui-*
+*.src
 _*
 *___*
 Makefile*
