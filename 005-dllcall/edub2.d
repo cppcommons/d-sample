@@ -78,6 +78,8 @@ int main(string[] args)
 	jsonObj["name"] = "dummy-name";
 	jsonObj["testArray"] = JSONValue(["A", "B", "C"]);
 	jsonObj["subConfigurations"]["d2sqlite3"] = JSONValue(["A", "B", "C"]);
+	jsonObj["000-name"] = jsonObj["name"];
+	jsonObj.object.remove("name");
 	//auto jsonText2 = toJSON(jsonObj);
 	auto jsonText2 = jsonObj.toPrettyString();
 	writeln(jsonText2);
