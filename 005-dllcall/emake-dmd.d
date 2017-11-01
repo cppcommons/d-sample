@@ -65,6 +65,35 @@ class CodeblocksProject
 		file1.write(join(this.doc.pretty(4), "\n"));
 		file1.close();
 	}
+
+	void exec_edit(string cbp_path)
+	{
+		string[] cb_command = ["codeblocks", cbp_path];
+		writeln(cb_command);
+		execute(cb_command);
+	}
+
+	int exec_build(string cbp_path, string[] command_type)
+	{
+		string[] cb_command = [
+			"codeblocks", "--build", format!"--target=%s"(command_type[1] == "release"
+				? "Release" : "Debug"), cbp_path
+		];
+		writeln(cb_command);
+		auto ret = execute(cb_command);
+		writeln(ret.output);
+		if (ret.status != 0)
+		{
+			writeln("Build Failed!");
+			exec_edit(cbp_path);
+			//cb_command = ["codeblocks", emake_cmd.project_file_name ~ ".cbp"];
+			//writeln(cb_command);
+			//execute(cb_command);
+			return ret.status;
+		}
+		writeln("Build Successful!");
+		return 0;
+	}
 }
 
 int main(string[] args)
@@ -92,27 +121,11 @@ int main(string[] args)
 	case "generate":
 		break;
 	case "edit":
-		string[] cb_command = ["codeblocks", emake_cmd.project_file_name ~ ".cbp"];
-		writeln(cb_command);
-		execute(cb_command);
+		cbp.exec_edit(emake_cmd.project_file_name ~ ".cbp");
 		break;
 	case "build", "run":
-		string[] cb_command = [
-			"codeblocks", "--build", format!"--target=%s"(emake_cmd.command_type[1] == "release"
-				? "Release" : "Debug"), emake_cmd.project_file_name ~ ".cbp"
-		];
-		writeln(cb_command);
-		auto ret = execute(cb_command);
-		writeln(ret.output);
-		if (ret.status != 0)
-		{
-			writeln("Build Failed!");
-			cb_command = ["codeblocks", emake_cmd.project_file_name ~ ".cbp"];
-			writeln(cb_command);
-			execute(cb_command);
-			return ret.status;
-		}
-		writeln("Build Successful!");
+		return cbp.exec_build(emake_cmd.project_file_name ~ ".cbp",
+				emake_cmd.command_type);
 		break;
 	default:
 		break;

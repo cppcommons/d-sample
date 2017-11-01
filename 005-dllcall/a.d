@@ -1,8 +1,10 @@
-void main()
+void main(string[] args)
 {
     import core.stdc.stdio;
     import core.thread;
     import std.stdio : writeln;
+
+    writeln(args);
 
     int i, j;
     int times = 1000;
