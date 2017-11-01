@@ -72,6 +72,7 @@ int main(string[] args)
 		writeln(`jsonObj["sourceFiles"]=`, jsonObj["sourceFiles"]);
 
 	}
+	writeln(jsonObj.object.keys);
 	//writeln(jsonObj["name"]);
 	//writeln(jsonObj["nameX"]);
 	jsonObj["name"] = "dummy-name";
