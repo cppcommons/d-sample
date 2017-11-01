@@ -49,12 +49,14 @@ int main(string[] args)
 		if (sourceFiles.type() == JSON_TYPE.ARRAY)
 		{
 			//JSONValue[] *sourceFilesArray = &(sourceFiles.array);
-			for (int i=0; i<sourceFiles.array.length; i++)
+			for (int i = 0; i < sourceFiles.array.length; i++)
 			{
 				auto val = sourceFiles.array[i];
-				if (val.type() != JSON_TYPE.STRING) continue;
+				if (val.type() != JSON_TYPE.STRING)
+					continue;
 				string abs_path = val.str;
-				if (!isAbsolute(abs_path)) abs_path = absolutePath(abs_path);
+				if (!isAbsolute(abs_path))
+					abs_path = absolutePath(abs_path);
 				abs_path = abs_path.replace("\\", "/");
 				writefln("%d: %s", i, abs_path);
 				sourceFiles.array[i] = JSONValue(abs_path);
@@ -73,6 +75,8 @@ int main(string[] args)
 	//writeln(jsonObj["name"]);
 	//writeln(jsonObj["nameX"]);
 	jsonObj["name"] = "dummy-name";
+	jsonObj["testArray"] = JSONValue(["A", "B", "C"]);
+	jsonObj["subConfigurations"]["d2sqlite3"] = JSONValue(["A", "B", "C"]);
 	//auto jsonText2 = toJSON(jsonObj);
 	auto jsonText2 = jsonObj.toPrettyString();
 	writeln(jsonText2);
