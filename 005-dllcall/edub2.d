@@ -82,6 +82,10 @@ int main(string[] args)
 	//jsonObj["[GUID]000-name"] = jsonObj["name"];
 	//jsonObj.object.remove("name");
 	int[string] dict = ["name" : 1, "targetName" : 2];
+	//UUID id = sha1UUID("edub");
+	//writeln("id=", id.toString);
+	string uuid = sha1UUID("edub").toString;
+	writeln("uuid=", uuid);
 	JSONValue jj = ["language" : "D"];
 	foreach (pair; jsonObj.object.byKeyValue)
 	{
@@ -89,16 +93,16 @@ int main(string[] args)
 		int *found = pair.key in dict;
 		if (found)
 		{
-			jj[format!"<GUID-%05d>"(*found)~pair.key] = pair.value;
+			//jj[format!"<GUID-%05d>"(*found)~pair.key] = pair.value;
+			jj[format!`<%05d-%s>`(*found, uuid)~pair.key] = pair.value;
 			continue;
 		}
 		jj[pair.key] = pair.value;
 	}
 	//auto jsonText2 = jsonObj.toPrettyString();
 	auto jsonText2 = jj.toPrettyString();
-	UUID id = sha1UUID("edub");
-	writeln("id=", id.toString);
-	auto re = regex(r"(<GUID-(\d)+>)","g");
+	//auto re = regex(r"(<GUID-(\d)+>)","g");
+	auto re = regex(format!`<(\d)+-%s>`(uuid), "g");
 	jsonText2 = replaceAll(jsonText2, re, "");
 	writeln(jsonText2);
 	File file1 = File(project_file_name ~ ".json", "w");
