@@ -75,13 +75,11 @@ int main(string[] args)
 
 	}
 	writeln(jsonObj.object.keys);
-	//writeln(jsonObj["name"]);
-	//writeln(jsonObj["nameX"]);
 	jsonObj["name"] = "dummy-name";
 	jsonObj["testArray"] = JSONValue(["A", "B", "C"]);
 	jsonObj["subConfigurations"]["d2sqlite3"] = JSONValue(["A", "B", "C"]);
-	jsonObj["[GUID]000-name"] = jsonObj["name"];
-	jsonObj.object.remove("name");
+	//jsonObj["[GUID]000-name"] = jsonObj["name"];
+	//jsonObj.object.remove("name");
 	int[string] dict = ["name" : 1, "targetName" : 2];
 	JSONValue jj = ["language" : "D"];
 	foreach (pair; jsonObj.object.byKeyValue)
@@ -90,7 +88,7 @@ int main(string[] args)
 		int *found = pair.key in dict;
 		if (found)
 		{
-			jj[format!"GUID-%05d-"(*found)~pair.key] = pair.value;
+			jj[format!"<GUID-%05d>"(*found)~pair.key] = pair.value;
 			continue;
 		}
 		jj[pair.key] = pair.value;
@@ -99,7 +97,7 @@ int main(string[] args)
 	//auto jsonText2 = jsonObj.toPrettyString();
 	auto jsonText2 = jj.toPrettyString();
 	jsonText2 = jsonText2.replace("[GUID]000-", "");
-	auto re = regex(r"(GUID-(\d)+-)","g");
+	auto re = regex(r"(<GUID-(\d)+>)","g");
 	//writeln(replaceAll("12000 + 42100 = 54100", re, ","))
 	jsonText2 = replaceAll(jsonText2, re, "");
 	writeln(jsonText2);
