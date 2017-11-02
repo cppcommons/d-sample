@@ -3,9 +3,11 @@ import std.algorithm : startsWith, endsWith;
 import std.array : replace;
 import std.file : copy, exists, read, rename, remove, setTimes, write,
 	FileException, PreserveAttributes;
+import std.format : format;
 import std.json;
 import std.path : absolutePath, baseName, extension, isAbsolute;
 import std.process : execute, executeShell;
+import std.regex : regex, replaceAll;
 import std.stdio : writefln, writeln, File;
 import std.typecons : Yes, No;
 import std.datetime.systime : Clock;
@@ -78,10 +80,28 @@ int main(string[] args)
 	jsonObj["name"] = "dummy-name";
 	jsonObj["testArray"] = JSONValue(["A", "B", "C"]);
 	jsonObj["subConfigurations"]["d2sqlite3"] = JSONValue(["A", "B", "C"]);
-	jsonObj["000-name"] = jsonObj["name"];
+	jsonObj["[GUID]000-name"] = jsonObj["name"];
 	jsonObj.object.remove("name");
+	int[string] dict = ["name" : 1, "targetName" : 2];
+	JSONValue jj = ["language" : "D"];
+	foreach (pair; jsonObj.object.byKeyValue)
+	{
+		writeln(pair.key, ": ", pair.value);
+		int *found = pair.key in dict;
+		if (found)
+		{
+			jj[format!"GUID-%05d-"(*found)~pair.key] = pair.value;
+			continue;
+		}
+		jj[pair.key] = pair.value;
+	}
 	//auto jsonText2 = toJSON(jsonObj);
-	auto jsonText2 = jsonObj.toPrettyString();
+	//auto jsonText2 = jsonObj.toPrettyString();
+	auto jsonText2 = jj.toPrettyString();
+	jsonText2 = jsonText2.replace("[GUID]000-", "");
+	auto re = regex(r"(GUID-(\d)+-)","g");
+	//writeln(replaceAll("12000 + 42100 = 54100", re, ","))
+	jsonText2 = replaceAll(jsonText2, re, "");
 	writeln(jsonText2);
 	File file1 = File(project_file_name ~ ".json", "w");
 	file1.write(jsonText2);
