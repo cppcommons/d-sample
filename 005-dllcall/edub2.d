@@ -12,6 +12,7 @@ import std.stdio : writefln, writeln, File;
 import std.typecons : Yes, No;
 import std.datetime.systime : Clock;
 import std.process : pipeProcess, wait, Redirect;
+import std.uuid : sha1UUID, UUID;
 
 import emake_common : emake_run_command;
 
@@ -93,12 +94,11 @@ int main(string[] args)
 		}
 		jj[pair.key] = pair.value;
 	}
-	//auto jsonText2 = toJSON(jsonObj);
 	//auto jsonText2 = jsonObj.toPrettyString();
 	auto jsonText2 = jj.toPrettyString();
-	jsonText2 = jsonText2.replace("[GUID]000-", "");
+	UUID id = sha1UUID("edub");
+	writeln("id=", id.toString);
 	auto re = regex(r"(<GUID-(\d)+>)","g");
-	//writeln(replaceAll("12000 + 42100 = 54100", re, ","))
 	jsonText2 = replaceAll(jsonText2, re, "");
 	writeln(jsonText2);
 	File file1 = File(project_file_name ~ ".json", "w");
