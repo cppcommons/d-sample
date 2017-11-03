@@ -205,10 +205,16 @@ private void handle_exe_output(string[] args)
 	}
 
 	_PackageSpec[] packages;
+	string uuid = sha1UUID("edub").toString;
+	uuid = format!`{%s}`(uuid);
 	while (args.length)
 	{
 		string arg = pop(args).strip;
 		writefln(`arg="%s"`, arg);
+		if (arg.startsWith(`[`))
+		{
+			arg = arg.replace("{:}", uuid);
+		}
 		auto re = regex(`^\[([^:]+)(:[^:]+)?(:[^:]+)?\]$`);
 		auto m = matchFirst(arg, re);
 		if (m)
@@ -216,9 +222,9 @@ private void handle_exe_output(string[] args)
 			writeln(`match!`);
 			writefln(`match="%s" "%s" "%s"`, m[1], m[2], m[3]);
 			_PackageSpec spec;
-			spec._name = m[1];
-			spec._version = m[2].empty ? "~master" : m[2];
-			spec._sub_config = m[3];
+			spec._name = m[1].replace(uuid, `:`);
+			spec._version = m[2].empty ? "~master" : m[2].replace(uuid, `:`);
+			spec._sub_config = m[3].replace(uuid, `:`);
 			packages ~= spec;
 		}
 		else if (arg.startsWith(`resource=`))
@@ -359,6 +365,7 @@ int main(string[] args)
 	{
 		dub_cmdline ~= args[i];
 	}
+	/+
 	if (dub_cmdline.length >= 2 && dub_cmdline[1] == "generate")
 	{
 		chdir(folder_name);
@@ -366,6 +373,7 @@ int main(string[] args)
 		int rc = emake_run_command(dub_cmdline);
 		return rc;
 	}
+	+/
 	dub_cmdline ~= format!`--root=%s`(folder_name);
 	writeln(dub_cmdline);
 	int rc = emake_run_command(dub_cmdline);
