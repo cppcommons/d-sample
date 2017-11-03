@@ -12,6 +12,7 @@ import std.stdio : writefln, writeln, File;
 import std.typecons : Yes, No;
 import std.datetime.systime : Clock;
 import std.process : pipeProcess, wait, Redirect;
+import std.uni : toLower;
 import std.uuid : sha1UUID, UUID;
 
 //import emake_common : emake_run_command;
@@ -27,7 +28,9 @@ private void exit(int code)
 
 class EDubContext
 {
-	string cwd;
+	string fullPath;
+	string dirName;
+	string baseName;
 	string[] path_keyword_list = [
 		"targetPath", "sourceFiles", "sourcePaths", "excludedSourceFiles",
 		"mainSourceFile", "copyFiles", "importPaths", "stringImportPaths"
@@ -44,9 +47,9 @@ private string make_abs_path(string path)
 	switch (path)
 	{
 	case `.`, `./`, `.\`:
-		return g_context.cwd;
+		return g_context.dirName;
 	default:
-		return absolutePath(path, g_context.cwd).replace(`\`, `/`);
+		return absolutePath(path, g_context.dirName).replace(`\`, `/`);
 	}
 }
 
@@ -160,12 +163,26 @@ int main(string[] args)
 		writefln("Usage: edub2 PROJECT.json [build/run]");
 		return 1;
 	}
-	string project_file_name = args[1];
-	project_file_name = absolutePath(project_file_name, getcwd()).replace(`\`, `/`);
-	writefln(`project_file_name=%s`, project_file_name);
-	g_context.cwd = dirName(project_file_name);
-	writefln(`g_context.cwd=%s`, g_context.cwd);
-	auto jsonText = cast(char[]) read(project_file_name);
+	//string project_file_name = args[1];
+	g_context.fullPath = absolutePath(args[1], getcwd()).replace(`\`, `/`);
+	writefln(`g_context.fullPath=%s`, g_context.fullPath);
+	g_context.dirName = dirName(g_context.fullPath);
+	writefln(`g_context.dirName=%s`, g_context.dirName);
+	g_context.baseName = baseName(g_context.fullPath);
+	writefln(`g_context.baseName=%s`, g_context.baseName);
+	string extension = extension(g_context.baseName).toLower;
+	writefln(`extension=%s`, extension);
+	switch (extension)
+	{
+	case ".exe":
+		break;
+	case ".json":
+		break;
+	default:
+		assert(0);
+		break;
+	}
+	auto jsonText = cast(char[]) read(g_context.fullPath);
 	writeln(jsonText);
 	auto jsonObj = parseJSON(jsonText);
 
@@ -193,11 +210,17 @@ int main(string[] args)
 
 	auto jsonText2 = my_json_pprint(jsonObj);
 	writeln(jsonText2);
-	auto currentTime = Clock.currTime();
-	string folder_name = format!"%s.bin"(project_file_name);
+	string folder_name = format!"%s.bin"(g_context.fullPath);
 	writeln(folder_name);
 	mkdirRecurse(folder_name);
-	setTimes(folder_name, currentTime, currentTime);
+	try
+	{
+		auto currentTime = Clock.currTime();
+		setTimes(folder_name, currentTime, currentTime);
+	}
+	catch (Exception ex)
+	{
+	}
 	string dub_json_path = folder_name ~ "/dub.json";
 	writeln(dub_json_path);
 	File file1 = File(dub_json_path, "w");
