@@ -179,6 +179,7 @@ int main(string[] args)
 	switch (g_context.extension)
 	{
 	case ".exe":
+		return 0;
 		break;
 	case ".json":
 		break;
