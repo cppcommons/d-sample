@@ -1,7 +1,7 @@
 module main;
 import std.algorithm : startsWith, endsWith;
 import std.array : split, replace;
-import std.file : copy, exists, read, rename, remove, setTimes, write,
+import std.file : copy, exists, mkdirRecurse, read, rename, remove, setTimes, write,
 	FileException, PreserveAttributes;
 import std.format : format;
 import std.json;
@@ -136,64 +136,32 @@ int main(string[] args)
 			path_array.array[i] = JSONValue(abs_path);
 		}
 	}
-	//exit(0);
 
-	version (none)
-	{
-		jsonObj["name"] = "dummy-name";
-		jsonObj["testArray"] = JSONValue(["A", "B", "C"]);
-		jsonObj["subConfigurations"]["d2sqlite3"] = JSONValue(["A", "B", "C"]);
-	}
 	auto jsonText2 = my_json_pprint(jsonObj);
 	writeln(jsonText2);
-	File file1 = File(project_file_name ~ ".json", "w");
+	auto currentTime = Clock.currTime();
+	string folder_name = format!"%s.bin"(project_file_name);
+	writeln(folder_name);
+	mkdirRecurse(folder_name);
+	setTimes(folder_name, currentTime, currentTime);
+	string dub_json_path = folder_name ~ "/dub.json";
+	writeln(dub_json_path);
+	File file1 = File(dub_json_path, "w");
 	file1.write(jsonText2);
 	file1.close();
-	return 0;
-	try
-	{
-		copy(project_file_name, "dub.json", Yes.preserveAttributes);
-		auto currentTime = Clock.currTime();
-		setTimes("dub.json", currentTime, currentTime);
-		writefln("Copy successful: %s ==> dub.json", project_file_name);
-	}
-	catch (FileException ex)
-	{
-		writefln("Copy failure: %s", project_file_name);
-		return 1;
-	}
-	try
-	{
-		if (exists("dub.selections.json"))
-			remove("dub.selections.json");
-	}
-	catch (FileException ex)
-	{
-		//writefln("Remove failure: dub.selections.json", project_file_name);
-	}
-	if (args.length == 2)
-	{
-		return 0;
-	}
+	//return 0;
 	string[] dub_cmdline;
 	dub_cmdline ~= "dub";
 	for (int i = 2; i < args.length; i++)
 	{
 		dub_cmdline ~= args[i];
 	}
+	dub_cmdline ~= format!`--root=%s`(folder_name);
 	writeln(dub_cmdline);
 	int rc = emake_run_command(dub_cmdline);
 	//auto pipes = pipeProcess(dub_cmdline, Redirect.stdout | Redirect.stderr);
 	//foreach (line; pipes.stdout.byLine)
 	//    writeln(line);
 	//int rc = wait(pipes.pid);
-	try
-	{
-		if (exists("dub.selections.json"))
-			rename("dub.selections.json", project_file_name ~ ".selections");
-	}
-	catch (FileException ex)
-	{
-	}
 	return rc;
 }
