@@ -1,8 +1,8 @@
 module main;
 import std.algorithm : canFind, startsWith, endsWith;
 import std.array : split, replace;
-import std.file : copy, exists, mkdirRecurse, read, rename, remove, setTimes,
-	write, FileException, PreserveAttributes;
+import std.file : copy, exists, getcwd, mkdirRecurse, read, rename, remove,
+	setTimes, write, FileException, PreserveAttributes;
 import std.format : format;
 import std.json;
 import std.path : absolutePath, baseName, extension, isAbsolute;
@@ -14,7 +14,7 @@ import std.datetime.systime : Clock;
 import std.process : pipeProcess, wait, Redirect;
 import std.uuid : sha1UUID, UUID;
 
-import emake_common : emake_run_command;
+//import emake_common : emake_run_command;
 
 private void exit(int code)
 {
@@ -23,6 +23,15 @@ private void exit(int code)
 	writeln("before exit()");
 	std.c.stdlib.exit(0);
 	writeln("after exit()");
+}
+
+private int emake_run_command(string[] dub_cmdline)
+{
+	auto pipes = pipeProcess(dub_cmdline, Redirect.stdout | Redirect.stderrToStdout);
+	foreach (line; pipes.stdout.byLine)
+		writeln(line);
+	int rc = wait(pipes.pid);
+	return rc;
 }
 
 private JSONValue* get_object_array_member(JSONValue* jsonObj, string key)
@@ -36,23 +45,23 @@ private JSONValue* get_object_array_member(JSONValue* jsonObj, string key)
 private JSONValue*[] get_path_array_list(JSONValue* jsonObj)
 {
 	string[] list = [
-		"sourceFiles", "sourcePaths", "excludedSourceFiles", "mainSourceFile",
-		"copyFiles", "importPaths", "stringImportPaths"
+		"targetPath", "sourceFiles", "sourcePaths", "excludedSourceFiles",
+		"mainSourceFile", "copyFiles", "importPaths", "stringImportPaths"
 	];
 	import std.regex;
 
 	assert(jsonObj.type() == JSON_TYPE.OBJECT);
+	if (("targetType" in jsonObj.object) && !("targetPath" in jsonObj.object))
+	{
+		jsonObj.object["targetPath"] = getcwd(); //".";
+	}
 	JSONValue*[] result;
-	//auto re = regex(`^sourceFiles(-.+)?$`, "g");
 	foreach (key; jsonObj.object.keys())
 	{
 		writeln("key=", key);
-		//if (key.matchAll(re))
 		if (list.canFind(key.split("-")[0]))
 		{
-			////writeln("calling...");
 			JSONValue* array = get_object_array_member(jsonObj, key);
-			////writefln("array=0x%08x", array);
 			if (array)
 				result ~= array;
 		}
@@ -132,18 +141,13 @@ int main(string[] args)
 			path_array.str = absolutePath(path_array.str).replace("\\", "/");
 			continue;
 		}
+		assert(path_array.type == JSON_TYPE.ARRAY);
 		writeln(path_array.array.length);
 		for (int i = 0; i < path_array.array.length; i++)
 		{
 			auto val = path_array.array[i];
 			if (val.type() != JSON_TYPE.STRING)
 				continue;
-			//string abs_path = val.str;
-			//if (!isAbsolute(abs_path))
-			//	abs_path = absolutePath(abs_path);
-			//abs_path = abs_path.replace("\\", "/");
-			//writefln("%d: %s", i, abs_path);
-			//path_array.array[i] = JSONValue(abs_path);
 			path_array.array[i] = absolutePath(val.str).replace("\\", "/");
 		}
 	}
@@ -160,7 +164,6 @@ int main(string[] args)
 	File file1 = File(dub_json_path, "w");
 	file1.write(jsonText2);
 	file1.close();
-	//return 0;
 	string[] dub_cmdline;
 	dub_cmdline ~= "dub";
 	for (int i = 2; i < args.length; i++)
@@ -170,9 +173,5 @@ int main(string[] args)
 	dub_cmdline ~= format!`--root=%s`(folder_name);
 	writeln(dub_cmdline);
 	int rc = emake_run_command(dub_cmdline);
-	//auto pipes = pipeProcess(dub_cmdline, Redirect.stdout | Redirect.stderr);
-	//foreach (line; pipes.stdout.byLine)
-	//    writeln(line);
-	//int rc = wait(pipes.pid);
 	return rc;
 }
