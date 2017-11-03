@@ -61,7 +61,43 @@ private string my_json_pprint(ref JSONValue jsonObj)
 {
 	void my_json_pprint_helper(JSONValue* jsonObj, string uuid)
 	{
-		int[string] dict = ["name" : 1, "targetName" : 2];
+		// https://code.dlang.org/package-format?lang=json
+		int[string] dict = [
+			"name" : 1,
+			"description ": 2,
+			"homepage": 3,
+			"authors": 4,
+			"copyright": 5,
+			"license": 6,
+			"targetType": 7,
+			"targetName": 8,
+			"targetPath": 9,
+			"workingDirectory": 10,
+			"versions": 11,
+			"debugVersions": 12,
+			"mainSourceFile": 13,
+			"sourceFiles": 14,
+			"sourcePaths": 15,
+			"excludedSourceFiles": 16,
+			"importPaths": 15,
+			"stringImportPaths": 17,
+			"libs": 18,
+			"subPackages": 0,
+			"configurations": 0,
+			"buildTypes": 0,
+			"ddoxFilterArgs": 0,
+			"dependencies": 0,
+			"systemDependencies": 0,
+			"subConfigurations": 0,
+			"buildRequirements": 0,
+			"buildOptions": 0,
+			"copyFiles": 0,
+			"preGenerateCommands": 0,
+			"postGenerateCommands": 0,
+			"preBuildCommands": 0,
+			"postBuildCommands": 0,
+			"dflags": 0,
+			"lflags": 0 ];
 		JSON_TYPE type = jsonObj.type;
 		if (type == JSON_TYPE.ARRAY)
 		{
@@ -75,7 +111,7 @@ private string my_json_pprint(ref JSONValue jsonObj)
 			{
 				my_json_pprint_helper(&jsonObj.object[key], uuid);
 				int* found = key in dict;
-				if (found)
+				if (found && (*found)!=0)
 				{
 					jsonObj.object[format!`<%05d-%s>`(*found, uuid) ~ key] = jsonObj.object[key];
 					jsonObj.object.remove(key);
