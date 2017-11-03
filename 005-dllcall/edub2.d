@@ -1,6 +1,6 @@
 module main;
 import std.algorithm : canFind, startsWith, endsWith;
-import std.array : split, replace;
+import std.array : empty, split, replace;
 import std.file : chdir, copy, exists, getcwd, mkdirRecurse, read, rename,
 	remove, setTimes, write, FileException, PreserveAttributes;
 import std.format : format;
@@ -170,6 +170,11 @@ private void handle_exe_output(string[] args)
 		return result;
 	}
 
+	string normalize_path(string path)
+	{
+		return path.replace(`\`, `/`);
+	}
+
 	writeln(`handle_exe_output:`, args);
 	string command = pop(args);
 	writefln(`handle_exe_output: %s %s %s`, g_context.fileName, command, args);
@@ -190,43 +195,84 @@ private void handle_exe_output(string[] args)
 	jsonObj["targetType"] = "executable";
 	string[] source_files;
 	string[] include_dirs;
-	string[] datadir_dirs;
+	string[] resource_dirs;
 	string[] libs;
-	while(args.length)
+	struct _PackageSpec
+	{
+		string _name;
+		string _version;
+		string _sub_config;
+	}
+
+	_PackageSpec[] packages;
+	while (args.length)
 	{
 		string arg = pop(args).strip;
 		writefln(`arg="%s"`, arg);
 		auto re = regex(`^\[([^:]+)(:[^:]+)?(:[^:]+)?\]$`);
 		auto m = matchFirst(arg, re);
-		if (m) 
+		if (m)
 		{
 			writeln(`match!`);
 			writefln(`match="%s" "%s" "%s"`, m[1], m[2], m[3]);
+			_PackageSpec spec;
+			spec._name = m[1];
+			spec._version = m[2].empty ? "~master" : m[2];
+			spec._sub_config = m[3];
+			packages ~= spec;
 		}
-		else if (arg.startsWith(`datadir=`))
+		else if (arg.startsWith(`resource=`))
 		{
-			datadir_dirs ~= arg[8..$];
+			resource_dirs ~= normalize_path(arg[9 .. $]);
 		}
 		else if (arg.startsWith(`include=`))
 		{
-			include_dirs ~= arg[8..$];
+			include_dirs ~= normalize_path(arg[8 .. $]);
 		}
 		else if (arg.startsWith(`libs=`))
 		{
-			libs ~= arg[5..$].split(`:`);
+			libs ~= arg[5 .. $].split(`:`);
 		}
 		else
 		{
 			source_files ~= arg;
 		}
 	}
-	if (source_files) jsonObj["sourceFiles"] = source_files;
-	if (include_dirs) jsonObj["importPaths"] = include_dirs;
-	if (datadir_dirs) jsonObj["stringImportPaths"] = datadir_dirs;
-	if (libs) jsonObj["libs"] = libs;
+	if (source_files)
+		jsonObj["sourceFiles"] = source_files;
+	if (include_dirs)
+		jsonObj["importPaths"] = include_dirs;
+	if (resource_dirs)
+		jsonObj["stringImportPaths"] = resource_dirs;
+	if (libs)
+		jsonObj["libs"] = libs;
+	int sub_config_count = 0;
+	if (packages.length > 0)
+	{
+		string[string] dependencies_init;
+		jsonObj["dependencies"] = dependencies_init;
+		foreach (ref pkg; packages)
+		{
+			jsonObj["dependencies"][pkg._name] = pkg._version;
+			if (!pkg._sub_config.empty)
+				sub_config_count++;
+		}
+		if (sub_config_count > 0)
+		{
+			string[string] sub_config_init;
+			jsonObj["subConfigurations"] = sub_config_init;
+			foreach (ref pkg; packages)
+			{
+				if (pkg._sub_config.empty)
+					continue;
+				jsonObj["subConfigurations"][pkg._name] = pkg._sub_config;
+			}
+		}
+	}
 	//stringImportPaths
 	string json = my_json_pprint(jsonObj);
 	writeln(json);
+	writeln(packages);
 	exit(0);
 }
 
