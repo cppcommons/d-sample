@@ -7,11 +7,12 @@ import std.format : format;
 import std.json;
 import std.path : absolutePath, baseName, dirName, extension, isAbsolute;
 import std.process : execute, executeShell;
-import std.regex : regex, replaceAll;
+import std.regex : regex, matchAll, matchFirst, replaceAll;
 import std.stdio : writefln, writeln, File;
 import std.typecons : Yes, No;
 import std.datetime.systime : Clock;
 import std.process : pipeProcess, wait, Redirect;
+import std.string : strip;
 import std.uni : toLower;
 import std.uuid : sha1UUID, UUID;
 
@@ -21,9 +22,9 @@ private void exit(int code)
 {
 	import std.c.stdlib;
 
-	writeln("before exit()");
-	std.c.stdlib.exit(0);
-	writeln("after exit()");
+	//writeln("before exit()");
+	std.c.stdlib.exit(code);
+	//writeln("after exit()");
 }
 
 class EDubContext
@@ -157,9 +158,49 @@ private string my_json_pprint(ref JSONValue jsonObj)
 	return result;
 }
 
+private void handle_exe_output(string[] args)
+{
+	string pop(ref string[] list)
+	{
+		if (list.length == 0)
+			return "[eoi]";
+		string result = list[0];
+		list = list[1 .. $];
+		return result;
+	}
+
+	writeln(`handle_exe_output:`, args);
+	string command = pop(args);
+	writefln(`handle_exe_output: %s %s %s`, g_context.fileName, command, args);
+	switch (command)
+	{
+	case `build`:
+		break;
+	default:
+		writefln(`Invalid command "%s".`, command);
+		exit(1);
+	}
+	while(args.length)
+	{
+		string arg = pop(args).strip;
+		writefln(`arg="%s"`, arg);
+		//auto re = regex(`^\[[^:]+(:[^:]+(:[^:]+)?)?\]$`, "g");
+		auto re = regex(`^\[([^:]+)(:[^:]+)?(:[^:]+)?\]$`, "g");
+		//auto m = matchAll(arg, re);
+		auto m = matchFirst(arg, re);
+		if (m) 
+		{
+			writeln(`match!`);
+			writefln(`match="%s" "%s" "%s"`, m[1], m[2], m[3]);
+		}
+	}
+	exit(0);
+}
+
 int main(string[] args)
 {
 	//writeln(args.length);
+	writeln(`args=`, args);
 	if (args.length < 2)
 	{
 		writefln("Usage: edub2 PROJECT.json [build/run]");
@@ -172,13 +213,14 @@ int main(string[] args)
 	writefln(`g_context.dirName=%s`, g_context.dirName);
 	g_context.fileName = baseName(g_context.fullPath);
 	writefln(`g_context.fileName=%s`, g_context.fileName);
-	g_context.extension = extension(g_context.fileName).toLower;
+	g_context.extension = extension(g_context.fileName); //.toLower;
 	writefln(`g_context.extension=%s`, g_context.extension);
 	g_context.basePath = g_context.dirName ~ `/` ~ baseName(g_context.fileName, g_context.extension);
 	writefln(`g_context.basePath=%s`, g_context.basePath);
-	switch (g_context.extension)
+	switch (g_context.extension.toLower)
 	{
 	case ".exe":
+		handle_exe_output(args[2 .. $]);
 		return 0;
 		break;
 	case ".json":
