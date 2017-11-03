@@ -5,7 +5,7 @@ import std.file : copy, exists, getcwd, mkdirRecurse, read, rename, remove,
 	setTimes, write, FileException, PreserveAttributes;
 import std.format : format;
 import std.json;
-import std.path : absolutePath, baseName, extension, isAbsolute;
+import std.path : absolutePath, baseName, dirName, extension, isAbsolute;
 import std.process : execute, executeShell;
 import std.regex : regex, replaceAll;
 import std.stdio : writefln, writeln, File;
@@ -24,6 +24,13 @@ private void exit(int code)
 	std.c.stdlib.exit(0);
 	writeln("after exit()");
 }
+
+class EDubContext
+{
+	string cwd;
+}
+
+private shared EDubContext g_context = new EDubContext;
 
 private int emake_run_command(string[] dub_cmdline)
 {
@@ -53,7 +60,7 @@ private JSONValue*[] get_path_array_list(JSONValue* jsonObj)
 	assert(jsonObj.type() == JSON_TYPE.OBJECT);
 	if (("targetType" in jsonObj.object) && !("targetPath" in jsonObj.object))
 	{
-		jsonObj.object["targetPath"] = getcwd(); //".";
+		jsonObj.object["targetPath"] = g_context.cwd; //getcwd(); //".";
 	}
 	JSONValue*[] result;
 	foreach (key; jsonObj.object.keys())
@@ -127,7 +134,10 @@ int main(string[] args)
 		return 1;
 	}
 	string project_file_name = args[1];
-	writefln("project_file_name=%s", project_file_name);
+	project_file_name = absolutePath(project_file_name, getcwd()).replace(`\`, `/`);
+	writefln(`project_file_name=%s`, project_file_name);
+	g_context.cwd = dirName(project_file_name);
+	writefln(`g_context.cwd=%s`, g_context.cwd);
 	auto jsonText = cast(char[]) read(project_file_name);
 	writeln(jsonText);
 	auto jsonObj = parseJSON(jsonText);
@@ -138,7 +148,7 @@ int main(string[] args)
 	{
 		if (path_array.type == JSON_TYPE.STRING)
 		{
-			path_array.str = absolutePath(path_array.str).replace("\\", "/");
+			path_array.str = absolutePath(path_array.str, g_context.cwd).replace("\\", "/");
 			continue;
 		}
 		assert(path_array.type == JSON_TYPE.ARRAY);
@@ -148,7 +158,7 @@ int main(string[] args)
 			auto val = path_array.array[i];
 			if (val.type() != JSON_TYPE.STRING)
 				continue;
-			path_array.array[i] = absolutePath(val.str).replace("\\", "/");
+			path_array.array[i] = absolutePath(val.str, g_context.cwd).replace("\\", "/");
 		}
 	}
 
