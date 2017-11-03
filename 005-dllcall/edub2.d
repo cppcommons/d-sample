@@ -28,7 +28,8 @@ private void exit(int code)
 private JSONValue* get_object_array_member(JSONValue* jsonObj, string key)
 {
 	JSONValue* member = cast(JSONValue*)(key in (*jsonObj));
-	if (member.type() != JSON_TYPE.ARRAY) return null;
+	if (member.type() != JSON_TYPE.ARRAY)
+		return null;
 	return member;
 }
 
@@ -41,12 +42,16 @@ private JSONValue*[] get_path_array_list(JSONValue* jsonObj)
 		writeln("key=", key);
 		if (key == "sourceFiles")
 		{
-			JSONValue* arrray = get_object_array_member(jsonObj, key);
+			////writeln("calling...");
+			JSONValue* array = get_object_array_member(jsonObj, key);
+			////writefln("array=0x%08x", array);
+			if (array)
+				result ~= array;
 		}
 	}
 	string s = jsonObj.toString();
 	//exit(0);
-	return null;
+	return result;
 }
 
 int main(string[] args)
@@ -64,6 +69,24 @@ int main(string[] args)
 	auto jsonObj = parseJSON(jsonText);
 
 	JSONValue*[] path_array_list = get_path_array_list(&jsonObj);
+	writeln(path_array_list.length);
+	foreach (JSONValue* path_array; path_array_list)
+	{
+		writeln(path_array.array.length);
+		for (int i = 0; i < path_array.array.length; i++)
+		{
+			auto val = path_array.array[i];
+			if (val.type() != JSON_TYPE.STRING)
+				continue;
+			string abs_path = val.str;
+			if (!isAbsolute(abs_path))
+				abs_path = absolutePath(abs_path);
+			abs_path = abs_path.replace("\\", "/");
+			writefln("%d: %s", i, abs_path);
+			path_array.array[i] = JSONValue(abs_path);
+		}
+	}
+	//exit(0);
 
 	if (const(JSONValue)* name = "name" in jsonObj)
 	{
@@ -83,6 +106,7 @@ int main(string[] args)
 		writeln(`jsonObj["nameX"]=`, jsonObj["nameX"]);
 	}
 	//if (const(JSONValue)* sourceFiles = "sourceFiles" in jsonObj)
+	version(none)
 	if (JSONValue* sourceFiles = cast(JSONValue*)("sourceFiles" in jsonObj))
 	{
 		if (sourceFiles.type() == JSON_TYPE.ARRAY)
