@@ -33,6 +33,7 @@ class EDubContext
 	string dirName;
 	string fileName;
 	string extension;
+	string baseName;
 	string basePath;
 	string[] path_keyword_list = [
 		"targetPath", "sourceFiles", "sourcePaths", "excludedSourceFiles",
@@ -180,6 +181,14 @@ private void handle_exe_output(string[] args)
 		writefln(`Invalid command "%s".`, command);
 		exit(1);
 	}
+	string dub_json_path = format!`%s.json`(g_context.fullPath);
+	writefln(`dub_json_path="%s"`, dub_json_path);
+	int[string] dummyAlist;
+	JSONValue jsonObj = dummyAlist;
+	jsonObj["name"] = g_context.baseName.toLower;
+	jsonObj["targetName"] = g_context.baseName;
+	jsonObj["targetType"] = "executable";
+	string[] source_files;
 	while(args.length)
 	{
 		string arg = pop(args).strip;
@@ -193,8 +202,9 @@ private void handle_exe_output(string[] args)
 			writefln(`match="%s" "%s" "%s"`, m[1], m[2], m[3]);
 		}
 	}
-	string dub_json_path = format!`%s.json`(g_context.fullPath);
-	writefln(`dub_json_path="%s"`, dub_json_path);
+	jsonObj["sourceFiles"] = source_files;
+	string json = my_json_pprint(jsonObj);
+	writeln(json);
 	exit(0);
 }
 
@@ -216,7 +226,8 @@ int main(string[] args)
 	writefln(`g_context.fileName=%s`, g_context.fileName);
 	g_context.extension = extension(g_context.fileName); //.toLower;
 	writefln(`g_context.extension=%s`, g_context.extension);
-	g_context.basePath = g_context.dirName ~ `/` ~ baseName(g_context.fileName, g_context.extension);
+	g_context.baseName = baseName(g_context.fileName, g_context.extension);
+	g_context.basePath = g_context.dirName ~ `/` ~ g_context.baseName;
 	writefln(`g_context.basePath=%s`, g_context.basePath);
 	switch (g_context.extension.toLower)
 	{
