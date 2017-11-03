@@ -30,7 +30,9 @@ class EDubContext
 {
 	string fullPath;
 	string dirName;
-	string baseName;
+	string fileName;
+	string extension;
+	string basePath;
 	string[] path_keyword_list = [
 		"targetPath", "sourceFiles", "sourcePaths", "excludedSourceFiles",
 		"mainSourceFile", "copyFiles", "importPaths", "stringImportPaths"
@@ -168,11 +170,13 @@ int main(string[] args)
 	writefln(`g_context.fullPath=%s`, g_context.fullPath);
 	g_context.dirName = dirName(g_context.fullPath);
 	writefln(`g_context.dirName=%s`, g_context.dirName);
-	g_context.baseName = baseName(g_context.fullPath);
-	writefln(`g_context.baseName=%s`, g_context.baseName);
-	string extension = extension(g_context.baseName).toLower;
-	writefln(`extension=%s`, extension);
-	switch (extension)
+	g_context.fileName = baseName(g_context.fullPath);
+	writefln(`g_context.fileName=%s`, g_context.fileName);
+	g_context.extension = extension(g_context.fileName).toLower;
+	writefln(`g_context.extension=%s`, g_context.extension);
+	g_context.basePath = g_context.dirName ~ `/` ~ baseName(g_context.fileName, g_context.extension);
+	writefln(`g_context.basePath=%s`, g_context.basePath);
+	switch (g_context.extension)
 	{
 	case ".exe":
 		break;
@@ -210,7 +214,7 @@ int main(string[] args)
 
 	auto jsonText2 = my_json_pprint(jsonObj);
 	writeln(jsonText2);
-	string folder_name = format!"%s.bin"(g_context.fullPath);
+	string folder_name = format!"%s.bin"(g_context.basePath);
 	writeln(folder_name);
 	mkdirRecurse(folder_name);
 	try
