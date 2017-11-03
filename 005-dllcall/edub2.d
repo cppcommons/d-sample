@@ -1,8 +1,8 @@
 module main;
-import std.algorithm : startsWith, endsWith;
+import std.algorithm : canFind, startsWith, endsWith;
 import std.array : split, replace;
-import std.file : copy, exists, mkdirRecurse, read, rename, remove, setTimes, write,
-	FileException, PreserveAttributes;
+import std.file : copy, exists, mkdirRecurse, read, rename, remove, setTimes,
+	write, FileException, PreserveAttributes;
 import std.format : format;
 import std.json;
 import std.path : absolutePath, baseName, extension, isAbsolute;
@@ -28,22 +28,27 @@ private void exit(int code)
 private JSONValue* get_object_array_member(JSONValue* jsonObj, string key)
 {
 	JSONValue* member = cast(JSONValue*)(key in (*jsonObj));
-	if (member.type() != JSON_TYPE.ARRAY)
+	if (member.type() != JSON_TYPE.ARRAY && member.type() != JSON_TYPE.STRING)
 		return null;
 	return member;
 }
 
 private JSONValue*[] get_path_array_list(JSONValue* jsonObj)
 {
+	string[] list = [
+		"sourceFiles", "sourcePaths", "excludedSourceFiles", "mainSourceFile",
+		"copyFiles", "importPaths", "stringImportPaths"
+	];
 	import std.regex;
 
 	assert(jsonObj.type() == JSON_TYPE.OBJECT);
 	JSONValue*[] result;
-	auto re = regex(`^sourceFiles(-.+)?$`, "g");
+	//auto re = regex(`^sourceFiles(-.+)?$`, "g");
 	foreach (key; jsonObj.object.keys())
 	{
 		writeln("key=", key);
-		if (key.matchAll(re))
+		//if (key.matchAll(re))
+		if (list.canFind(key.split("-")[0]))
 		{
 			////writeln("calling...");
 			JSONValue* array = get_object_array_member(jsonObj, key);
@@ -122,18 +127,24 @@ int main(string[] args)
 	writeln(path_array_list.length);
 	foreach (JSONValue* path_array; path_array_list)
 	{
+		if (path_array.type == JSON_TYPE.STRING)
+		{
+			path_array.str = absolutePath(path_array.str).replace("\\", "/");
+			continue;
+		}
 		writeln(path_array.array.length);
 		for (int i = 0; i < path_array.array.length; i++)
 		{
 			auto val = path_array.array[i];
 			if (val.type() != JSON_TYPE.STRING)
 				continue;
-			string abs_path = val.str;
-			if (!isAbsolute(abs_path))
-				abs_path = absolutePath(abs_path);
-			abs_path = abs_path.replace("\\", "/");
-			writefln("%d: %s", i, abs_path);
-			path_array.array[i] = JSONValue(abs_path);
+			//string abs_path = val.str;
+			//if (!isAbsolute(abs_path))
+			//	abs_path = absolutePath(abs_path);
+			//abs_path = abs_path.replace("\\", "/");
+			//writefln("%d: %s", i, abs_path);
+			//path_array.array[i] = JSONValue(abs_path);
+			path_array.array[i] = absolutePath(val.str).replace("\\", "/");
 		}
 	}
 
