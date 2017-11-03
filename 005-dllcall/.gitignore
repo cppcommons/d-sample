@@ -1,4 +1,5 @@
 dub.json
+*.bin
 *.exe.cbp
 *.dll.cbp
 *.lib.cbp
