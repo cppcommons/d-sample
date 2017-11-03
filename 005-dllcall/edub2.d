@@ -1,8 +1,8 @@
 module main;
 import std.algorithm : canFind, startsWith, endsWith;
 import std.array : split, replace;
-import std.file : copy, exists, getcwd, mkdirRecurse, read, rename, remove,
-	setTimes, write, FileException, PreserveAttributes;
+import std.file : chdir, copy, exists, getcwd, mkdirRecurse, read, rename,
+	remove, setTimes, write, FileException, PreserveAttributes;
 import std.format : format;
 import std.json;
 import std.path : absolutePath, baseName, dirName, extension, isAbsolute;
@@ -208,6 +208,13 @@ int main(string[] args)
 	for (int i = 2; i < args.length; i++)
 	{
 		dub_cmdline ~= args[i];
+	}
+	if (dub_cmdline.length >= 2 && dub_cmdline[1] == "generate")
+	{
+		chdir(folder_name);
+		writeln(dub_cmdline);
+		int rc = emake_run_command(dub_cmdline);
+		return rc;
 	}
 	dub_cmdline ~= format!`--root=%s`(folder_name);
 	writeln(dub_cmdline);
