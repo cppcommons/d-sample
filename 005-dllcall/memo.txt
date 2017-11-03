@@ -1,0 +1,2 @@
+// https://forum.rejectedsoftware.com/groups/rejectedsoftware.dub/thread/927/
+dub fetch dlangui --cache=local --version=0.9.170
