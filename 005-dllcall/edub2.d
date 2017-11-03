@@ -184,9 +184,8 @@ private void handle_exe_output(string[] args)
 	{
 		string arg = pop(args).strip;
 		writefln(`arg="%s"`, arg);
-		//auto re = regex(`^\[[^:]+(:[^:]+(:[^:]+)?)?\]$`, "g");
-		auto re = regex(`^\[([^:]+)(:[^:]+)?(:[^:]+)?\]$`, "g");
-		//auto m = matchAll(arg, re);
+		//auto re = regex(`^\[([^:]+)(:[^:]+)?(:[^:]+)?\]$`, "g");
+		auto re = regex(`^\[([^:]+)(:[^:]+)?(:[^:]+)?\]$`);
 		auto m = matchFirst(arg, re);
 		if (m) 
 		{
@@ -194,6 +193,8 @@ private void handle_exe_output(string[] args)
 			writefln(`match="%s" "%s" "%s"`, m[1], m[2], m[3]);
 		}
 	}
+	string dub_json_path = format!`%s.json`(g_context.fullPath);
+	writefln(`dub_json_path="%s"`, dub_json_path);
 	exit(0);
 }
 
