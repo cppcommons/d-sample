@@ -35,12 +35,15 @@ private JSONValue* get_object_array_member(JSONValue* jsonObj, string key)
 
 private JSONValue*[] get_path_array_list(JSONValue* jsonObj)
 {
+	import std.regex;
+
 	assert(jsonObj.type() == JSON_TYPE.OBJECT);
 	JSONValue*[] result;
+	auto re = regex(`^sourceFiles(-.+)?$`, "g");
 	foreach (key; jsonObj.object.keys())
 	{
 		writeln("key=", key);
-		if (key == "sourceFiles")
+		if (key.matchAll(re))
 		{
 			////writeln("calling...");
 			JSONValue* array = get_object_array_member(jsonObj, key);
@@ -51,6 +54,41 @@ private JSONValue*[] get_path_array_list(JSONValue* jsonObj)
 	}
 	string s = jsonObj.toString();
 	//exit(0);
+	return result;
+}
+
+private string my_json_pprint(ref JSONValue jsonObj)
+{
+	void my_json_pprint_helper(JSONValue* jsonObj, string uuid)
+	{
+		int[string] dict = ["name" : 1, "targetName" : 2];
+		JSON_TYPE type = jsonObj.type;
+		if (type == JSON_TYPE.ARRAY)
+		{
+			for (int i = 0; i < jsonObj.array.length; i++)
+				my_json_pprint_helper(&jsonObj.array[i], uuid);
+		}
+		else if (type == JSON_TYPE.OBJECT)
+		{
+			string[] keys = jsonObj.object.keys;
+			foreach (key; keys)
+			{
+				my_json_pprint_helper(&jsonObj.object[key], uuid);
+				int* found = key in dict;
+				if (found)
+				{
+					jsonObj.object[format!`<%05d-%s>`(*found, uuid) ~ key] = jsonObj.object[key];
+					jsonObj.object.remove(key);
+				}
+			}
+		}
+	}
+	JSONValue jsonCopy = jsonObj;
+	string uuid = sha1UUID("edub").toString;
+	my_json_pprint_helper(&jsonCopy, uuid);
+	string result = jsonCopy.toPrettyString(JSONOptions.doNotEscapeSlashes);
+	auto re = regex(format!`<(\d)+-%s>`(uuid), "g");
+	result = replaceAll(result, re, "");
 	return result;
 }
 
@@ -88,65 +126,18 @@ int main(string[] args)
 	}
 	//exit(0);
 
-	if (const(JSONValue)* name = "name" in jsonObj)
+	version (none)
 	{
-		//if (code.type() == JSON_TYPE.INTEGER)
-		//	x = code.integer;
-		//else
-		//	x = to!int(code.str);
-		writeln(`jsonObj["name"]=`, jsonObj["name"]);
-
+		jsonObj["name"] = "dummy-name";
+		jsonObj["testArray"] = JSONValue(["A", "B", "C"]);
+		jsonObj["subConfigurations"]["d2sqlite3"] = JSONValue(["A", "B", "C"]);
 	}
-	if (const(JSONValue)* nameX = "nameX" in jsonObj)
-	{
-		//if (code.type() == JSON_TYPE.INTEGER)
-		//	x = code.integer;
-		//else
-		//	x = to!int(code.str);
-		writeln(`jsonObj["nameX"]=`, jsonObj["nameX"]);
-	}
-	//if (const(JSONValue)* sourceFiles = "sourceFiles" in jsonObj)
-	version(none)
-	if (JSONValue* sourceFiles = cast(JSONValue*)("sourceFiles" in jsonObj))
-	{
-		if (sourceFiles.type() == JSON_TYPE.ARRAY)
-		{
-			//JSONValue[] *sourceFilesArray = &(sourceFiles.array);
-			for (int i = 0; i < sourceFiles.array.length; i++)
-			{
-				auto val = sourceFiles.array[i];
-				if (val.type() != JSON_TYPE.STRING)
-					continue;
-				string abs_path = val.str;
-				if (!isAbsolute(abs_path))
-					abs_path = absolutePath(abs_path);
-				abs_path = abs_path.replace("\\", "/");
-				writefln("%d: %s", i, abs_path);
-				sourceFiles.array[i] = JSONValue(abs_path);
-				//JSONValue[] x;
-				//sourceFiles.array = x;
-				//sourceFiles.array ~= JSONValue(abs_path);
-			}
-		}
-		//if (code.type() == JSON_TYPE.INTEGER)
-		//	x = code.integer;
-		//else
-		//	x = to!int(code.str);
-		writeln(`jsonObj["sourceFiles"]=`, jsonObj["sourceFiles"]);
-
-	}
-	writeln(jsonObj.object.keys);
-	jsonObj["name"] = "dummy-name";
-	jsonObj["testArray"] = JSONValue(["A", "B", "C"]);
-	jsonObj["subConfigurations"]["d2sqlite3"] = JSONValue(["A", "B", "C"]);
-	//jsonObj["[GUID]000-name"] = jsonObj["name"];
-	//jsonObj.object.remove("name");
 	int[string] dict = ["name" : 1, "targetName" : 2];
-	//UUID id = sha1UUID("edub");
-	//writeln("id=", id.toString);
 	string uuid = sha1UUID("edub").toString;
 	writeln("uuid=", uuid);
-	JSONValue jj = ["language" : "D"];
+	//JSONValue jj = ["language" : "D"];
+	int[string] jjAList;
+	JSONValue jj = jjAList;
 	foreach (pair; jsonObj.object.byKeyValue)
 	{
 		writeln(pair.key, ": ", pair.value);
@@ -160,7 +151,10 @@ int main(string[] args)
 		jj[pair.key] = pair.value;
 	}
 	//auto jsonText2 = jsonObj.toPrettyString();
-	auto jsonText2 = jj.toPrettyString(JSONOptions.doNotEscapeSlashes);
+	//auto jsonText2 = myToJSON(jsonObj, true, JSONOptions.doNotEscapeSlashes);
+	//auto jsonText2 = jj.toPrettyString(JSONOptions.doNotEscapeSlashes);
+	auto jsonText2 = my_json_pprint(jsonObj);
+	//auto jsonText2 = myToJSON(jj, true, JSONOptions.doNotEscapeSlashes);
 	/+
 enum JSONOptions
 {
@@ -170,9 +164,8 @@ enum JSONOptions
     doNotEscapeSlashes = 0x4,   /// do not escape slashes ('/')
 }
 +/
-	//auto re = regex(r"(<GUID-(\d)+>)","g");
-	auto re = regex(format!`<(\d)+-%s>`(uuid), "g");
-	jsonText2 = replaceAll(jsonText2, re, "");
+	//auto re = regex(format!`<(\d)+-%s>`(uuid), "g");
+	//jsonText2 = replaceAll(jsonText2, re, "");
 	writeln(jsonText2);
 	File file1 = File(project_file_name ~ ".json", "w");
 	file1.write(jsonText2);
