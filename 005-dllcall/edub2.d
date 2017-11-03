@@ -16,6 +16,39 @@ import std.uuid : sha1UUID, UUID;
 
 import emake_common : emake_run_command;
 
+private void exit(int code)
+{
+	import std.c.stdlib;
+
+	writeln("before exit()");
+	std.c.stdlib.exit(0);
+	writeln("after exit()");
+}
+
+private JSONValue* get_object_array_member(JSONValue* jsonObj, string key)
+{
+	JSONValue* member = cast(JSONValue*)(key in (*jsonObj));
+	if (member.type() != JSON_TYPE.ARRAY) return null;
+	return member;
+}
+
+private JSONValue*[] get_path_array_list(JSONValue* jsonObj)
+{
+	assert(jsonObj.type() == JSON_TYPE.OBJECT);
+	JSONValue*[] result;
+	foreach (key; jsonObj.object.keys())
+	{
+		writeln("key=", key);
+		if (key == "sourceFiles")
+		{
+			JSONValue* arrray = get_object_array_member(jsonObj, key);
+		}
+	}
+	string s = jsonObj.toString();
+	//exit(0);
+	return null;
+}
+
 int main(string[] args)
 {
 	//writeln(args.length);
@@ -29,6 +62,9 @@ int main(string[] args)
 	auto jsonText = cast(char[]) read(project_file_name);
 	writeln(jsonText);
 	auto jsonObj = parseJSON(jsonText);
+
+	JSONValue*[] path_array_list = get_path_array_list(&jsonObj);
+
 	if (const(JSONValue)* name = "name" in jsonObj)
 	{
 		//if (code.type() == JSON_TYPE.INTEGER)
@@ -90,17 +126,26 @@ int main(string[] args)
 	foreach (pair; jsonObj.object.byKeyValue)
 	{
 		writeln(pair.key, ": ", pair.value);
-		int *found = pair.key in dict;
+		int* found = pair.key in dict;
 		if (found)
 		{
 			//jj[format!"<GUID-%05d>"(*found)~pair.key] = pair.value;
-			jj[format!`<%05d-%s>`(*found, uuid)~pair.key] = pair.value;
+			jj[format!`<%05d-%s>`(*found, uuid) ~ pair.key] = pair.value;
 			continue;
 		}
 		jj[pair.key] = pair.value;
 	}
 	//auto jsonText2 = jsonObj.toPrettyString();
-	auto jsonText2 = jj.toPrettyString();
+	auto jsonText2 = jj.toPrettyString(JSONOptions.doNotEscapeSlashes);
+	/+
+enum JSONOptions
+{
+    none,                       /// standard parsing
+    specialFloatLiterals = 0x1, /// encode NaN and Inf float values as strings
+    escapeNonAsciiChars = 0x2,  /// encode non ascii characters with an unicode escape sequence
+    doNotEscapeSlashes = 0x4,   /// do not escape slashes ('/')
+}
++/
 	//auto re = regex(r"(<GUID-(\d)+>)","g");
 	auto re = regex(format!`<(\d)+-%s>`(uuid), "g");
 	jsonText2 = replaceAll(jsonText2, re, "");
