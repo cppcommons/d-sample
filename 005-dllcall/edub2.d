@@ -189,11 +189,13 @@ private void handle_exe_output(string[] args)
 	jsonObj["targetName"] = g_context.baseName;
 	jsonObj["targetType"] = "executable";
 	string[] source_files;
+	string[] include_dirs;
+	string[] datadir_dirs;
+	string[] libs;
 	while(args.length)
 	{
 		string arg = pop(args).strip;
 		writefln(`arg="%s"`, arg);
-		//auto re = regex(`^\[([^:]+)(:[^:]+)?(:[^:]+)?\]$`, "g");
 		auto re = regex(`^\[([^:]+)(:[^:]+)?(:[^:]+)?\]$`);
 		auto m = matchFirst(arg, re);
 		if (m) 
@@ -201,8 +203,28 @@ private void handle_exe_output(string[] args)
 			writeln(`match!`);
 			writefln(`match="%s" "%s" "%s"`, m[1], m[2], m[3]);
 		}
+		else if (arg.startsWith(`datadir=`))
+		{
+			datadir_dirs ~= arg[8..$];
+		}
+		else if (arg.startsWith(`include=`))
+		{
+			include_dirs ~= arg[8..$];
+		}
+		else if (arg.startsWith(`libs=`))
+		{
+			libs ~= arg[5..$].split(`:`);
+		}
+		else
+		{
+			source_files ~= arg;
+		}
 	}
-	jsonObj["sourceFiles"] = source_files;
+	if (source_files) jsonObj["sourceFiles"] = source_files;
+	if (include_dirs) jsonObj["importPaths"] = include_dirs;
+	if (datadir_dirs) jsonObj["stringImportPaths"] = datadir_dirs;
+	if (libs) jsonObj["libs"] = libs;
+	//stringImportPaths
 	string json = my_json_pprint(jsonObj);
 	writeln(json);
 	exit(0);
