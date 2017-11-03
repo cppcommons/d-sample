@@ -1,6 +1,6 @@
 module main;
 import std.algorithm : startsWith, endsWith;
-import std.array : replace;
+import std.array : split, replace;
 import std.file : copy, exists, read, rename, remove, setTimes, write,
 	FileException, PreserveAttributes;
 import std.format : format;
@@ -59,45 +59,20 @@ private JSONValue*[] get_path_array_list(JSONValue* jsonObj)
 
 private string my_json_pprint(ref JSONValue jsonObj)
 {
+	int[string] dict = [
+		"name" : 1, "description " : 2, "homepage" : 3, "authors" : 4, "copyright"
+		: 5, "license" : 6, "targetType" : 7, "targetName" : 8, "targetPath" : 9,
+		"workingDirectory" : 10, "dependencies" : 11, "subConfigurations" : 12, "versions" : 13, "debugVersions" : 14,
+		"importPaths" : 15, "stringImportPaths" : 16, "sourcePaths" : 17, "mainSourceFile" : 18, "sourceFiles" : 19,
+		"excludedSourceFiles" : 20, "libs" : 21, "subPackages" : 0, "configurations" : 0, "buildTypes" : 0,
+		"ddoxFilterArgs" : 0, "systemDependencies" : 0, "buildRequirements" : 0,
+		"buildOptions" : 0, "copyFiles" : 0, "preGenerateCommands"
+		: 0, "postGenerateCommands" : 0, "preBuildCommands" : 0,
+		"postBuildCommands" : 0, "dflags" : 0, "lflags" : 0
+	];
 	void my_json_pprint_helper(JSONValue* jsonObj, string uuid)
 	{
 		// https://code.dlang.org/package-format?lang=json
-		int[string] dict = [
-			"name" : 1,
-			"description ": 2,
-			"homepage": 3,
-			"authors": 4,
-			"copyright": 5,
-			"license": 6,
-			"targetType": 7,
-			"targetName": 8,
-			"targetPath": 9,
-			"workingDirectory": 10,
-			"versions": 11,
-			"debugVersions": 12,
-			"mainSourceFile": 13,
-			"sourceFiles": 14,
-			"sourcePaths": 15,
-			"excludedSourceFiles": 16,
-			"importPaths": 15,
-			"stringImportPaths": 17,
-			"libs": 18,
-			"subPackages": 0,
-			"configurations": 0,
-			"buildTypes": 0,
-			"ddoxFilterArgs": 0,
-			"dependencies": 0,
-			"systemDependencies": 0,
-			"subConfigurations": 0,
-			"buildRequirements": 0,
-			"buildOptions": 0,
-			"copyFiles": 0,
-			"preGenerateCommands": 0,
-			"postGenerateCommands": 0,
-			"preBuildCommands": 0,
-			"postBuildCommands": 0,
-			"dflags": 0,
-			"lflags": 0 ];
 		JSON_TYPE type = jsonObj.type;
 		if (type == JSON_TYPE.ARRAY)
 		{
@@ -110,8 +85,8 @@ private string my_json_pprint(ref JSONValue jsonObj)
 			foreach (key; keys)
 			{
 				my_json_pprint_helper(&jsonObj.object[key], uuid);
-				int* found = key in dict;
-				if (found && (*found)!=0)
+				int* found = key.split("-")[0] in dict;
+				if (found && (*found) != 0)
 				{
 					jsonObj.object[format!`<%05d-%s>`(*found, uuid) ~ key] = jsonObj.object[key];
 					jsonObj.object.remove(key);
@@ -119,6 +94,7 @@ private string my_json_pprint(ref JSONValue jsonObj)
 			}
 		}
 	}
+
 	JSONValue jsonCopy = jsonObj;
 	string uuid = sha1UUID("edub").toString;
 	my_json_pprint_helper(&jsonCopy, uuid);
@@ -168,40 +144,7 @@ int main(string[] args)
 		jsonObj["testArray"] = JSONValue(["A", "B", "C"]);
 		jsonObj["subConfigurations"]["d2sqlite3"] = JSONValue(["A", "B", "C"]);
 	}
-	int[string] dict = ["name" : 1, "targetName" : 2];
-	string uuid = sha1UUID("edub").toString;
-	writeln("uuid=", uuid);
-	//JSONValue jj = ["language" : "D"];
-	int[string] jjAList;
-	JSONValue jj = jjAList;
-	foreach (pair; jsonObj.object.byKeyValue)
-	{
-		writeln(pair.key, ": ", pair.value);
-		int* found = pair.key in dict;
-		if (found)
-		{
-			//jj[format!"<GUID-%05d>"(*found)~pair.key] = pair.value;
-			jj[format!`<%05d-%s>`(*found, uuid) ~ pair.key] = pair.value;
-			continue;
-		}
-		jj[pair.key] = pair.value;
-	}
-	//auto jsonText2 = jsonObj.toPrettyString();
-	//auto jsonText2 = myToJSON(jsonObj, true, JSONOptions.doNotEscapeSlashes);
-	//auto jsonText2 = jj.toPrettyString(JSONOptions.doNotEscapeSlashes);
 	auto jsonText2 = my_json_pprint(jsonObj);
-	//auto jsonText2 = myToJSON(jj, true, JSONOptions.doNotEscapeSlashes);
-	/+
-enum JSONOptions
-{
-    none,                       /// standard parsing
-    specialFloatLiterals = 0x1, /// encode NaN and Inf float values as strings
-    escapeNonAsciiChars = 0x2,  /// encode non ascii characters with an unicode escape sequence
-    doNotEscapeSlashes = 0x4,   /// do not escape slashes ('/')
-}
-+/
-	//auto re = regex(format!`<(\d)+-%s>`(uuid), "g");
-	//jsonText2 = replaceAll(jsonText2, re, "");
 	writeln(jsonText2);
 	File file1 = File(project_file_name ~ ".json", "w");
 	file1.write(jsonText2);
