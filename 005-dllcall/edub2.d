@@ -28,9 +28,27 @@ private void exit(int code)
 class EDubContext
 {
 	string cwd;
+	string[] path_keyword_list = [
+		"targetPath", "sourceFiles", "sourcePaths", "excludedSourceFiles",
+		"mainSourceFile", "copyFiles", "importPaths", "stringImportPaths"
+	];
+	this()
+	{
+	}
 }
 
-private shared EDubContext g_context = new EDubContext;
+private __gshared EDubContext g_context = new EDubContext();
+
+private string make_abs_path(string path)
+{
+	switch (path)
+	{
+	case `.`, `./`, `.\`:
+		return g_context.cwd;
+	default:
+		return absolutePath(path, g_context.cwd).replace(`\`, `/`);
+	}
+}
 
 private int emake_run_command(string[] dub_cmdline)
 {
@@ -41,41 +59,50 @@ private int emake_run_command(string[] dub_cmdline)
 	return rc;
 }
 
-private JSONValue* get_object_array_member(JSONValue* jsonObj, string key)
+void rewite_dub_json(JSONValue* jsonObj, ref JSONValue*[] path_array_list, string prop_name)
 {
-	JSONValue* member = cast(JSONValue*)(key in (*jsonObj));
-	if (member.type() != JSON_TYPE.ARRAY && member.type() != JSON_TYPE.STRING)
-		return null;
-	return member;
-}
-
-private JSONValue*[] get_path_array_list(JSONValue* jsonObj)
-{
-	string[] list = [
-		"targetPath", "sourceFiles", "sourcePaths", "excludedSourceFiles",
-		"mainSourceFile", "copyFiles", "importPaths", "stringImportPaths"
-	];
-	import std.regex;
-
-	assert(jsonObj.type() == JSON_TYPE.OBJECT);
-	if (("targetType" in jsonObj.object) && !("targetPath" in jsonObj.object))
+	JSONValue* get_object_array_member(JSONValue* jsonObj, string key)
 	{
-		jsonObj.object["targetPath"] = g_context.cwd; //getcwd(); //".";
+		JSONValue* member = cast(JSONValue*)(key in (*jsonObj));
+		if (member.type() != JSON_TYPE.ARRAY && member.type() != JSON_TYPE.STRING)
+			return null;
+		return member;
 	}
-	JSONValue*[] result;
-	foreach (key; jsonObj.object.keys())
+
+	if (jsonObj.type == JSON_TYPE.ARRAY)
 	{
-		writeln("key=", key);
-		if (list.canFind(key.split("-")[0]))
+		for (int i = 0; i < jsonObj.array.length; i++)
 		{
-			JSONValue* array = get_object_array_member(jsonObj, key);
-			if (array)
-				result ~= array;
+			rewite_dub_json(&jsonObj.array[i], path_array_list, prop_name);
+		}
+
+	}
+	else if (jsonObj.type == JSON_TYPE.OBJECT)
+	{
+		static string[] list = ["[root]", "configurations", "subPackages"];
+		if (list.canFind(prop_name)) //(("name" in jsonObj.object) || ("targetType" in jsonObj.object))
+		{
+			if (!("targetPath" in jsonObj.object))
+			{
+				jsonObj.object["targetPath"] = `.`;
+			}
+		}
+		JSONValue*[] result;
+		foreach (key; jsonObj.object.keys())
+		{
+			JSONValue* member = key in jsonObj.object;
+			rewite_dub_json(member, path_array_list, key);
+			if (g_context.path_keyword_list.canFind(key.split("-")[0]))
+			{
+				JSONValue* array = get_object_array_member(jsonObj, key);
+				if (array)
+					path_array_list ~= array;
+			}
 		}
 	}
-	string s = jsonObj.toString();
-	//exit(0);
-	return result;
+	else
+	{
+	}
 }
 
 private string my_json_pprint(ref JSONValue jsonObj)
@@ -142,13 +169,15 @@ int main(string[] args)
 	writeln(jsonText);
 	auto jsonObj = parseJSON(jsonText);
 
-	JSONValue*[] path_array_list = get_path_array_list(&jsonObj);
+	//JSONValue*[] path_array_list = get_path_array_list(&jsonObj);
+	JSONValue*[] path_array_list;
+	rewite_dub_json(&jsonObj, path_array_list, `[root]`);
 	writeln(path_array_list.length);
 	foreach (JSONValue* path_array; path_array_list)
 	{
 		if (path_array.type == JSON_TYPE.STRING)
 		{
-			path_array.str = absolutePath(path_array.str, g_context.cwd).replace("\\", "/");
+			path_array.str = make_abs_path(path_array.str);
 			continue;
 		}
 		assert(path_array.type == JSON_TYPE.ARRAY);
@@ -158,7 +187,7 @@ int main(string[] args)
 			auto val = path_array.array[i];
 			if (val.type() != JSON_TYPE.STRING)
 				continue;
-			path_array.array[i] = absolutePath(val.str, g_context.cwd).replace("\\", "/");
+			path_array.array[i] = make_abs_path(val.str);
 		}
 	}
 
