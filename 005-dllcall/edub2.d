@@ -242,22 +242,21 @@ private int handle_exe_output(string[] args)
 			packages ~= spec;
 			writeln("match end!");
 		}
-		else if (arg.startsWith(`source=`))
+		else if (arg.startsWith(`source=`)||arg.startsWith(`src=`))
 		{
-			//source_dirs ~= normalize_path(arg[7 .. $]);
 			source_dirs ~= normalize_path(arg_strip_prefix(arg));
 		}
-		else if (arg.startsWith(`resource=`))
+		else if (arg.startsWith(`resource=`)||arg.startsWith(`res=`))
 		{
-			resource_dirs ~= normalize_path(arg[9 .. $]);
+			resource_dirs ~= normalize_path(arg_strip_prefix(arg));
 		}
-		else if (arg.startsWith(`include=`))
+		else if (arg.startsWith(`include=`)||arg.startsWith(`inc=`))
 		{
-			include_dirs ~= normalize_path(arg[8 .. $]);
+			include_dirs ~= normalize_path(arg_strip_prefix(arg));
 		}
 		else if (arg.startsWith(`libs=`))
 		{
-			libs ~= arg[5 .. $].split(`:`);
+			libs ~= arg_strip_prefix(arg).split(`:`);
 		}
 		else
 		{
