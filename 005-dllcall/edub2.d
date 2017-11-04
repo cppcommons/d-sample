@@ -166,7 +166,7 @@ private int handle_exe_output(string[] args)
 	string pop(ref string[] list)
 	{
 		if (list.length == 0)
-			return "[eoi]";
+			return "";
 		string result = list[0];
 		list = list[1 .. $];
 		return result;

@@ -1,3 +1,4 @@
+// https://code.dlang.org/package-format?lang=json
 module main;
 import std.algorithm : canFind, startsWith, endsWith;
 import std.array : empty, split, replace;
@@ -165,7 +166,7 @@ private int handle_exe_output(string[] args)
 	string pop(ref string[] list)
 	{
 		if (list.length == 0)
-			return "[eoi]";
+			return "";
 		string result = list[0];
 		list = list[1 .. $];
 		return result;
@@ -207,6 +208,7 @@ private int handle_exe_output(string[] args)
 	jsonObj["name"] = g_context.baseName.toLower;
 	jsonObj["targetName"] = g_context.baseName;
 	jsonObj["targetType"] = "executable";
+	string[] dub_opts;
 	string[] source_files;
 	string[] source_dirs;
 	string[] include_dirs;
@@ -243,9 +245,16 @@ private int handle_exe_output(string[] args)
 				writeln("match end!");
 			}
 		}
-		else if (arg == "--cleanup")
+		else if (arg.startsWith("-"))
 		{
-			g_context.opt_cleanup = true;
+			if (arg == "--cleanup")
+			{
+				g_context.opt_cleanup = true;
+			}
+			else
+			{
+				dub_opts ~= arg;
+			}
 		}
 		else if (arg.startsWith(`source=`) || arg.startsWith(`src=`))
 		{
@@ -313,6 +322,7 @@ private int handle_exe_output(string[] args)
 	if (command == "init")
 		return 0;
 	string[] new_args = ["edub.exe", dub_json_path, command];
+	new_args ~= dub_opts;
 	return main(new_args);
 }
 
