@@ -2,7 +2,7 @@ module main;
 import std.algorithm : canFind, startsWith, endsWith;
 import std.array : empty, split, replace;
 import std.file : chdir, copy, exists, getcwd, mkdirRecurse, read, rename,
-	remove, setTimes, write, FileException, PreserveAttributes;
+	remove, rmdirRecurse, setTimes, write, FileException, PreserveAttributes;
 import std.format : format;
 import std.json;
 import std.path : absolutePath, baseName, dirName, extension, isAbsolute;
@@ -242,15 +242,15 @@ private int handle_exe_output(string[] args)
 			packages ~= spec;
 			writeln("match end!");
 		}
-		else if (arg.startsWith(`source=`)||arg.startsWith(`src=`))
+		else if (arg.startsWith(`source=`) || arg.startsWith(`src=`))
 		{
 			source_dirs ~= normalize_path(arg_strip_prefix(arg));
 		}
-		else if (arg.startsWith(`resource=`)||arg.startsWith(`res=`))
+		else if (arg.startsWith(`resource=`) || arg.startsWith(`res=`))
 		{
 			resource_dirs ~= normalize_path(arg_strip_prefix(arg));
 		}
-		else if (arg.startsWith(`include=`)||arg.startsWith(`inc=`))
+		else if (arg.startsWith(`include=`) || arg.startsWith(`inc=`))
 		{
 			include_dirs ~= normalize_path(arg_strip_prefix(arg));
 		}
@@ -404,5 +404,9 @@ int main(string[] args)
 	dub_cmdline ~= format!`--root=%s`(folder_name);
 	writeln(dub_cmdline);
 	int rc = emake_run_command(dub_cmdline);
+	if (rc==0)
+	{
+		rmdirRecurse(folder_name);
+	}
 	return rc;
 }
