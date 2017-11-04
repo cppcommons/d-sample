@@ -175,12 +175,27 @@ private int handle_exe_output(string[] args)
 		return path.replace(`\`, `/`);
 	}
 
+	string arg_strip_prefix(string arg)
+	{
+		int arg_prefix_len(string arg)
+		{
+			auto re = regex(`^[^=]+=`);
+			auto m = matchFirst(arg, re);
+			if (!m)
+				return 0;
+			return m[0].length;
+		}
+
+		return arg[arg_prefix_len(arg) .. $];
+	}
+
 	writeln(`handle_exe_output:`, args);
 	string command = pop(args);
 	writefln(`handle_exe_output: %s %s %s`, g_context.fileName, command, args);
 	switch (command)
 	{
 	case `build`:
+	case `init`:
 		break;
 	default:
 		writefln(`Invalid command "%s".`, command);
@@ -192,6 +207,7 @@ private int handle_exe_output(string[] args)
 	jsonObj["targetName"] = g_context.baseName;
 	jsonObj["targetType"] = "executable";
 	string[] source_files;
+	string[] source_dirs;
 	string[] include_dirs;
 	string[] resource_dirs;
 	string[] libs;
@@ -221,9 +237,15 @@ private int handle_exe_output(string[] args)
 			writefln(`match="%s" "%s" "%s"`, m[1], m[2], m[3]);
 			_PackageSpec spec;
 			spec._name = m[1].replace(uuid, `:`);
-			spec._version = m[2].empty ? "~master" : m[2][1..$].replace(uuid, `:`);
-			spec._sub_config = m[2].empty ? "" : m[3][1..$].replace(uuid, `:`);
+			spec._version = m[2].empty ? "~master" : m[2][1 .. $].replace(uuid, `:`);
+			spec._sub_config = m[3].empty ? "" : m[3][1 .. $].replace(uuid, `:`);
 			packages ~= spec;
+			writeln("match end!");
+		}
+		else if (arg.startsWith(`source=`))
+		{
+			//source_dirs ~= normalize_path(arg[7 .. $]);
+			source_dirs ~= normalize_path(arg_strip_prefix(arg));
 		}
 		else if (arg.startsWith(`resource=`))
 		{
@@ -244,6 +266,8 @@ private int handle_exe_output(string[] args)
 	}
 	if (source_files)
 		jsonObj["sourceFiles"] = source_files;
+	if (source_dirs)
+		jsonObj["sourcePaths"] = resource_dirs;
 	if (include_dirs)
 		jsonObj["importPaths"] = include_dirs;
 	if (resource_dirs)
@@ -282,6 +306,8 @@ private int handle_exe_output(string[] args)
 	File file1 = File(dub_json_path, "w");
 	file1.write(json);
 	file1.close();
+	if (command == "init")
+		return 0;
 	string[] new_args = ["edub.exe", dub_json_path, command];
 	return main(new_args);
 }
