@@ -275,11 +275,12 @@ private int handle_exe_output(string[] args)
 		{
 			include_dirs ~= normalize_path(arg_strip_prefix(arg));
 		}
-		else if (arg.startsWith(`libs=`))
+		else if (arg.startsWith(`libs=`) || arg.startsWith(`lib=`))
 		{
 			libs ~= arg_strip_prefix(arg).split(`:`);
 		}
-		else if (arg.startsWith(`defines=`) || arg.startsWith(`defs=`))
+		else if (arg.startsWith(`defines=`) || arg.startsWith(`defs=`)
+				|| arg.startsWith(`define=`) || arg.startsWith(`def=`))
 		{
 			foreach (def; arg_strip_prefix(arg).split(`:`))
 			{
