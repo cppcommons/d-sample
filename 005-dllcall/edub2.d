@@ -94,7 +94,8 @@ void rewite_dub_json(JSONValue* jsonObj, ref JSONValue*[] path_array_list, strin
 		{
 			if (!("targetPath" in jsonObj.object))
 			{
-				jsonObj.object["targetPath"] = `.`;
+				//jsonObj.object["targetPath"] = `.`;
+				jsonObj.object["targetPath"] = getcwd();
 			}
 		}
 		JSONValue*[] result;
@@ -463,7 +464,9 @@ int main(string[] args)
 
 	auto jsonText2 = my_json_pprint(jsonObj);
 	writeln(jsonText2);
-	string folder_name = format!"%s.bin"(g_context.basePath);
+	//string folder_name = format!"%s.bin"(g_context.basePath);
+	string folder_name = format!"%s/%s.bin"(getcwd(), g_context.baseName).replace(`\`, `/`);
+	writeln(`folder_name=`, folder_name); //exit(0);
 	writeln(folder_name);
 	mkdirRecurse(folder_name);
 	try
