@@ -1,4 +1,7 @@
-setlocal
-emake-dmd build=release edub.exe edub.d emake_common.d
+del edub.exe
+rmdir /s /q edub.exe.bin
+dmd -of=edub.exe -od=edub.exe.bin -g -debug edub.d
 if %errorlevel% neq 0 ( exit /b )
-endlocal
+copy edub.exe E:\opt\bin32\
+rmdir /s /q edub.exe.bin
+del edub.exe

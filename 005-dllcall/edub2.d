@@ -39,6 +39,7 @@ class EDubContext
 		"targetPath", "sourceFiles", "sourcePaths", "excludedSourceFiles",
 		"mainSourceFile", "copyFiles", "importPaths", "stringImportPaths"
 	];
+	bool opt_cleanup;
 	this()
 	{
 	}
@@ -219,7 +220,7 @@ private int handle_exe_output(string[] args)
 	}
 
 	_PackageSpec[] packages;
-	string uuid = sha1UUID("edub").toString;
+	string uuid = sha1UUID(":").toString;
 	uuid = format!`{%s}`(uuid);
 	while (args.length)
 	{
@@ -228,19 +229,23 @@ private int handle_exe_output(string[] args)
 		if (arg.startsWith(`[`))
 		{
 			arg = arg.replace("{:}", uuid);
+			auto re = regex(`^\[([^:]+)(:[^:]+)?(:[^:]+)?\]$`);
+			auto m = matchFirst(arg, re);
+			if (m)
+			{
+				writeln(`match!`);
+				writefln(`match="%s" "%s" "%s"`, m[1], m[2], m[3]);
+				_PackageSpec spec;
+				spec._name = m[1].replace(uuid, `:`);
+				spec._version = m[2].empty ? "~master" : m[2][1 .. $].replace(uuid, `:`);
+				spec._sub_config = m[3].empty ? "" : m[3][1 .. $].replace(uuid, `:`);
+				packages ~= spec;
+				writeln("match end!");
+			}
 		}
-		auto re = regex(`^\[([^:]+)(:[^:]+)?(:[^:]+)?\]$`);
-		auto m = matchFirst(arg, re);
-		if (m)
+		else if (arg == "--cleanup")
 		{
-			writeln(`match!`);
-			writefln(`match="%s" "%s" "%s"`, m[1], m[2], m[3]);
-			_PackageSpec spec;
-			spec._name = m[1].replace(uuid, `:`);
-			spec._version = m[2].empty ? "~master" : m[2][1 .. $].replace(uuid, `:`);
-			spec._sub_config = m[3].empty ? "" : m[3][1 .. $].replace(uuid, `:`);
-			packages ~= spec;
-			writeln("match end!");
+			g_context.opt_cleanup = true;
 		}
 		else if (arg.startsWith(`source=`) || arg.startsWith(`src=`))
 		{
@@ -390,7 +395,14 @@ int main(string[] args)
 	dub_cmdline ~= "dub";
 	for (int i = 2; i < args.length; i++)
 	{
-		dub_cmdline ~= args[i];
+		if (args[i] == "--cleanup")
+		{
+			g_context.opt_cleanup = true;
+		}
+		else
+		{
+			dub_cmdline ~= args[i];
+		}
 	}
 	/+
 	if (dub_cmdline.length >= 2 && dub_cmdline[1] == "generate")
@@ -404,9 +416,18 @@ int main(string[] args)
 	dub_cmdline ~= format!`--root=%s`(folder_name);
 	writeln(dub_cmdline);
 	int rc = emake_run_command(dub_cmdline);
-	if (rc==0)
+	if (rc == 0)
 	{
-		rmdirRecurse(folder_name);
+		if (g_context.opt_cleanup)
+		{
+			try
+			{
+				rmdirRecurse(folder_name);
+			}
+			catch (Exception ex)
+			{
+			}
+		}
 	}
 	return rc;
 }
