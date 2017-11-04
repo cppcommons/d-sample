@@ -293,7 +293,27 @@ private int handle_exe_output(string[] args)
 		}
 		else
 		{
-			source_files ~= arg;
+			if (arg.canFind('*') || arg.canFind('?')
+					|| arg.canFind('{') || arg.canFind('}'))
+			{
+				try
+				{
+					auto files = dirEntries(dirName(arg), baseName(arg), SpanMode.shallow);
+					foreach (file; files)
+					{
+						string file_name = file.name.replace(`\`, `/`);
+						if (file_name.startsWith("./")) file_name = file_name[2..$];
+						source_files ~= file_name;
+					}
+				}
+				catch (Exception ex)
+				{
+				}
+			}
+			else
+			{
+				source_files ~= arg;
+			}
 		}
 	}
 	if (main_source)
@@ -417,16 +437,24 @@ int main(string[] args)
 				continue;
 			}
 			string abs_path = make_abs_path(val.str);
-			try
+			if (abs_path.canFind('*') || abs_path.canFind('?')
+					|| abs_path.canFind('{') || abs_path.canFind('}'))
 			{
-				auto files = dirEntries(dirName(abs_path), baseName(abs_path), SpanMode.shallow);
-				foreach (file; files)
+				try
 				{
-					new_array ~= JSONValue(file.name.replace(`\`, `/`));
+					auto files = dirEntries(dirName(abs_path), baseName(abs_path), SpanMode.shallow);
+					foreach (file; files)
+					{
+						new_array ~= JSONValue(file.name.replace(`\`, `/`));
+					}
+				}
+				catch (Exception ex)
+				{
 				}
 			}
-			catch (Exception ex)
+			else
 			{
+				new_array ~= JSONValue(abs_path);
 			}
 		}
 		path_array.array.length = 0;
