@@ -159,7 +159,7 @@ private string my_json_pprint(ref JSONValue jsonObj)
 	return result;
 }
 
-private void handle_exe_output(string[] args)
+private int handle_exe_output(string[] args)
 {
 	string pop(ref string[] list)
 	{
@@ -221,8 +221,8 @@ private void handle_exe_output(string[] args)
 			writefln(`match="%s" "%s" "%s"`, m[1], m[2], m[3]);
 			_PackageSpec spec;
 			spec._name = m[1].replace(uuid, `:`);
-			spec._version = m[2].empty ? "~master" : m[2].replace(uuid, `:`);
-			spec._sub_config = m[3].replace(uuid, `:`);
+			spec._version = m[2].empty ? "~master" : m[2][1..$].replace(uuid, `:`);
+			spec._sub_config = m[2].empty ? "" : m[3][1..$].replace(uuid, `:`);
 			packages ~= spec;
 		}
 		else if (arg.startsWith(`resource=`))
@@ -282,7 +282,8 @@ private void handle_exe_output(string[] args)
 	File file1 = File(dub_json_path, "w");
 	file1.write(json);
 	file1.close();
-	exit(0);
+	string[] new_args = ["edub.exe", dub_json_path, command];
+	return main(new_args);
 }
 
 int main(string[] args)
@@ -309,9 +310,7 @@ int main(string[] args)
 	switch (g_context.extension.toLower)
 	{
 	case ".exe":
-		handle_exe_output(args[2 .. $]);
-		return 0;
-		break;
+		return handle_exe_output(args[2 .. $]);
 	case ".json":
 		break;
 	default:
