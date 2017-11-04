@@ -209,11 +209,14 @@ private int handle_exe_output(string[] args)
 	jsonObj["targetName"] = g_context.baseName;
 	jsonObj["targetType"] = "executable";
 	string[] dub_opts;
+	string main_source;
 	string[] source_files;
 	string[] source_dirs;
 	string[] include_dirs;
 	string[] resource_dirs;
 	string[] libs;
+	string[] defines;
+	string[] debug_defines;
 	struct _PackageSpec
 	{
 		string _name;
@@ -256,6 +259,10 @@ private int handle_exe_output(string[] args)
 				dub_opts ~= arg;
 			}
 		}
+		else if (arg.startsWith(`main=`))
+		{
+			main_source = arg_strip_prefix(arg);
+		}
 		else if (arg.startsWith(`source=`) || arg.startsWith(`src=`))
 		{
 			source_dirs ~= normalize_path(arg_strip_prefix(arg));
@@ -272,11 +279,23 @@ private int handle_exe_output(string[] args)
 		{
 			libs ~= arg_strip_prefix(arg).split(`:`);
 		}
+		else if (arg.startsWith(`defines=`) || arg.startsWith(`defs=`))
+		{
+			foreach (def; arg_strip_prefix(arg).split(`:`))
+			{
+				if (def.startsWith(`@`))
+					debug_defines ~= def[1 .. $];
+				else
+					defines ~= def;
+			}
+		}
 		else
 		{
 			source_files ~= arg;
 		}
 	}
+	if (main_source)
+		jsonObj["mainSourceFile"] = main_source;
 	if (source_files)
 		jsonObj["sourceFiles"] = source_files;
 	if (source_dirs)
@@ -287,6 +306,10 @@ private int handle_exe_output(string[] args)
 		jsonObj["stringImportPaths"] = resource_dirs;
 	if (libs)
 		jsonObj["libs"] = libs;
+	if (defines)
+		jsonObj["versions"] = defines;
+	if (debug_defines)
+		jsonObj["debugVersions"] = debug_defines;
 	int sub_config_count = 0;
 	if (packages.length > 0)
 	{

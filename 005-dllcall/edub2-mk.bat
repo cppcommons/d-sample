@@ -10,8 +10,11 @@ rmdir /s /q edub2.exe.bin
 ::echo errorlevel=%errorlevel%
 ::edub2 apps.json build :app3
 ::edub2 app1.dub.json generate visuald
-goto skip
+::goto skip
 edub2 test1.exe init app1.d ^
+defines=A:@B ^
+defs=C:@D ^
+main=main.d ^
 source=..\abc\source1 ^
 src=..\abc\source2 ^
 resource=..\abc\data1 ^
