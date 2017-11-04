@@ -116,7 +116,7 @@ private string my_json_pprint(ref JSONValue jsonObj)
 {
 	int[string] dict = [
 		"name" : 1, "description " : 2, "homepage" : 3, "authors" : 4, "copyright"
-		: 5, "license" : 6, "targetType" : 7, "targetName" : 8, "targetPath" : 9,
+		: 5, "license" : 6, "targetName" : 7, "targetType" : 8, "targetPath" : 9,
 		"workingDirectory" : 10, "dependencies" : 11, "subConfigurations" : 12, "versions" : 13, "debugVersions" : 14,
 		"importPaths" : 15, "stringImportPaths" : 16, "sourcePaths" : 17, "mainSourceFile" : 18, "sourceFiles" : 19,
 		"excludedSourceFiles" : 20, "libs" : 21, "subPackages" : 0, "configurations" : 0, "buildTypes" : 0,
@@ -186,10 +186,8 @@ private void handle_exe_output(string[] args)
 		writefln(`Invalid command "%s".`, command);
 		exit(1);
 	}
-	string dub_json_path = format!`%s.json`(g_context.fullPath);
-	writefln(`dub_json_path="%s"`, dub_json_path);
-	int[string] dummyAlist;
-	JSONValue jsonObj = dummyAlist;
+	//int[string] dummyAlist;
+	JSONValue jsonObj = parseJSON("{}"); //dummyAlist;
 	jsonObj["name"] = g_context.baseName.toLower;
 	jsonObj["targetName"] = g_context.baseName;
 	jsonObj["targetType"] = "executable";
@@ -255,8 +253,8 @@ private void handle_exe_output(string[] args)
 	int sub_config_count = 0;
 	if (packages.length > 0)
 	{
-		string[string] dependencies_init;
-		jsonObj["dependencies"] = dependencies_init;
+		//string[string] dependencies_init;
+		jsonObj["dependencies"] = parseJSON("{}"); //dependencies_init;
 		foreach (ref pkg; packages)
 		{
 			jsonObj["dependencies"][pkg._name] = pkg._version;
@@ -265,8 +263,8 @@ private void handle_exe_output(string[] args)
 		}
 		if (sub_config_count > 0)
 		{
-			string[string] sub_config_init;
-			jsonObj["subConfigurations"] = sub_config_init;
+			//string[string] sub_config_init;
+			jsonObj["subConfigurations"] = parseJSON("{}"); //sub_config_init;
 			foreach (ref pkg; packages)
 			{
 				if (pkg._sub_config.empty)
@@ -278,7 +276,12 @@ private void handle_exe_output(string[] args)
 	//stringImportPaths
 	string json = my_json_pprint(jsonObj);
 	writeln(json);
-	writeln(packages);
+	//writeln(packages);
+	string dub_json_path = format!`%s.json`(g_context.fullPath);
+	writefln(`dub_json_path="%s"`, dub_json_path);
+	File file1 = File(dub_json_path, "w");
+	file1.write(json);
+	file1.close();
 	exit(0);
 }
 
