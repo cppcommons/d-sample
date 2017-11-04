@@ -1,0 +1,47 @@
+http://forum.dlang.org/thread/jccg6a$2s0u$1@digitalmars.com
+
+You might want to use my dom.d
+
+https://github.com/adamdruppe/misc-stuff-including-D-programming-language-web-stuff
+
+Grab dom.d, characterencodings.d, and curl.d.
+
+Here's an example program:
+
+====
+import arsd.dom;
+import arsd.curl;
+
+import std.stdio;
+
+void main() {
+	auto document = new Document();
+	document.parseGarbage(curl("http://digitalmars.com/"));
+
+	writeln(document.querySelector("p"));
+}
+=====
+
+Compile like this:
+
+dmd yourfile.d dom.d characterencodings.d curl.d
+
+You'll need the curl C library from an outside source. If you're
+on Linux, it is probably already installed. If you're on Windows,
+check the Internet.
+
+// this downloads a file from the web and returns a string
+curl(site url);
+
+// this builds a DOM tree out of html. It's called parseGarbage because
+// it tries to figure out really bad html - so it works on a lot of web
+// sites.
+document.parseGarbage(string);
+
+// My dom.d includes a lot of functions you might know from
+// javascript like getElementById, getElementsByTagName, and the
+// get element by CSS selector functions
+document.querySelector("p") // get the first paragraph
+
+
+And then, finally, the writeln puts out the html of an element.

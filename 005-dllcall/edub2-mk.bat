@@ -11,7 +11,7 @@ rmdir /s /q edub2.exe.bin
 ::edub2 apps.json build :app3
 ::edub2 app1.dub.json generate visuald
 ::goto skip
-edub2 test1.exe init app1.d ^
+edub2 test1.exe build app1.d emake*.d ^
 defines=A:@B ^
 defs=C:@D ^
 main=main.d ^
@@ -29,5 +29,5 @@ libs=gdi32.lib:kernel32.lib ^
 "  [d2sqlite3E:~master:without-lib]  "
 echo errorlevel=%errorlevel%
 :skip
-edub2 test2.exe build app1.d curl.d lib_entry.lib [d2sqlite3:~master:without-lib] --build=release
-echo errorlevel=%errorlevel%
+::edub2 test2.exe build app1.d curl.d lib_entry.lib [d2sqlite3:~master:without-lib] --build=release
+::echo errorlevel=%errorlevel%

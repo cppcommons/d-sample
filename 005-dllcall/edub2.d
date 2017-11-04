@@ -2,8 +2,9 @@
 module main;
 import std.algorithm : canFind, startsWith, endsWith;
 import std.array : empty, split, replace;
-import std.file : chdir, copy, exists, getcwd, mkdirRecurse, read, rename,
-	remove, rmdirRecurse, setTimes, write, FileException, PreserveAttributes;
+import std.file : chdir, copy, dirEntries, exists, getcwd, mkdirRecurse, read,
+	rename, remove, rmdirRecurse, setTimes, write, FileException,
+	PreserveAttributes, SpanMode;
 import std.format : format;
 import std.json;
 import std.path : absolutePath, baseName, dirName, extension, isAbsolute;
@@ -398,13 +399,38 @@ int main(string[] args)
 		}
 		assert(path_array.type == JSON_TYPE.ARRAY);
 		writeln(path_array.array.length);
+		/+
 		for (int i = 0; i < path_array.array.length; i++)
 		{
 			auto val = path_array.array[i];
 			if (val.type() != JSON_TYPE.STRING)
 				continue;
 			path_array.array[i] = make_abs_path(val.str);
+		}+/
+		JSONValue[] new_array;
+		for (int i = 0; i < path_array.array.length; i++)
+		{
+			auto val = path_array.array[i];
+			if (val.type() != JSON_TYPE.STRING)
+			{
+				new_array ~= val;
+				continue;
+			}
+			string abs_path = make_abs_path(val.str);
+			try
+			{
+				auto files = dirEntries(dirName(abs_path), baseName(abs_path), SpanMode.shallow);
+				foreach (file; files)
+				{
+					new_array ~= JSONValue(file.name.replace(`\`, `/`));
+				}
+			}
+			catch (Exception ex)
+			{
+			}
 		}
+		path_array.array.length = 0;
+		path_array.array ~= new_array;
 	}
 
 	auto jsonText2 = my_json_pprint(jsonObj);

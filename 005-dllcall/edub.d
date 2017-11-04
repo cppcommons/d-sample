@@ -2,8 +2,9 @@
 module main;
 import std.algorithm : canFind, startsWith, endsWith;
 import std.array : empty, split, replace;
-import std.file : chdir, copy, exists, getcwd, mkdirRecurse, read, rename,
-	remove, rmdirRecurse, setTimes, write, FileException, PreserveAttributes;
+import std.file : chdir, copy, dirEntries, exists, getcwd, mkdirRecurse, read,
+	rename, remove, rmdirRecurse, setTimes, write, FileException,
+	PreserveAttributes, SpanMode;
 import std.format : format;
 import std.json;
 import std.path : absolutePath, baseName, dirName, extension, isAbsolute;
@@ -209,11 +210,14 @@ private int handle_exe_output(string[] args)
 	jsonObj["targetName"] = g_context.baseName;
 	jsonObj["targetType"] = "executable";
 	string[] dub_opts;
+	string main_source;
 	string[] source_files;
 	string[] source_dirs;
 	string[] include_dirs;
 	string[] resource_dirs;
 	string[] libs;
+	string[] defines;
+	string[] debug_defines;
 	struct _PackageSpec
 	{
 		string _name;
@@ -256,6 +260,10 @@ private int handle_exe_output(string[] args)
 				dub_opts ~= arg;
 			}
 		}
+		else if (arg.startsWith(`main=`))
+		{
+			main_source = arg_strip_prefix(arg);
+		}
 		else if (arg.startsWith(`source=`) || arg.startsWith(`src=`))
 		{
 			source_dirs ~= normalize_path(arg_strip_prefix(arg));
@@ -268,15 +276,28 @@ private int handle_exe_output(string[] args)
 		{
 			include_dirs ~= normalize_path(arg_strip_prefix(arg));
 		}
-		else if (arg.startsWith(`libs=`))
+		else if (arg.startsWith(`libs=`) || arg.startsWith(`lib=`))
 		{
 			libs ~= arg_strip_prefix(arg).split(`:`);
+		}
+		else if (arg.startsWith(`defines=`) || arg.startsWith(`defs=`)
+				|| arg.startsWith(`define=`) || arg.startsWith(`def=`))
+		{
+			foreach (def; arg_strip_prefix(arg).split(`:`))
+			{
+				if (def.startsWith(`@`))
+					debug_defines ~= def[1 .. $];
+				else
+					defines ~= def;
+			}
 		}
 		else
 		{
 			source_files ~= arg;
 		}
 	}
+	if (main_source)
+		jsonObj["mainSourceFile"] = main_source;
 	if (source_files)
 		jsonObj["sourceFiles"] = source_files;
 	if (source_dirs)
@@ -287,6 +308,10 @@ private int handle_exe_output(string[] args)
 		jsonObj["stringImportPaths"] = resource_dirs;
 	if (libs)
 		jsonObj["libs"] = libs;
+	if (defines)
+		jsonObj["versions"] = defines;
+	if (debug_defines)
+		jsonObj["debugVersions"] = debug_defines;
 	int sub_config_count = 0;
 	if (packages.length > 0)
 	{
@@ -374,13 +399,38 @@ int main(string[] args)
 		}
 		assert(path_array.type == JSON_TYPE.ARRAY);
 		writeln(path_array.array.length);
+		/+
 		for (int i = 0; i < path_array.array.length; i++)
 		{
 			auto val = path_array.array[i];
 			if (val.type() != JSON_TYPE.STRING)
 				continue;
 			path_array.array[i] = make_abs_path(val.str);
+		}+/
+		JSONValue[] new_array;
+		for (int i = 0; i < path_array.array.length; i++)
+		{
+			auto val = path_array.array[i];
+			if (val.type() != JSON_TYPE.STRING)
+			{
+				new_array ~= val;
+				continue;
+			}
+			string abs_path = make_abs_path(val.str);
+			try
+			{
+				auto files = dirEntries(dirName(abs_path), baseName(abs_path), SpanMode.shallow);
+				foreach (file; files)
+				{
+					new_array ~= JSONValue(file.name.replace(`\`, `/`));
+				}
+			}
+			catch (Exception ex)
+			{
+			}
 		}
+		path_array.array.length = 0;
+		path_array.array ~= new_array;
 	}
 
 	auto jsonText2 = my_json_pprint(jsonObj);
