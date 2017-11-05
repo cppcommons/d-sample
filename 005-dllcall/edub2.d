@@ -84,10 +84,9 @@ private string make_abs_path(string path)
 		string[] parts = url.split(`/`);
 		import std.algorithm : remove;
 
-		writeln(parts);
-		//parts = remove(parts, parts.length - 3);
+		//writeln(parts);
 		parts = remove(parts, 2);
-		writeln(parts);
+		//writeln(parts);
 		return parts.join(`/`).replace(uuid, `https://raw.githubusercontent.com/`);
 	}
 
@@ -297,7 +296,7 @@ private int handle_exe_output(string[] args)
 
 	writeln(`handle_exe_output:`, args);
 	string command = pop(args);
-	writefln(`handle_exe_output: %s %s %s`, g_context.fileName, command, args);
+	//writefln(`handle_exe_output: %s %s %s`, g_context.fileName, command, args);
 	switch (command)
 	{
 	case `run`:
@@ -491,7 +490,7 @@ int main(string[] args)
 {
 	//writeln(modify_download_url("https://github.com/apache/thrift/blob/master/CHANGES")); exit(0);
 	//writeln(args.length);
-	writeln(`args=`, args);
+	//writeln(`args=`, args);
 	if (args.length < 2)
 	{
 		writefln("Usage: edub2 PROJECT.json [build/run]");
@@ -528,6 +527,7 @@ int main(string[] args)
 	{
 		return relativePath(path, folder_name).replace(`\`, `/`);
 	}
+	/+
 	JSONValue*[] unit_list;
 	collect_compile_units(&jsonObj, unit_list, `[root]`);
 	writefln(`unit_list.length=%d`, unit_list.length);
@@ -550,6 +550,7 @@ int main(string[] args)
 			unit.object["sourcePaths"].array ~= JSONValue(`src`);
 		}
 	}
+	+/
 	/+
 	JSONValue*[] unit_list;
 	collect_compile_units(&jsonObj, unit_list, `[root]`);
@@ -633,6 +634,7 @@ int main(string[] args)
 		assert(path_array.type == JSON_TYPE.ARRAY);
 		//writeln(path_array.array.length);
 		JSONValue[] new_array;
+		string[] check_array;
 		for (int i = 0; i < path_array.array.length; i++)
 		{
 			auto val = path_array.array[i];
@@ -644,6 +646,8 @@ int main(string[] args)
 			string abs_path = make_abs_path(val.str);
 			foreach (real_path; expand_wild_cards(abs_path))
 			{
+				if (check_array.canFind(real_path)) continue;
+				check_array ~= real_path;
 				new_array ~= JSONValue(make_relative_to_folder(real_path));
 				//new_array ~= JSONValue(real_path);
 			}
