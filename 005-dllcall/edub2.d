@@ -388,7 +388,7 @@ private int handle_exe_output(string[] args)
 	if (source_files)
 		jsonObj["sourceFiles"] = source_files;
 	if (source_dirs)
-		jsonObj["sourcePaths"] = resource_dirs;
+		jsonObj["sourcePaths"] = source_dirs;
 	if (include_dirs)
 		jsonObj["importPaths"] = include_dirs;
 	if (resource_dirs)
