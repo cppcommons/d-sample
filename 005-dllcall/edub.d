@@ -60,6 +60,31 @@ private string make_abs_path(string path)
 	}
 }
 
+private string[] expand_wild_cards(string path)
+{
+	string[] result;
+	if (!path.canFind('*') && !path.canFind('?') && !path.canFind('{') && !path.canFind('}'))
+	{
+		result ~= path;
+		return result;
+	}
+	try
+	{
+		auto files = dirEntries(dirName(path), baseName(path), SpanMode.shallow);
+		foreach (file; files)
+		{
+			string file_name = file.name.replace(`\`, `/`);
+			if (file_name.startsWith(`./`) && !path.startsWith(`./`) && !path.startsWith(`.\`))
+				file_name = file_name[2 .. $];
+			result ~= file_name;
+		}
+	}
+	catch (Exception ex)
+	{
+	}
+	return result;
+}
+
 private int emake_run_command(string[] dub_cmdline)
 {
 	auto pipes = pipeProcess(dub_cmdline, Redirect.stdout | Redirect.stderrToStdout);
@@ -94,7 +119,8 @@ void rewite_dub_json(JSONValue* jsonObj, ref JSONValue*[] path_array_list, strin
 		{
 			if (!("targetPath" in jsonObj.object))
 			{
-				jsonObj.object["targetPath"] = `.`;
+				//jsonObj.object["targetPath"] = `.`;
+				jsonObj.object["targetPath"] = getcwd();
 			}
 		}
 		JSONValue*[] result;
@@ -293,7 +319,30 @@ private int handle_exe_output(string[] args)
 		}
 		else
 		{
-			source_files ~= arg;
+			source_files ~= expand_wild_cards(arg);
+			/+
+			if (arg.canFind('*') || arg.canFind('?') || arg.canFind('{') || arg.canFind('}'))
+			{
+				try
+				{
+					auto files = dirEntries(dirName(arg), baseName(arg), SpanMode.shallow);
+					foreach (file; files)
+					{
+						string file_name = file.name.replace(`\`, `/`);
+						if (file_name.startsWith("./"))
+							file_name = file_name[2 .. $];
+						source_files ~= file_name;
+					}
+				}
+				catch (Exception ex)
+				{
+				}
+			}
+			else
+			{
+				source_files ~= arg;
+			}
+			+/
 		}
 	}
 	if (main_source)
@@ -417,17 +466,31 @@ int main(string[] args)
 				continue;
 			}
 			string abs_path = make_abs_path(val.str);
-			try
+			foreach (real_path; expand_wild_cards(abs_path))
 			{
-				auto files = dirEntries(dirName(abs_path), baseName(abs_path), SpanMode.shallow);
-				foreach (file; files)
+				new_array ~= JSONValue(real_path);
+			}
+			/+
+			if (abs_path.canFind('*') || abs_path.canFind('?')
+					|| abs_path.canFind('{') || abs_path.canFind('}'))
+			{
+				try
 				{
-					new_array ~= JSONValue(file.name.replace(`\`, `/`));
+					auto files = dirEntries(dirName(abs_path), baseName(abs_path), SpanMode.shallow);
+					foreach (file; files)
+					{
+						new_array ~= JSONValue(file.name.replace(`\`, `/`));
+					}
+				}
+				catch (Exception ex)
+				{
 				}
 			}
-			catch (Exception ex)
+			else
 			{
+				new_array ~= JSONValue(abs_path);
 			}
+			+/
 		}
 		path_array.array.length = 0;
 		path_array.array ~= new_array;
@@ -435,7 +498,9 @@ int main(string[] args)
 
 	auto jsonText2 = my_json_pprint(jsonObj);
 	writeln(jsonText2);
-	string folder_name = format!"%s.bin"(g_context.basePath);
+	//string folder_name = format!"%s.bin"(g_context.basePath);
+	string folder_name = format!"%s/%s.bin"(getcwd(), g_context.baseName).replace(`\`, `/`);
+	writeln(`folder_name=`, folder_name); //exit(0);
 	writeln(folder_name);
 	mkdirRecurse(folder_name);
 	try

@@ -60,6 +60,31 @@ private string make_abs_path(string path)
 	}
 }
 
+private string[] expand_wild_cards(string path)
+{
+	string[] result;
+	if (!path.canFind('*') && !path.canFind('?') && !path.canFind('{') && !path.canFind('}'))
+	{
+		result ~= path;
+		return result;
+	}
+	try
+	{
+		auto files = dirEntries(dirName(path), baseName(path), SpanMode.shallow);
+		foreach (file; files)
+		{
+			string file_name = file.name.replace(`\`, `/`);
+			if (file_name.startsWith(`./`) && !path.startsWith(`./`) && !path.startsWith(`.\`))
+				file_name = file_name[2 .. $];
+			result ~= file_name;
+		}
+	}
+	catch (Exception ex)
+	{
+	}
+	return result;
+}
+
 private int emake_run_command(string[] dub_cmdline)
 {
 	auto pipes = pipeProcess(dub_cmdline, Redirect.stdout | Redirect.stderrToStdout);
@@ -294,8 +319,9 @@ private int handle_exe_output(string[] args)
 		}
 		else
 		{
-			if (arg.canFind('*') || arg.canFind('?')
-					|| arg.canFind('{') || arg.canFind('}'))
+			source_files ~= expand_wild_cards(arg);
+			/+
+			if (arg.canFind('*') || arg.canFind('?') || arg.canFind('{') || arg.canFind('}'))
 			{
 				try
 				{
@@ -303,7 +329,8 @@ private int handle_exe_output(string[] args)
 					foreach (file; files)
 					{
 						string file_name = file.name.replace(`\`, `/`);
-						if (file_name.startsWith("./")) file_name = file_name[2..$];
+						if (file_name.startsWith("./"))
+							file_name = file_name[2 .. $];
 						source_files ~= file_name;
 					}
 				}
@@ -315,6 +342,7 @@ private int handle_exe_output(string[] args)
 			{
 				source_files ~= arg;
 			}
+			+/
 		}
 	}
 	if (main_source)
@@ -438,6 +466,11 @@ int main(string[] args)
 				continue;
 			}
 			string abs_path = make_abs_path(val.str);
+			foreach (real_path; expand_wild_cards(abs_path))
+			{
+				new_array ~= JSONValue(real_path);
+			}
+			/+
 			if (abs_path.canFind('*') || abs_path.canFind('?')
 					|| abs_path.canFind('{') || abs_path.canFind('}'))
 			{
@@ -457,6 +490,7 @@ int main(string[] args)
 			{
 				new_array ~= JSONValue(abs_path);
 			}
+			+/
 		}
 		path_array.array.length = 0;
 		path_array.array ~= new_array;
