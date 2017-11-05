@@ -7,7 +7,8 @@ import std.file : chdir, copy, dirEntries, exists, getcwd, mkdirRecurse, read,
 	PreserveAttributes, SpanMode;
 import std.format : format;
 import std.json;
-import std.path : absolutePath, baseName, dirName, extension, isAbsolute;
+import std.path : absolutePath, baseName, dirName, extension, isAbsolute,
+	relativePath;
 import std.process : execute, executeShell;
 import std.regex : regex, matchAll, matchFirst, replaceAll;
 import std.stdio : writefln, writeln, File;
@@ -470,10 +471,16 @@ int main(string[] args)
 		assert(0);
 		break;
 	}
+	string folder_name = format!"%s/%s.bin"(getcwd(), g_context.baseName).replace(`\`, `/`);
+
 	auto jsonText = cast(char[]) read(g_context.fullPath);
 	//writeln(jsonText);
 	auto jsonObj = parseJSON(jsonText);
 
+	string make_relative_to_folder(string path)
+	{
+		return relativePath(path, folder_name).replace(`\`, `/`);
+	}
 	//JSONValue*[] path_array_list = get_path_array_list(&jsonObj);
 	JSONValue*[] path_array_list;
 	rewite_dub_json(&jsonObj, path_array_list, `[root]`);
@@ -482,7 +489,7 @@ int main(string[] args)
 	{
 		if (path_array.type == JSON_TYPE.STRING)
 		{
-			path_array.str = make_abs_path(path_array.str);
+			path_array.str = make_relative_to_folder(make_abs_path(path_array.str));
 			continue;
 		}
 		assert(path_array.type == JSON_TYPE.ARRAY);
@@ -499,7 +506,7 @@ int main(string[] args)
 			string abs_path = make_abs_path(val.str);
 			foreach (real_path; expand_wild_cards(abs_path))
 			{
-				new_array ~= JSONValue(real_path);
+				new_array ~= JSONValue(make_relative_to_folder(real_path));
 			}
 		}
 		path_array.array.length = 0;
@@ -509,7 +516,7 @@ int main(string[] args)
 	auto jsonText2 = my_json_pprint(jsonObj);
 	//writeln(jsonText2);
 	//string folder_name = format!"%s.bin"(g_context.basePath);
-	string folder_name = format!"%s/%s.bin"(getcwd(), g_context.baseName).replace(`\`, `/`);
+	//string folder_name = format!"%s/%s.bin"(getcwd(), g_context.baseName).replace(`\`, `/`);
 	//writeln(`folder_name=`, folder_name); //exit(0);
 	//writeln(folder_name);
 	mkdirRecurse(folder_name);
