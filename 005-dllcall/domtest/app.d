@@ -1,25 +1,43 @@
 import arsd.dom;
-import arsd.curl;
-
+import easy.windows.std.net.curl;
+import std.json;
 import std.stdio;
 
 void main()
 {
-	string html = curl("https://qiita.com/search?sort=created&q=created%3A2016-12");
+	//string html = curl("https://qiita.com/search?sort=created&q=created%3A2016-12");
+	string html = cast(string)get("https://qiita.com/search?sort=created&q=created%3A2016-12");
 	writeln(html);
 	auto document = new Document();
 	document.parseGarbage(html);
 	writeln(document.querySelector("p"));
 	Element[] elems = document.getElementsByClassName(`searchResult`);
 	writeln(elems.length);
+	JSONValue array = parseJSON(`[]`);
 	foreach(ref elem; elems)
 	{
-		writeln(elem.outerHTML);
+		//writeln(elem.outerHTML);
+		JSONValue rec = parseJSON(`{}`);
+		rec.object["data-uuid"] = elem.getAttribute(`data-uuid`);
 		writeln();
 		writeln(`data-uuid=`, elem.getAttribute(`data-uuid`));
+		writeln(elem.getElementsByClassName(`searchResult_statusList`)[0].innerText);
 		writeln(elem.getElementsByClassName(`searchResult_itemTitle`)[0].innerText);
+		Element a = elem.getElementsByClassName(`searchResult_itemTitle`)[0].requireSelector("a");
+		writeln(a.getAttribute("href"));
+		writeln(elem.getElementsByClassName(`searchResult_header`)[0].innerHTML);
+		writeln(elem.getElementsByClassName(`searchResult_header`)[0].innerText);
+		writeln(elem.getElementsByClassName(`tagList`)[0].innerHTML);
+		writeln(elem.getElementsByClassName(`tagList`)[0].innerText);
+		writeln(elem.getElementsByClassName(`searchResult_snippet`)[0].innerText);
+		foreach(ref tag; elem.getElementsByClassName(`tagList_item`))
+		{
+			writefln("tag=%s", tag.innerText);
+		}
+		array.array ~= rec;
 		writeln();
 	}
+	writeln(array.toPrettyString(JSONOptions.doNotEscapeSlashes));
 }
 
 version (none) void main()

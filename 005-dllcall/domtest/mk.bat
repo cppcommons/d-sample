@@ -1,16 +1,24 @@
-edub domtest.exe build ^
-app.d ^
+chcp 65001
+edub domtest.exe run ^
+app.d ../curl.d ^
 characterencodings.d@https://github.com/adamdruppe/arsd/blob/master/characterencodings.d ^
-curl.d@https://github.com/adamdruppe/arsd/blob/master/curl.d ^
 https://github.com/adamdruppe/arsd/blob/master/dom.d ^
 ../lib_entry.lib ^
 [d2sqlite3:~master:all-included]
 echo errorlevel=%errorlevel%
 
-::goto skip
+goto skip
+
+:: https://code.dlang.org/packages/htmld
 edub test1.exe build ^
-https://github.com/Bystroushaak/DHTMLParser/blob/master/dhtmlparser.d ^
-https://github.com/Bystroushaak/DHTMLParser/blob/master/quote_escaper.d ^
-https://github.com/Bystroushaak/DHTMLParser/blob/master/examples/find_links.d ^
-[d2sqlite3:~master:all-included]
+htmld-test.d ^
+[htmld]
+
+:: https://github.com/bakkdoor/gumbo-d
+edub test2.exe build ^
+https://github.com/bakkdoor/gumbo-d/blob/master/examples/find_links.d ^
+https://github.com/bakkdoor/gumbo-d/blob/master/source/gumbo/capi.d ^
+https://github.com/bakkdoor/gumbo-d/blob/master/source/gumbo/node.d ^
+https://github.com/bakkdoor/gumbo-d/blob/master/source/gumbo/parse.d
+
 :skip
