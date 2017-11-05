@@ -1,8 +1,10 @@
 import arsd.dom;
+import dateparser;
 import easy.windows.std.net.curl;
 import jsonizer;
 import std.array;
 import std.conv;
+import std.datetime;
 import std.json;
 import std.stdio;
 import std.string;
@@ -24,11 +26,22 @@ struct QPost
 	@jsonize
 	{
 		string uuid;
+		long favCount;
+		string title;
+		string href;
+		string header;
+		string description;
+		string tags;
 	}
 }
 
 void main()
 {
+	assert(parse("2003-09-25") == SysTime(DateTime(2003, 9, 25)));
+	assert(parse("09/25/2003") == SysTime(DateTime(2003, 9, 25)));
+	assert(parse("Sep 2003") == SysTime(DateTime(2003, 9, 1)));
+	assert(parse("Jan 01, 2017") == SysTime(DateTime(2017, 1, 1)));
+
 	S s = {1, 1.23f};
 	writeln(toJSON(s));
 	S[] list;
@@ -55,12 +68,19 @@ void main()
 		JSONValue rec = parseJSON(`{}`);
 		rec.object["data-uuid"] = elem.getAttribute(`data-uuid`);
 		post.uuid = elem.getAttribute(`data-uuid`);
+		post.favCount = to!long(elem.getElementsByClassName(
+				`searchResult_statusList`)[0].innerText.strip);
 		rec.object["fav-count"] = to!long(elem.getElementsByClassName(
 				`searchResult_statusList`)[0].innerText.strip);
+		post.title = elem.getElementsByClassName(`searchResult_itemTitle`)[0].innerText;
 		rec.object["title"] = elem.getElementsByClassName(`searchResult_itemTitle`)[0].innerText;
+		post.href = elem.getElementsByClassName(
+				`searchResult_itemTitle`)[0].requireSelector("a").getAttribute("href");
 		rec.object["href"] = elem.getElementsByClassName(
 				`searchResult_itemTitle`)[0].requireSelector("a").getAttribute("href");
+		post.header = elem.getElementsByClassName(`searchResult_header`)[0].innerText;
 		rec.object["header"] = elem.getElementsByClassName(`searchResult_header`)[0].innerText;
+		post.description = elem.getElementsByClassName(`searchResult_snippet`)[0].innerText;
 		rec.object["description"] = elem.getElementsByClassName(
 				`searchResult_snippet`)[0].innerText;
 		string[] tag_array;
@@ -69,6 +89,7 @@ void main()
 			writefln("tag=%s", tag.innerText);
 			tag_array ~= tag.innerText;
 		}
+		post.tags = tag_array.join(`|`);
 		rec.object["tags"] = tag_array.join(`|`);
 		posts ~= post;
 		array.array ~= rec;

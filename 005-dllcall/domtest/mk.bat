@@ -4,7 +4,7 @@ app.d ../curl.d ^
 characterencodings.d@https://github.com/adamdruppe/arsd/blob/master/characterencodings.d ^
 https://github.com/adamdruppe/arsd/blob/master/dom.d ^
 ../lib_entry.lib ^
-[jsonizer]
+[jsonizer] [dateparser]
 echo errorlevel=%errorlevel%
 
 goto skip

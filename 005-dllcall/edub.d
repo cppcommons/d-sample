@@ -528,7 +528,29 @@ int main(string[] args)
 	{
 		return relativePath(path, folder_name).replace(`\`, `/`);
 	}
-	//JSONValue*[] path_array_list = get_path_array_list(&jsonObj);
+	JSONValue*[] unit_list;
+	collect_compile_units(&jsonObj, unit_list, `[root]`);
+	writefln(`unit_list.length=%d`, unit_list.length);
+	foreach (unit; unit_list)
+	{
+		//unit.object["dummy"] = 1234;
+		string[] source_path_list;
+		string[] found_source_list;
+		JSONValue* source_paths = cast(JSONValue*)("sourcePaths" in *unit);
+		if (source_paths && source_paths.type == JSON_TYPE.ARRAY)
+		{
+			writeln("found!");
+		}
+		else
+		{
+			writeln("not found!");
+			source_path_list = [`source`, `src`];
+			unit.object["sourcePaths"] = parseJSON("[]");
+			unit.object["sourcePaths"].array ~= JSONValue(`source`);
+			unit.object["sourcePaths"].array ~= JSONValue(`src`);
+		}
+	}
+	/+
 	JSONValue*[] unit_list;
 	collect_compile_units(&jsonObj, unit_list, `[root]`);
 	writefln(`unit_list.length=%d`, unit_list.length);
@@ -596,7 +618,7 @@ int main(string[] args)
 		//writeln(`(D)`);
 	}
 	//exit(0);
-
+	+/
 	JSONValue*[] path_array_list;
 	rewite_dub_json(&jsonObj, path_array_list, `[root]`);
 	//writeln(path_array_list.length);
@@ -604,8 +626,8 @@ int main(string[] args)
 	{
 		if (path_array.type == JSON_TYPE.STRING)
 		{
-			//path_array.str = make_relative_to_folder(make_abs_path(path_array.str));
-			path_array.str = make_abs_path(path_array.str);
+			path_array.str = make_relative_to_folder(make_abs_path(path_array.str));
+			//path_array.str = make_abs_path(path_array.str);
 			continue;
 		}
 		assert(path_array.type == JSON_TYPE.ARRAY);
@@ -622,8 +644,8 @@ int main(string[] args)
 			string abs_path = make_abs_path(val.str);
 			foreach (real_path; expand_wild_cards(abs_path))
 			{
-				//new_array ~= JSONValue(make_relative_to_folder(real_path));
-				new_array ~= JSONValue(real_path);
+				new_array ~= JSONValue(make_relative_to_folder(real_path));
+				//new_array ~= JSONValue(real_path);
 			}
 		}
 		path_array.array.length = 0;
