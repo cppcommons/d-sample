@@ -84,9 +84,10 @@ private string make_abs_path(string path)
 		string[] parts = url.split(`/`);
 		import std.algorithm : remove;
 
-		//writeln(parts);
-		parts = remove(parts, parts.length - 3);
-		//writeln(parts);
+		writeln(parts);
+		//parts = remove(parts, parts.length - 3);
+		parts = remove(parts, 2);
+		writeln(parts);
 		return parts.join(`/`).replace(uuid, `https://raw.githubusercontent.com/`);
 	}
 
