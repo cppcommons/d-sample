@@ -46,6 +46,14 @@ class EDubContext
 
 private __gshared EDubContext g_context = new EDubContext();
 
+string url_last_part(string url)
+{
+	string[] _split = url.split(`/`);
+	if (_split.length == 0)
+		return ``;
+	return _split[_split.length - 1];
+}
+
 private string make_abs_path(string path)
 {
 	string[] split_donwload_path(string arg)
@@ -83,7 +91,12 @@ private string make_abs_path(string path)
 	}
 
 	string url = null;
-	if (path.canFind("@"))
+	if (path.startsWith(`http://`) || path.startsWith(`https://`))
+	{
+		url = modify_download_url(path);
+		path = url_last_part(url);
+	}
+	else if (path.canFind("@"))
 	{
 		string[] split = split_donwload_path(path);
 		path = split[0];
