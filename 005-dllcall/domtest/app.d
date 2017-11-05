@@ -1,16 +1,37 @@
 import arsd.dom;
 import easy.windows.std.net.curl;
+import jsonizer;
 import std.array;
 import std.conv;
 import std.json;
 import std.stdio;
 import std.string;
 
+struct S
+{
+	mixin JsonizeMe; // this is required to support jsonization
+	@jsonize
+	{ // public serialized members
+		int x;
+		float f;
+	}
+	string dontJsonMe; // jsonizer won't touch members not marked with @jsonize
+}
+
 void main()
 {
+	S s = {1,1.23f};
+	writeln(toJSON(s));
+	S[] list;
+	list ~= s;
+	list ~= s;
+	writeln(toJSON(list));
+	JSONValue json = toJSON(list);
+	S[] list2 = json.fromJSON!(S[]);
+	writeln(list2);
 	//string html = curl("https://qiita.com/search?sort=created&q=created%3A2016-12");
 	string html = cast(string) get("https://qiita.com/search?sort=created&q=created%3A2016-12");
-	writeln(html);
+	//writeln(html);
 	auto document = new Document();
 	document.parseGarbage(html);
 	writeln(document.querySelector("p"));
@@ -22,8 +43,8 @@ void main()
 		//writeln(elem.outerHTML);
 		JSONValue rec = parseJSON(`{}`);
 		rec.object["data-uuid"] = elem.getAttribute(`data-uuid`);
-		rec.object["fav-count"] = to!long(
-				elem.getElementsByClassName(`searchResult_statusList`)[0].innerText.strip);
+		rec.object["fav-count"] = to!long(elem.getElementsByClassName(
+				`searchResult_statusList`)[0].innerText.strip);
 		rec.object["title"] = elem.getElementsByClassName(`searchResult_itemTitle`)[0].innerText;
 		rec.object["href"] = elem.getElementsByClassName(
 				`searchResult_itemTitle`)[0].requireSelector("a").getAttribute("href");

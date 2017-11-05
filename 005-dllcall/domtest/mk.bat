@@ -4,7 +4,7 @@ app.d ../curl.d ^
 characterencodings.d@https://github.com/adamdruppe/arsd/blob/master/characterencodings.d ^
 https://github.com/adamdruppe/arsd/blob/master/dom.d ^
 ../lib_entry.lib ^
-[d2sqlite3:~master:all-included]
+[jsonizer]
 echo errorlevel=%errorlevel%
 
 goto skip
