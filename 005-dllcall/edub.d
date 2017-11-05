@@ -1,7 +1,7 @@
 // https://code.dlang.org/package-format?lang=json
 module main;
 import std.algorithm : canFind, startsWith, endsWith;
-import std.array : empty, split, replace;
+import std.array : empty, join, split, replace;
 import std.file : chdir, copy, dirEntries, exists, getcwd, mkdirRecurse, read,
 	rename, remove, rmdirRecurse, setTimes, write, FileException,
 	PreserveAttributes, SpanMode;
@@ -17,8 +17,6 @@ import std.process : pipeProcess, wait, Redirect;
 import std.string : strip;
 import std.uni : toLower;
 import std.uuid : sha1UUID, UUID;
-
-//import emake_common : emake_run_command;
 
 private void exit(int code)
 {
@@ -47,33 +45,49 @@ class EDubContext
 
 private __gshared EDubContext g_context = new EDubContext();
 
-string[] split_donwload_path(string arg)
-{
-	int prefix_len(string arg)
-	{
-		auto re = regex(`^[^@]+@`);
-		auto m = matchFirst(arg, re);
-		if (!m)
-			return 0;
-		return m[0].length;
-	}
-
-	int len = prefix_len(arg);
-	string[] result;
-	result ~= arg[0 .. len - 1];
-	result ~= arg[len .. $];
-	return result;
-}
-
 private string make_abs_path(string path)
 {
+	string[] split_donwload_path(string arg)
+	{
+		int prefix_len(string arg)
+		{
+			auto re = regex(`^[^@]+@`);
+			auto m = matchFirst(arg, re);
+			if (!m)
+				return 0;
+			return m[0].length;
+		}
+
+		int len = prefix_len(arg);
+		string[] result;
+		result ~= arg[0 .. len - 1];
+		result ~= arg[len .. $];
+		return result;
+	}
+
+	string modify_download_url(string url)
+	{
+		if (!url.startsWith(`https://github.com/`))
+			return url;
+		string uuid = sha1UUID("0").toString;
+		uuid = format!`{%s}`(uuid);
+		url = url.replace(`https://github.com/`, uuid);
+		string[] parts = url.split(`/`);
+		import std.algorithm : remove;
+
+		//writeln(parts);
+		parts = remove(parts, parts.length - 3);
+		//writeln(parts);
+		return parts.join(`/`).replace(uuid, `https://raw.githubusercontent.com/`);
+	}
+
 	string url = null;
 	if (path.canFind("@"))
 	{
 		string[] split = split_donwload_path(path);
 		path = split[0];
 		//writeln(`new_path=`, path);
-		url = split[1];
+		url = modify_download_url(split[1]);
 		//writeln(`url=`, url);
 	}
 	string abs_path;
@@ -89,6 +103,7 @@ private string make_abs_path(string path)
 	if (url !is null)
 	{
 		import std.net.curl : byChunkAsync;
+
 		writefln(`Donwloading %s`, url);
 		ubyte[] bytes;
 		bytes.reserve(10240);
@@ -425,6 +440,7 @@ private int handle_exe_output(string[] args)
 
 int main(string[] args)
 {
+	//writeln(modify_download_url("https://github.com/apache/thrift/blob/master/CHANGES")); exit(0);
 	//writeln(args.length);
 	writeln(`args=`, args);
 	if (args.length < 2)
