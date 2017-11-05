@@ -1,3 +1,4 @@
+copy edub2.d edub.d
 del edub.exe
 rmdir /s /q edub.exe.bin
 dmd -of=edub.exe -od=edub.exe.bin -g -debug edub.d

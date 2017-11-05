@@ -24,9 +24,7 @@ private void exit(int code)
 {
 	import std.c.stdlib;
 
-	//writeln("before exit()");
 	std.c.stdlib.exit(code);
-	//writeln("after exit()");
 }
 
 class EDubContext
@@ -49,15 +47,62 @@ class EDubContext
 
 private __gshared EDubContext g_context = new EDubContext();
 
+string[] split_donwload_path(string arg)
+{
+	int prefix_len(string arg)
+	{
+		auto re = regex(`^[^@]+@`);
+		auto m = matchFirst(arg, re);
+		if (!m)
+			return 0;
+		return m[0].length;
+	}
+
+	int len = prefix_len(arg);
+	string[] result;
+	result ~= arg[0 .. len - 1];
+	result ~= arg[len .. $];
+	return result;
+}
+
 private string make_abs_path(string path)
 {
+	string url = null;
+	if (path.canFind("@"))
+	{
+		string[] split = split_donwload_path(path);
+		path = split[0];
+		//writeln(`new_path=`, path);
+		url = split[1];
+		//writeln(`url=`, url);
+	}
+	string abs_path;
 	switch (path)
 	{
 	case `.`, `./`, `.\`:
-		return g_context.dirName;
+		abs_path = g_context.dirName;
+		break;
 	default:
-		return absolutePath(path, g_context.dirName).replace(`\`, `/`);
+		abs_path = absolutePath(path, g_context.dirName).replace(`\`, `/`);
+		break;
 	}
+	if (url !is null)
+	{
+		import std.net.curl : byChunkAsync;
+		writefln(`Donwloading %s`, url);
+		ubyte[] bytes;
+		bytes.reserve(10240);
+		foreach (chunk; byChunkAsync(url, 1024))
+		{
+			bytes ~= chunk;
+		}
+		//writeln("bytes.length=", bytes.length);
+		mkdirRecurse(dirName(abs_path));
+		File f = File(abs_path, "wb");
+		f.rawWrite(bytes);
+		f.close();
+	}
+	return abs_path;
 }
 
 private string[] expand_wild_cards(string path)
@@ -257,7 +302,7 @@ private int handle_exe_output(string[] args)
 	while (args.length)
 	{
 		string arg = pop(args).strip;
-		writefln(`arg="%s"`, arg);
+		//writefln(`arg="%s"`, arg);
 		if (arg.startsWith(`[`))
 		{
 			arg = arg.replace("{:}", uuid);
@@ -265,14 +310,14 @@ private int handle_exe_output(string[] args)
 			auto m = matchFirst(arg, re);
 			if (m)
 			{
-				writeln(`match!`);
-				writefln(`match="%s" "%s" "%s"`, m[1], m[2], m[3]);
+				//writeln(`match!`);
+				//writefln(`match="%s" "%s" "%s"`, m[1], m[2], m[3]);
 				_PackageSpec spec;
 				spec._name = m[1].replace(uuid, `:`);
 				spec._version = m[2].empty ? "~master" : m[2][1 .. $].replace(uuid, `:`);
 				spec._sub_config = m[3].empty ? "" : m[3][1 .. $].replace(uuid, `:`);
 				packages ~= spec;
-				writeln("match end!");
+				//writeln("match end!");
 			}
 		}
 		else if (arg.startsWith("-"))
@@ -386,10 +431,10 @@ private int handle_exe_output(string[] args)
 	}
 	//stringImportPaths
 	string json = my_json_pprint(jsonObj);
-	writeln(json);
+	//writeln(json);
 	//writeln(packages);
 	string dub_json_path = format!`%s.json`(g_context.fullPath);
-	writefln(`dub_json_path="%s"`, dub_json_path);
+	//writefln(`dub_json_path="%s"`, dub_json_path);
 	File file1 = File(dub_json_path, "w");
 	file1.write(json);
 	file1.close();
@@ -432,13 +477,13 @@ int main(string[] args)
 		break;
 	}
 	auto jsonText = cast(char[]) read(g_context.fullPath);
-	writeln(jsonText);
+	//writeln(jsonText);
 	auto jsonObj = parseJSON(jsonText);
 
 	//JSONValue*[] path_array_list = get_path_array_list(&jsonObj);
 	JSONValue*[] path_array_list;
 	rewite_dub_json(&jsonObj, path_array_list, `[root]`);
-	writeln(path_array_list.length);
+	//writeln(path_array_list.length);
 	foreach (JSONValue* path_array; path_array_list)
 	{
 		if (path_array.type == JSON_TYPE.STRING)
@@ -447,15 +492,7 @@ int main(string[] args)
 			continue;
 		}
 		assert(path_array.type == JSON_TYPE.ARRAY);
-		writeln(path_array.array.length);
-		/+
-		for (int i = 0; i < path_array.array.length; i++)
-		{
-			auto val = path_array.array[i];
-			if (val.type() != JSON_TYPE.STRING)
-				continue;
-			path_array.array[i] = make_abs_path(val.str);
-		}+/
+		//writeln(path_array.array.length);
 		JSONValue[] new_array;
 		for (int i = 0; i < path_array.array.length; i++)
 		{
@@ -470,38 +507,17 @@ int main(string[] args)
 			{
 				new_array ~= JSONValue(real_path);
 			}
-			/+
-			if (abs_path.canFind('*') || abs_path.canFind('?')
-					|| abs_path.canFind('{') || abs_path.canFind('}'))
-			{
-				try
-				{
-					auto files = dirEntries(dirName(abs_path), baseName(abs_path), SpanMode.shallow);
-					foreach (file; files)
-					{
-						new_array ~= JSONValue(file.name.replace(`\`, `/`));
-					}
-				}
-				catch (Exception ex)
-				{
-				}
-			}
-			else
-			{
-				new_array ~= JSONValue(abs_path);
-			}
-			+/
 		}
 		path_array.array.length = 0;
 		path_array.array ~= new_array;
 	}
 
 	auto jsonText2 = my_json_pprint(jsonObj);
-	writeln(jsonText2);
+	//writeln(jsonText2);
 	//string folder_name = format!"%s.bin"(g_context.basePath);
 	string folder_name = format!"%s/%s.bin"(getcwd(), g_context.baseName).replace(`\`, `/`);
-	writeln(`folder_name=`, folder_name); //exit(0);
-	writeln(folder_name);
+	//writeln(`folder_name=`, folder_name); //exit(0);
+	//writeln(folder_name);
 	mkdirRecurse(folder_name);
 	try
 	{
@@ -512,7 +528,7 @@ int main(string[] args)
 	{
 	}
 	string dub_json_path = folder_name ~ "/dub.json";
-	writeln(dub_json_path);
+	//writeln(dub_json_path);
 	File file1 = File(dub_json_path, "w");
 	file1.write(jsonText2);
 	file1.close();
