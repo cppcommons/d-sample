@@ -70,10 +70,13 @@ private string make_abs_path(string path)
 	{
 		if (!url.startsWith(`https://github.com/`))
 			return url;
+		string orig_url = url;
 		string uuid = sha1UUID("0").toString;
 		uuid = format!`{%s}`(uuid);
 		url = url.replace(`https://github.com/`, uuid);
 		string[] parts = url.split(`/`);
+		if (parts.length < 5 || parts[2] != `blob`)
+			return orig_url;
 		import std.algorithm : remove;
 
 		//writeln(parts);
