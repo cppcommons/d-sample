@@ -1,4 +1,4 @@
-edub domtest.exe build src=. ^
+edub domtest.exe build ^
 app.d ^
 characterencodings.d@https://github.com/adamdruppe/arsd/blob/master/characterencodings.d ^
 curl.d@https://github.com/adamdruppe/arsd/blob/master/curl.d ^

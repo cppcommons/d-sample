@@ -460,6 +460,31 @@ private int handle_exe_output(string[] args)
 	return main(new_args);
 }
 
+void collect_compile_units(JSONValue* jsonObj, ref JSONValue*[] unit_list, string prop_name)
+{
+	if (jsonObj.type == JSON_TYPE.ARRAY)
+	{
+		for (int i = 0; i < jsonObj.array.length; i++)
+		{
+			collect_compile_units(&jsonObj.array[i], unit_list, prop_name);
+		}
+
+	}
+	else if (jsonObj.type == JSON_TYPE.OBJECT)
+	{
+		static string[] list = ["[root]", "configurations", "subPackages"];
+		if (list.canFind(prop_name)) //(("name" in jsonObj.object) || ("targetType" in jsonObj.object))
+		{
+			unit_list ~= jsonObj;
+		}
+		foreach (key; jsonObj.object.keys())
+		{
+			JSONValue* member = key in jsonObj.object;
+			collect_compile_units(member, unit_list, key);
+		}
+	}
+}
+
 int main(string[] args)
 {
 	//writeln(modify_download_url("https://github.com/apache/thrift/blob/master/CHANGES")); exit(0);
@@ -470,18 +495,17 @@ int main(string[] args)
 		writefln("Usage: edub2 PROJECT.json [build/run]");
 		return 1;
 	}
-	//string project_file_name = args[1];
 	g_context.fullPath = absolutePath(args[1], getcwd()).replace(`\`, `/`);
-	writefln(`g_context.fullPath=%s`, g_context.fullPath);
+	//writefln(`g_context.fullPath=%s`, g_context.fullPath);
 	g_context.dirName = dirName(g_context.fullPath);
-	writefln(`g_context.dirName=%s`, g_context.dirName);
+	//writefln(`g_context.dirName=%s`, g_context.dirName);
 	g_context.fileName = baseName(g_context.fullPath);
-	writefln(`g_context.fileName=%s`, g_context.fileName);
+	//writefln(`g_context.fileName=%s`, g_context.fileName);
 	g_context.extension = extension(g_context.fileName); //.toLower;
-	writefln(`g_context.extension=%s`, g_context.extension);
+	//writefln(`g_context.extension=%s`, g_context.extension);
 	g_context.baseName = baseName(g_context.fileName, g_context.extension);
 	g_context.basePath = g_context.dirName ~ `/` ~ g_context.baseName;
-	writefln(`g_context.basePath=%s`, g_context.basePath);
+	//writefln(`g_context.basePath=%s`, g_context.basePath);
 	switch (g_context.extension.toLower)
 	{
 	case ".exe":
@@ -503,6 +527,74 @@ int main(string[] args)
 		return relativePath(path, folder_name).replace(`\`, `/`);
 	}
 	//JSONValue*[] path_array_list = get_path_array_list(&jsonObj);
+	JSONValue*[] unit_list;
+	collect_compile_units(&jsonObj, unit_list, `[root]`);
+	writefln(`unit_list.length=%d`, unit_list.length);
+	foreach (unit; unit_list)
+	{
+		//unit.object["dummy"] = 1234;
+		string[] source_path_list;
+		string[] found_source_list;
+		JSONValue* source_paths = cast(JSONValue*)("sourcePaths" in *unit);
+		if (source_paths && source_paths.type == JSON_TYPE.ARRAY)
+		{
+			writeln("found!");
+			foreach (ref source_path; source_paths.array)
+			{
+				if (source_path.type != JSON_TYPE.STRING)
+					continue;
+				source_path_list ~= source_path.str;
+			}
+		}
+		else
+		{
+			source_path_list = [`source`, `src`];
+		}
+		foreach (source_path; source_path_list)
+		{
+			try
+			{
+				string source_path_abs = make_abs_path(source_path);
+				auto files = dirEntries(source_path_abs, "*.d", SpanMode.breadth);
+				foreach (file; files)
+				{
+					string file_name = file.name.replace(`\`, `/`);
+					if (file_name.startsWith(`./`))
+						file_name = file_name[2 .. $];
+					if (found_source_list.canFind(file_name)) continue;
+					found_source_list ~= file_name;
+					writeln(file_name);
+				}
+			}
+			catch (Exception ex)
+			{
+			}
+		}
+		writeln(`found_source_list=`, found_source_list);
+		const string[] _empty_array;
+		if (found_source_list)
+		{
+			//writeln(`(A0)`);
+			JSONValue* source_files = cast(JSONValue*)("sourceFiles" in *unit);
+			if (!source_files || source_files.type != JSON_TYPE.ARRAY)
+			{
+				//writeln(`(A)`);
+				unit.object["sourceFiles"] = _empty_array;
+				source_files = cast(JSONValue*)("sourceFiles" in *unit);
+				assert(source_files);
+			}
+			foreach (found_source; found_source_list)
+			{
+				//writeln(`(B)`);
+				source_files.array ~= JSONValue(found_source);
+			}
+		}
+		//writeln(`(C)`);
+		unit.object["sourcePaths"] = _empty_array;
+		//writeln(`(D)`);
+	}
+	//exit(0);
+
 	JSONValue*[] path_array_list;
 	rewite_dub_json(&jsonObj, path_array_list, `[root]`);
 	//writeln(path_array_list.length);
