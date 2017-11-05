@@ -46,14 +46,6 @@ class EDubContext
 
 private __gshared EDubContext g_context = new EDubContext();
 
-string url_last_part(string url)
-{
-	string[] _split = url.split(`/`);
-	if (_split.length == 0)
-		return ``;
-	return _split[_split.length - 1];
-}
-
 private string make_abs_path(string path)
 {
 	string[] split_donwload_path(string arg)
@@ -88,6 +80,14 @@ private string make_abs_path(string path)
 		parts = remove(parts, 2);
 		//writeln(parts);
 		return parts.join(`/`).replace(uuid, `https://raw.githubusercontent.com/`);
+	}
+
+	string url_last_part(string url)
+	{
+		string[] _split = url.split(`/`);
+		if (_split.length == 0)
+			return ``;
+		return _split[_split.length - 1];
 	}
 
 	string url = null;
@@ -646,7 +646,8 @@ int main(string[] args)
 			string abs_path = make_abs_path(val.str);
 			foreach (real_path; expand_wild_cards(abs_path))
 			{
-				if (check_array.canFind(real_path)) continue;
+				if (check_array.canFind(real_path))
+					continue;
 				check_array ~= real_path;
 				new_array ~= JSONValue(make_relative_to_folder(real_path));
 				//new_array ~= JSONValue(real_path);
