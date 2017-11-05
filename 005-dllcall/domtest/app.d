@@ -18,9 +18,18 @@ struct S
 	string dontJsonMe; // jsonizer won't touch members not marked with @jsonize
 }
 
+struct QPost
+{
+	mixin JsonizeMe; // this is required to support jsonization
+	@jsonize
+	{
+		string uuid;
+	}
+}
+
 void main()
 {
-	S s = {1,1.23f};
+	S s = {1, 1.23f};
 	writeln(toJSON(s));
 	S[] list;
 	list ~= s;
@@ -38,11 +47,14 @@ void main()
 	Element[] elems = document.getElementsByClassName(`searchResult`);
 	writeln(elems.length);
 	JSONValue array = parseJSON(`[]`);
+	QPost[] posts;
 	foreach (ref elem; elems)
 	{
+		QPost post;
 		//writeln(elem.outerHTML);
 		JSONValue rec = parseJSON(`{}`);
 		rec.object["data-uuid"] = elem.getAttribute(`data-uuid`);
+		post.uuid = elem.getAttribute(`data-uuid`);
 		rec.object["fav-count"] = to!long(elem.getElementsByClassName(
 				`searchResult_statusList`)[0].innerText.strip);
 		rec.object["title"] = elem.getElementsByClassName(`searchResult_itemTitle`)[0].innerText;
@@ -58,10 +70,12 @@ void main()
 			tag_array ~= tag.innerText;
 		}
 		rec.object["tags"] = tag_array.join(`|`);
+		posts ~= post;
 		array.array ~= rec;
 		writeln();
 	}
 	writeln(array.toPrettyString(JSONOptions.doNotEscapeSlashes));
+	writeln(toJSON(posts).toPrettyString(JSONOptions.doNotEscapeSlashes));
 }
 
 version (none) void main()
