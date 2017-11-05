@@ -364,30 +364,8 @@ private int handle_exe_output(string[] args)
 		}
 		else
 		{
-			source_files ~= expand_wild_cards(arg);
-			/+
-			if (arg.canFind('*') || arg.canFind('?') || arg.canFind('{') || arg.canFind('}'))
-			{
-				try
-				{
-					auto files = dirEntries(dirName(arg), baseName(arg), SpanMode.shallow);
-					foreach (file; files)
-					{
-						string file_name = file.name.replace(`\`, `/`);
-						if (file_name.startsWith("./"))
-							file_name = file_name[2 .. $];
-						source_files ~= file_name;
-					}
-				}
-				catch (Exception ex)
-				{
-				}
-			}
-			else
-			{
-				source_files ~= arg;
-			}
-			+/
+			//source_files ~= expand_wild_cards(arg);
+			source_files ~= arg;
 		}
 	}
 	if (main_source)
