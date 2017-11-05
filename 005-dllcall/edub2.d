@@ -317,7 +317,7 @@ private int handle_exe_output(string[] args)
 	string[] source_files;
 	string[] source_dirs;
 	string[] include_dirs;
-	string[] resource_dirs;
+	string[] data_dirs;
 	string[] libs;
 	string[] defines;
 	string[] debug_defines;
@@ -371,9 +371,9 @@ private int handle_exe_output(string[] args)
 		{
 			source_dirs ~= normalize_path(arg_strip_prefix(arg));
 		}
-		else if (arg.startsWith(`resource=`) || arg.startsWith(`res=`))
+		else if (arg.startsWith(`data=`))
 		{
-			resource_dirs ~= normalize_path(arg_strip_prefix(arg));
+			data_dirs ~= normalize_path(arg_strip_prefix(arg));
 		}
 		else if (arg.startsWith(`include=`) || arg.startsWith(`inc=`))
 		{
@@ -394,6 +394,11 @@ private int handle_exe_output(string[] args)
 					defines ~= def;
 			}
 		}
+		else if (arg.canFind(`=`))
+		{
+			writefln("Unrecognized option: %s", arg);
+			exit(1);
+		}
 		else
 		{
 			//source_files ~= expand_wild_cards(arg);
@@ -408,8 +413,8 @@ private int handle_exe_output(string[] args)
 		jsonObj["sourcePaths"] = source_dirs;
 	if (include_dirs)
 		jsonObj["importPaths"] = include_dirs;
-	if (resource_dirs)
-		jsonObj["stringImportPaths"] = resource_dirs;
+	if (data_dirs)
+		jsonObj["stringImportPaths"] = data_dirs;
 	if (libs)
 		jsonObj["libs"] = libs;
 	if (defines)
