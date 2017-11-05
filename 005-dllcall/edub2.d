@@ -300,6 +300,7 @@ private int handle_exe_output(string[] args)
 	writefln(`handle_exe_output: %s %s %s`, g_context.fileName, command, args);
 	switch (command)
 	{
+	case `run`:
 	case `build`:
 	case `init`:
 	case `debug`:
