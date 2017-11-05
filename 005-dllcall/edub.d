@@ -111,6 +111,8 @@ private string make_abs_path(string path)
 		abs_path = g_context.dirName;
 		break;
 	default:
+		if (path.startsWith(`./`) || path.startsWith(`.\`))
+			path = path[2 .. $];
 		abs_path = absolutePath(path, g_context.dirName).replace(`\`, `/`);
 		break;
 	}
@@ -299,6 +301,7 @@ private int handle_exe_output(string[] args)
 	{
 	case `build`:
 	case `init`:
+	case `debug`:
 		break;
 	default:
 		writefln(`Invalid command "%s".`, command);
@@ -502,7 +505,8 @@ int main(string[] args)
 	{
 		if (path_array.type == JSON_TYPE.STRING)
 		{
-			path_array.str = make_relative_to_folder(make_abs_path(path_array.str));
+			//path_array.str = make_relative_to_folder(make_abs_path(path_array.str));
+			path_array.str = make_abs_path(path_array.str);
 			continue;
 		}
 		assert(path_array.type == JSON_TYPE.ARRAY);
@@ -519,7 +523,8 @@ int main(string[] args)
 			string abs_path = make_abs_path(val.str);
 			foreach (real_path; expand_wild_cards(abs_path))
 			{
-				new_array ~= JSONValue(make_relative_to_folder(real_path));
+				//new_array ~= JSONValue(make_relative_to_folder(real_path));
+				new_array ~= JSONValue(real_path);
 			}
 		}
 		path_array.array.length = 0;
@@ -558,6 +563,11 @@ int main(string[] args)
 		{
 			dub_cmdline ~= args[i];
 		}
+	}
+	if (dub_cmdline.canFind("debug"))
+	{
+		writeln(jsonText2);
+		exit(0);
 	}
 	/+
 	if (dub_cmdline.length >= 2 && dub_cmdline[1] == "generate")

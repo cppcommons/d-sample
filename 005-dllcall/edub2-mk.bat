@@ -11,7 +11,7 @@ rmdir /s /q edub2.exe.bin
 ::edub2 apps.json build :app3
 ::edub2 app1.dub.json generate visuald
 ::goto skip
-edub2 test1.exe init app1.d ../*.d emake*.d .\emake*.d ^
+edub2 test1.exe debug app1.d ../*.d emake*.d .\emake*.d ^
 arsd/dom.d@https://raw.githubusercontent.com/adamdruppe/arsd/master/dom.d ^
 defines=A:@B ^
 defs=C:@D ^
