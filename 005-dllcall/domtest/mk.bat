@@ -1,6 +1,6 @@
 chcp 65001
 edub domtest.exe run ^
-app.d ../curl.d ^
+app.d ^
 characterencodings.d@https://github.com/adamdruppe/arsd/blob/master/characterencodings.d ^
 https://github.com/adamdruppe/arsd/blob/master/dom.d ^
 ../lib_entry.lib ^

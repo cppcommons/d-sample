@@ -1,6 +1,7 @@
 import arsd.dom;
 import dateparser;
-import easy.windows.std.net.curl;
+//import easy.windows.std.net.curl;
+import std.net.curl;
 import jsonizer;
 import std.array;
 import std.conv;
