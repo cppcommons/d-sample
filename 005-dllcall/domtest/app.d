@@ -156,7 +156,7 @@ int main(string[] args)
 			else
 			{
 				auto v_date = parse(m[1]);
-				post.postDate = format!`%04d/%02d/%02d`(v_date.year, v_date.month, v_date.day);
+				post.postDate = format!`%04d-%02d-%02d`(v_date.year, v_date.month, v_date.day);
 			}
 			post.description = elem.getElementsByClassName(`searchResult_snippet`)[0].innerText;
 			string[] tag_array;
