@@ -130,11 +130,31 @@ private string make_abs_path(string path)
 		{
 			bytes ~= chunk;
 		}
+		bool up_to_date = false;
+		try
+		{
+			File f_read = File(abs_path, "rb");
+			ubyte[] bytes_read = cast(ubyte[])read(abs_path);
+			up_to_date = (bytes == bytes_read);
+			f_read.close();
+		}
+		catch (Exception ex)
+		{
+			writeln(ex);
+		}
 		//writeln("bytes.length=", bytes.length);
-		mkdirRecurse(dirName(abs_path));
-		File f = File(abs_path, "wb");
-		f.rawWrite(bytes);
-		f.close();
+		if (up_to_date)
+		{
+			writefln(`  ===> Up-to-date: %s`, abs_path);
+		}
+		else
+		{
+			mkdirRecurse(dirName(abs_path));
+			File f = File(abs_path, "wb");
+			f.rawWrite(bytes);
+			f.close();
+			writefln(`  ===> Writing to: %s`, abs_path);
+		}
 	}
 	return abs_path;
 }
