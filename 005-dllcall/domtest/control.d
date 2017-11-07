@@ -92,7 +92,7 @@ version (TEST1) int main(string[] args)
 		writeln("reading...");
 	}
 
-	auto sem = new Semaphore(2);
+	auto sem = new Semaphore(4);
 
 	bool pop(out SysTime head)
 	{
@@ -138,11 +138,24 @@ version (TEST1) int main(string[] args)
 		sem.notify();
 	}
 
+	void writerFn2(SysTime v_st)
+	{
+		sem.wait();
+		writeln(`v_st=`, v_st);
+		string v_period = format!`%04d-%02d`(v_st.year, v_st.month);
+		writeln(`v_period=`, v_period);
+		string[] cmd = ["domtest.exe", v_period];
+		run_command(cmd);
+		sem.notify();
+	}
+
 	auto group = new ThreadGroup();
 	foreach (v_sample; schedule)
 	{
 		writeln(v_sample);
-		group.create(&writerFn);
+		//group.create(&writerFn);
+		Thread th = new Thread(() => writerFn2(v_sample)).start();
+		group.add(th);
 	}
 	group.joinAll();
 
