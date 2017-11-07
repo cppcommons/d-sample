@@ -3,6 +3,7 @@ import jsonizer;
 
 //import core.sync.barrier;
 import core.sync.rwmutex;
+import core.sync.semaphore;
 import core.thread;
 import std.array;
 import std.conv;
@@ -52,7 +53,7 @@ static this()
 version (TEST1) int main(string[] args)
 {
 	// "2011/09/16"
-	version (none)
+	version (TEST1)
 	{
 		const short year0 = 2011;
 		const ubyte month0 = 9;
@@ -91,6 +92,8 @@ version (TEST1) int main(string[] args)
 		writeln("reading...");
 	}
 
+	auto sem = new Semaphore(2);
+
 	bool pop(out SysTime head)
 	{
 		synchronized (mutex.writer)
@@ -119,6 +122,7 @@ version (TEST1) int main(string[] args)
 
 	void writerFn()
 	{
+		sem.wait();
 		SysTime v_st;
 		if (!pop(v_st))
 			return;
@@ -127,18 +131,27 @@ version (TEST1) int main(string[] args)
 		writeln(`v_period=`, v_period);
 		string[] cmd = ["domtest.exe", v_period];
 		run_command(cmd);
+		sem.notify();
 	}
 
-	Thread t1 = new Thread(&writerFn).start();
-	Thread t2 = new Thread(&writerFn).start();
-	//Thread t3 = new Thread(&writerFn).start();
-	while (t1.isRunning || t2.isRunning)
+	auto group = new ThreadGroup();
+	foreach (v_sample; schedule)
 	{
-		Thread.sleep(dur!("msecs")(50));
+		writeln(v_sample);
+		group.create(&writerFn);
 	}
+	group.joinAll();
 
-	delete t1;
-	delete t2;
+	//Thread t1 = new Thread(&writerFn).start();
+	//Thread t2 = new Thread(&writerFn).start();
+	//Thread t3 = new Thread(&writerFn).start();
+	//while (t1.isRunning || t2.isRunning)
+	//{
+	//	Thread.sleep(dur!("msecs")(50));
+	//}
+
+	//delete t1;
+	//delete t2;
 
 	writeln("All finished!");
 	return 0;
