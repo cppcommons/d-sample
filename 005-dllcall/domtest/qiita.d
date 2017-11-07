@@ -30,7 +30,7 @@ int main(string[] args)
 {
 	// Get with custom data receivers
 	//auto http = HTTP("http://qiita.com/api/v2/items/1a182f187fd2a8df29c2");
-	auto http = HTTP("http://qiita.com/api/v2/items?query=created%3A2016-12");
+	auto http = HTTP("http://qiita.com/api/v2/items?query=created%3A2016-12-01&per_page=100");
 	http.addRequestHeader(`Authorization`, `Bearer 06ade23e3803334f43a0671f2a7c5087305578bd`);
 	long v_rate_reset = 0;
 	http.onReceiveHeader = (in char[] key, in char[] value) {
@@ -72,6 +72,11 @@ int main(string[] args)
 	writeln(diff.total!"minutes");
 	writeln(diff.total!"seconds");
 	writeln(diff.total!"msecs");
+
+	string a = "";
+	string b = null;
+
+	writeln(a == b);
 
 	return 0;
 }
