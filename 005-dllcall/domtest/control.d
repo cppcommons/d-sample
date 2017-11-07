@@ -93,11 +93,14 @@ version (TEST1) int main(string[] args)
 
 	bool pop(out SysTime head)
 	{
-		if (schedule.length == 0)
-			return false;
-		head = schedule[0];
-		schedule = schedule[1 .. $];
-		return true;
+		synchronized (mutex.writer)
+		{
+			if (schedule.length == 0)
+				return false;
+			head = schedule[0];
+			schedule = schedule[1 .. $];
+			return true;
+		}
 	}
 
 	int run_command(string[] cmdline)
@@ -117,14 +120,11 @@ version (TEST1) int main(string[] args)
 	void writerFn()
 	{
 		SysTime v_st;
-		synchronized (mutex.writer)
-		{
-			if (!pop(v_st))
-				return;
-		}
-		writeln(v_st);
+		if (!pop(v_st))
+			return;
+		writeln(`v_st=`, v_st);
 		string v_period = format!`%04d-%02d`(v_st.year, v_st.month);
-		writeln(v_period);
+		writeln(`v_period=`, v_period);
 		string[] cmd = ["domtest.exe", v_period];
 		run_command(cmd);
 	}
@@ -136,6 +136,9 @@ version (TEST1) int main(string[] args)
 	{
 		Thread.sleep(dur!("msecs")(50));
 	}
+
+	delete t1;
+	delete t2;
 
 	writeln("All finished!");
 	return 0;
