@@ -92,7 +92,7 @@ version (TEST1) int main(string[] args)
 		writeln("reading...");
 	}
 
-	auto sem = new Semaphore(4);
+	auto sem = new Semaphore(2);
 
 	bool pop(out SysTime head)
 	{
