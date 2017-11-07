@@ -81,6 +81,9 @@ int main(string[] args)
 	assert(parse("Sep 2003") == SysTime(DateTime(2003, 9, 1)));
 	assert(parse("Jan 01, 2017") == SysTime(DateTime(2017, 1, 1)));
 
+	auto v_date = parse("Jan 23, 2017");
+	writefln(`%d/%d/%d`, v_date.year, v_date.month, v_date.day);
+
 	writeln(args);
 
 	if (args.length != 2)
@@ -89,7 +92,8 @@ int main(string[] args)
 	}
 
 	//string target_period = `2016-12`;
-	string target_period = `2017-11`;
+	//string target_period = `2017-11`;
+	string target_period = args[1];
 	string file_name = `___monthly-data-` ~ target_period ~ `.json`;
 	if (exists(file_name))
 	{
