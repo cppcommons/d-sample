@@ -14,7 +14,7 @@ import std.regex : regex, matchAll, matchFirst, replaceAll;
 import std.stdio : writefln, writeln, File;
 import std.typecons : Yes, No;
 import std.datetime.systime : Clock;
-import std.process : pipeProcess, wait, Redirect;
+import std.process : pipeProcess, spawnProcess, wait, Redirect;
 import std.string : strip;
 import std.uni : toLower;
 import std.uuid : sha1UUID, UUID;
@@ -184,8 +184,9 @@ private string[] expand_wild_cards(string path)
 	return result;
 }
 
-private int emake_run_command(string[] dub_cmdline)
+private int emake_run_command(string[] cmdline)
 {
+	/+
 	auto pipes = pipeProcess(dub_cmdline, Redirect.stdout | Redirect.stderrToStdout);
 	foreach (line; pipes.stdout.byLine)
 	{
@@ -196,6 +197,9 @@ private int emake_run_command(string[] dub_cmdline)
 	}
 	int rc = wait(pipes.pid);
 	return rc;
+	+/
+	auto pid = spawnProcess(cmdline);
+	return wait(pid);
 }
 
 void rewite_dub_json(JSONValue* jsonObj, ref JSONValue*[] path_array_list, string prop_name)

@@ -108,6 +108,7 @@ version (TEST1) int main(string[] args)
 
 	int run_command(string[] cmdline)
 	{
+		/+
 		auto pipes = pipeProcess(cmdline, Redirect.stdout | Redirect.stderrToStdout);
 		foreach (line; pipes.stdout.byLine)
 		{
@@ -118,6 +119,9 @@ version (TEST1) int main(string[] args)
 		}
 		int rc = wait(pipes.pid);
 		return rc;
+		+/
+		auto pid = spawnProcess(cmdline);
+		return wait(pid);
 	}
 
 	void writerFn()
