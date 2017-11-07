@@ -11,6 +11,7 @@ import std.file;
 import std.format;
 import std.json;
 import std.path;
+import std.regex;
 import std.stdio;
 import std.string;
 
@@ -46,6 +47,7 @@ struct QPost
 		string header;
 		string description;
 		string tags;
+		string postDate;
 	}
 }
 
@@ -81,8 +83,8 @@ int main(string[] args)
 	assert(parse("Sep 2003") == SysTime(DateTime(2003, 9, 1)));
 	assert(parse("Jan 01, 2017") == SysTime(DateTime(2017, 1, 1)));
 
-	auto v_date = parse("Jan 23, 2017");
-	writefln(`%d/%d/%d`, v_date.year, v_date.month, v_date.day);
+	//auto v_date = parse("Jan 23, 2017");
+	//writefln(`%d/%d/%d`, v_date.year, v_date.month, v_date.day);
 
 	writeln(args);
 
@@ -145,6 +147,17 @@ int main(string[] args)
 			post.href = elem.getElementsByClassName(`searchResult_itemTitle`)[0].requireSelector("a")
 				.getAttribute("href");
 			post.header = elem.getElementsByClassName(`searchResult_header`)[0].innerText;
+			auto re = regex(` posted at ([a-zA-Z]+ [0-9]+, [0-9]+)$`);
+			auto m = matchFirst(post.header, re);
+			if (!m)
+			{
+				post.postDate = ``;
+			}
+			else
+			{
+				auto v_date = parse(m[1]);
+				post.postDate = format!`%04d/%02d/%02d`(v_date.year, v_date.month, v_date.day);
+			}
 			post.description = elem.getElementsByClassName(`searchResult_snippet`)[0].innerText;
 			string[] tag_array;
 			foreach (ref tag; elem.getElementsByClassName(`tagList_item`))
@@ -154,7 +167,7 @@ int main(string[] args)
 			}
 			post.tags = tag_array.join(`|`);
 			posts ~= post;
-			writefln(`%d: post.title=%s (%d) %s`, i + 1, post.title, post.favCount, post.header);
+			writefln(`%d: %s: post.title=%s (%d) %s`, i + 1, post.postDate, post.title, post.favCount, post.header);
 			stdout.flush();
 			//handle_revisions(post);
 		}
