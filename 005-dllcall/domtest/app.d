@@ -73,7 +73,7 @@ void write_post_list_to_file(string path, ref QPost[] posts)
 	f.close();
 }
 
-void main()
+int main(string[] args)
 {
 	writeln(`1`);
 	assert(parse("2003-09-25") == SysTime(DateTime(2003, 9, 25)));
@@ -81,8 +81,21 @@ void main()
 	assert(parse("Sep 2003") == SysTime(DateTime(2003, 9, 1)));
 	assert(parse("Jan 01, 2017") == SysTime(DateTime(2017, 1, 1)));
 
+	writeln(args);
+
+	if (args.length != 2)
+	{
+		return 1;
+	}
+
 	//string target_period = `2016-12`;
 	string target_period = `2017-11`;
+	string file_name = `___monthly-data-` ~ target_period ~ `.json`;
+	if (exists(file_name))
+	{
+		writefln(`%s exists!`, file_name);
+		return 0;
+	}
 	/+
 	S s = {1, 1.23f};
 	writeln(toJSON(s));
@@ -143,39 +156,8 @@ void main()
 		}
 		//writeln(toJSON(posts).toPrettyString(JSONOptions.doNotEscapeSlashes));
 		//stdout.flush();
-		write_post_list_to_file(`___monthly-data-` ~ target_period ~ `.json`, posts);
 	}
+	write_post_list_to_file(file_name, posts);
+	return 0;
 }
 
-version (none) void main()
-{
-	auto document = new Document();
-	// The example document will be defined inline here
-	// We could also load the string from a file with
-	// std.file.readText or the web with std.net.curl.get
-	document.parseGarbage(`<html><head>
-     <meta name="author" content="Adam D. Ruppe">
-     <title>Test Document</title>
-   </head>
-   <body>
-     <p>This is the first paragraph of our <a
-href="test.html">test document</a>.
-     <p>This second paragraph also has a <a
-href="test2.html">link</a>.
-     <p id="custom-paragraph">Old text</p>
-   </body>
-   </html>`);
-	import std.stdio;
-
-	// retrieve and print some meta information
-	writeln(document.title);
-	writeln(document.getMeta("author"));
-	// show a paragraphâs text
-	writeln(document.requireSelector("p").innerText);
-	// modify all links
-	document["a[href]"].setValue("source", "your-site");
-	// change some html
-	document.requireElementById("custom-paragraph").innerHTML = "New <b>HTML</b>!";
-	// show the new document
-	writeln(document.toString());
-}

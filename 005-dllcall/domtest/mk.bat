@@ -4,7 +4,8 @@ app.d ^
 characterencodings.d@https://github.com/adamdruppe/arsd/blob/master/characterencodings.d ^
 https://github.com/adamdruppe/arsd/blob/master/dom.d ^
 ../lib_entry.lib ^
-[jsonizer] [dateparser]
+[jsonizer] [dateparser] ^
+-- 2017-11
 echo errorlevel=%errorlevel%
 if %errorlevel% neq 0 ( exit /b )
 ::domtest.exe 

@@ -134,7 +134,7 @@ private string make_abs_path(string path)
 		try
 		{
 			File f_read = File(abs_path, "rb");
-			ubyte[] bytes_read = cast(ubyte[])read(abs_path);
+			ubyte[] bytes_read = cast(ubyte[]) read(abs_path);
 			up_to_date = (bytes == bytes_read);
 			f_read.close();
 		}
@@ -350,6 +350,7 @@ private int handle_exe_output(string[] args)
 	string[] libs;
 	string[] defines;
 	string[] debug_defines;
+	string[] run_args;
 	struct _PackageSpec
 	{
 		string _name;
@@ -364,7 +365,12 @@ private int handle_exe_output(string[] args)
 	{
 		string arg = pop(args).strip;
 		//writefln(`arg="%s"`, arg);
-		if (arg.startsWith(`[`))
+		if (arg == "--")
+		{
+			run_args = args;
+			break;
+		}
+		else if (arg.startsWith(`[`))
 		{
 			arg = arg.replace("{:}", uuid);
 			auto re = regex(`^\[([^:]+)(:[^:]+)?(:[^:]+)?\]$`);
@@ -486,6 +492,11 @@ private int handle_exe_output(string[] args)
 		return 0;
 	string[] new_args = ["edub.exe", dub_json_path, command];
 	new_args ~= dub_opts;
+	if (run_args)
+	{
+		new_args ~= `--`;
+		new_args ~= run_args;
+	}
 	return main(new_args);
 }
 
@@ -706,10 +717,16 @@ int main(string[] args)
 	file1.write(jsonText2);
 	file1.close();
 	string[] dub_cmdline;
+	string[] run_args;
 	dub_cmdline ~= "dub";
 	for (int i = 2; i < args.length; i++)
 	{
-		if (args[i] == "--cleanup")
+		if (args[i] == `--`)
+		{
+			run_args = args[i + 1 .. $];
+			break;
+		}
+		else if (args[i] == "--cleanup")
 		{
 			g_context.opt_cleanup = true;
 		}
@@ -733,6 +750,11 @@ int main(string[] args)
 	}
 	+/
 	dub_cmdline ~= format!`--root=%s`(folder_name);
+	if (run_args)
+	{
+		dub_cmdline ~= `--`;
+		dub_cmdline ~= run_args;
+	}
 	writeln(dub_cmdline);
 	int rc = emake_run_command(dub_cmdline);
 	if (rc == 0)
