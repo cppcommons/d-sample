@@ -29,7 +29,8 @@ private void exit(int code)
 int main(string[] args)
 {
 	// Get with custom data receivers
-	auto http = HTTP("http://qiita.com/api/v2/items/1a182f187fd2a8df29c2");
+	//auto http = HTTP("http://qiita.com/api/v2/items/1a182f187fd2a8df29c2");
+	auto http = HTTP("http://qiita.com/api/v2/items?query=created%3A2016-12");
 	http.addRequestHeader(`Authorization`, `Bearer 06ade23e3803334f43a0671f2a7c5087305578bd`);
 	long v_rate_reset = 0;
 	http.onReceiveHeader = (in char[] key, in char[] value) {
@@ -49,12 +50,17 @@ int main(string[] args)
 
 	//writeln(cast(char[]) bytes);
 	JSONValue jsonObj = parseJSON(cast(char[]) bytes);
+	/+
 	assert(jsonObj.type == JSON_TYPE.OBJECT);
 	foreach (key; jsonObj.object.keys)
 	{
 		writeln(key);
 	}
-	writeln(jsonObj.object[`created_at`].toString);
+	+/
+	//writeln(jsonObj.object[`created_at`].toString);
+	File f = File(`___temp.json`, `wb`);
+	f.write(jsonObj.toPrettyString(JSONOptions.doNotEscapeSlashes));
+	f.close();
 	writeln(v_rate_reset);
 	writeln(SysTime(unixTimeToStdTime(v_rate_reset)));
 	SysTime currentTime = Clock.currTime();
