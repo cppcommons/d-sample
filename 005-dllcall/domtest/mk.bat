@@ -9,8 +9,13 @@ https://github.com/adamdruppe/arsd/blob/master/dom.d ^
 echo errorlevel=%errorlevel%
 if %errorlevel% neq 0 (exit /b)
 
-edub control.exe run ^
+edub control.exe build ^
 def=TEST1 ^
 control.d ^
+[jsonizer] [dateparser]
+if %errorlevel% neq 0 (exit /b)
+
+edub qiita.exe run ^
+qiita.d ^
 [jsonizer] [dateparser]
 if %errorlevel% neq 0 (exit /b)
