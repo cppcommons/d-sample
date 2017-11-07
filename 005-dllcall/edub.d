@@ -168,7 +168,12 @@ private int emake_run_command(string[] dub_cmdline)
 {
 	auto pipes = pipeProcess(dub_cmdline, Redirect.stdout | Redirect.stderrToStdout);
 	foreach (line; pipes.stdout.byLine)
+	{
+		import std.stdio : stdout;
+
 		writeln(line);
+		stdout.flush();
+	}
 	int rc = wait(pipes.pid);
 	return rc;
 }

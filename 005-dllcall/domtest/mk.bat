@@ -6,7 +6,8 @@ https://github.com/adamdruppe/arsd/blob/master/dom.d ^
 ../lib_entry.lib ^
 [jsonizer] [dateparser]
 echo errorlevel=%errorlevel%
-
+if %errorlevel% neq 0 ( exit /b )
+::domtest.exe 
 goto skip
 
 :: https://code.dlang.org/packages/htmld
