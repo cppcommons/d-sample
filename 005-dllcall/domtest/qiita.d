@@ -123,8 +123,22 @@ class C_QiitaApiServie
 			int rc = this.http.get(url);
 			if (rc != 0)
 				return rc;
-			this.rateRemaining = to!long(this.http.headers["rate-remaining"]);
-			long v_rate_reset = to!long(this.http.headers["rate-reset"]);
+			this.rateRemaining = -1;
+			try
+			{
+				this.rateRemaining = to!long(this.http.headers["rate-remaining"]);
+			}
+			catch (Exception ex)
+			{
+			}
+			long v_rate_reset = 0;
+			try
+			{
+				v_rate_reset = to!long(this.http.headers["rate-reset"]);
+			}
+			catch (Exception ex)
+			{
+			}
 			this.rateResetTime = SysTime(unixTimeToStdTime(v_rate_reset));
 			//writeln(this.http.headers);
 			if (this.http.headers["content-type"] != "application/json"
@@ -218,7 +232,7 @@ bool handle_one_day(SysTime v_date)
 			exit(1);
 		}
 		//writeln(json2);
-		writefln(`[%s: complete (%d)]`, v_period, total_count2);
+		//writefln(`[%s: complete (%d)]`, v_period, total_count2);
 		return true;
 	}
 
