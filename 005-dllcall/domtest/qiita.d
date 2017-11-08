@@ -24,6 +24,18 @@ import std.variant;
 import d2sqlite3;
 import std.typecons : Nullable;
 
+private Database g_db;
+static this()
+{
+	g_db = Database("___g_db.db3");
+	g_db.run(`
+	CREATE TABLE IF NOT EXISTS qiita_posts (
+		post_date	text primary key,
+		total_count	integer not null,
+		json		text
+	)`);
+}
+
 private void exit(int code)
 {
 	import std.c.stdlib;
@@ -57,18 +69,6 @@ private void sleep_seconds(long secs)
 	write("\r");
 	write("Finished Sleeping!\n");
 	stdout.flush();
-}
-
-private Database g_db;
-static this()
-{
-	g_db = Database("___g_db.db3");
-	g_db.run(`
-	CREATE TABLE IF NOT EXISTS qiita_posts (
-		post_date	text primary key,
-		total_count	integer not null,
-		json		text
-	)`);
 }
 
 class C_QiitaApiHttp
@@ -130,7 +130,14 @@ class C_QiitaApiServie
 				return -1;
 			}
 			//JSONValue jsonObj = parseJSON(cast(char[]) this.http.data);
-			this.jsonValue = parseJSON(cast(char[]) this.http.data);
+			try {
+				this.jsonValue = parseJSON(cast(char[]) this.http.data);
+			}
+			catch(JSONException ex)
+			{
+				writeln(ex);
+				return -1;
+			}
 			Variant v_type = getJsonObjectProp(this.jsonValue, `type`);
 			if (v_type == `rate_limit_exceeded`)
 			{
@@ -203,6 +210,24 @@ bool handle_one_day(SysTime v_date)
 {
 	const int per_page = 100;
 	string v_period = format!`%04d-%02d-%02d`(v_date.year, v_date.month, v_date.day);
+
+	/+
+	g_db.run(`
+	CREATE TABLE IF NOT EXISTS qiita_posts (
+		post_date	text primary key,
+		total_count	integer not null,
+		json		text
+	)`);
+	+/
+	auto count = g_db.execute(format!"SELECT count(*) FROM qiita_posts WHERE post_date == '%s'"(v_period))
+		.oneValue!long;
+	//writefln(`count=%d`, count);
+	if (count)
+	{
+		writefln(`[%s: complete]`, v_period);
+		return true;
+	}
+
 	JSONValue newJsonValue = parseJSON(`[]`);
 
 	writefln(`[%s: page=1]`, v_period);
@@ -210,22 +235,20 @@ bool handle_one_day(SysTime v_date)
 	string url1 = format!`http://qiita.com/api/v2/items?query=created%%3A%s&per_page=%d`(
 			v_period, per_page);
 	int rc1 = qhttp1.get(url1);
-	writeln(rc1);
-	stdout.flush();
+	//writeln(rc1);
+	//stdout.flush();
 	if (rc1 != 0)
 		return false;
-	writeln(qhttp1.http.headers);
-	stdout.flush();
+	//writeln(qhttp1.http.headers);
+	//stdout.flush();
 	long total_count = to!long(qhttp1.http.headers[`total-count`]);
-	writeln(`total_count=`, total_count);
-	stdout.flush();
+	//writeln(`total_count=`, total_count);
+	//stdout.flush();
 
 	newJsonValue.array ~= qhttp1.jsonValue.array;
 
-	//long real_count = qhttp1.jsonValue.array.length;
-
 	long page_count = (total_count + per_page - 1) / per_page;
-	writeln(`page_count=`, page_count);
+	//writeln(`page_count=`, page_count);
 
 	for (int page_no = 2; page_no <= page_count; page_no++)
 	{
@@ -234,14 +257,12 @@ bool handle_one_day(SysTime v_date)
 		string url2 = format!`http://qiita.com/api/v2/items?query=created%%3A%s&per_page=%d&page=%d`(v_period,
 				per_page, page_no);
 		int rc2 = qhttp2.get(url2);
-		writeln(rc2);
+		//writeln(rc2);
 		if (rc2 != 0)
 			return false;
-		//real_count += qhttp2.jsonValue.array.length;
 		newJsonValue.array ~= qhttp2.jsonValue.array;
 	}
 
-	//writeln(`real_count=`, real_count);
 	writeln(`newJsonValue.array.length=`, newJsonValue.array.length);
 	if (newJsonValue.array.length != total_count)
 	{
@@ -249,9 +270,22 @@ bool handle_one_day(SysTime v_date)
 	}
 
 	string json = newJsonValue.toPrettyString(JSONOptions.doNotEscapeSlashes);
-	writeln(json);
+	//writeln(json);
+	Statement statement = g_db.prepare(
+			"INSERT INTO qiita_posts (post_date, total_count, json) VALUES (:post_date, :total_count, :json)");
 
-	exit(0);
+	// Bind values one by one (by parameter name or index)
+	statement.bind(":post_date", v_period);
+	statement.bind(":total_count", total_count);
+	statement.bind(":json", json);
+	statement.execute();
+	statement.reset(); // Need to reset the statement after execution.
+	version (none)
+	{
+		auto rowid = g_db.execute("SELECT last_insert_rowid()").oneValue!long;
+		writeln("rowid=", rowid);
+	}
+
 	return true;
 }
 
