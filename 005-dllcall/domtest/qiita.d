@@ -31,6 +31,39 @@ private void exit(int code)
 	std.c.stdlib.exit(code);
 }
 
+private void sleep_seconds(long secs)
+{
+	//import core.stdc.stdio;
+	//import core.thread;
+
+	SysTime startTime = Clock.currTime();
+	SysTime targetTime = startTime + dur!`seconds`(secs);
+
+	int max_width = 0;
+	for (;;)
+	{
+		Thread.sleep(dur!("msecs")(500));
+		SysTime currTime = Clock.currTime();
+		Duration leftTime = targetTime - currTime;
+		if (leftTime.total!`msecs` <= 0)
+			break;
+		string displayStr = format!`Sleeping: %s`(leftTime);
+		if (displayStr.length > max_width)
+			max_width = displayStr.length;
+		while (displayStr.length < max_width)
+			displayStr ~= ` `;
+		//printf("%s\r", cast(char*) toStringz(displayStr));
+		writef("%s\r", displayStr);
+		stdout.flush();
+	}
+	//printf("\n");
+	for (int i = 0; i < max_width; i++)
+		write(` `);
+	write("\r");
+	write("Finished Sleeping!\n");
+	stdout.flush();
+}
+
 private Database g_db;
 static this()
 {
@@ -122,7 +155,8 @@ class C_QiitaApiServie
 				writeln(diff.total!"seconds");
 				writeln(diff.total!"msecs");
 				writeln(`Sleeping for: `, diff2);
-				Thread.sleep(diff2);
+				//Thread.sleep(diff2);
+				sleep_seconds(diff2.total!`seconds`);
 				continue _loop_a;
 			}
 			break _loop_a;
@@ -178,6 +212,12 @@ Variant getJsonObjectProp(ref JSONValue jsonObj, string prop_name)
 
 int main(string[] args)
 {
+	/+
+	Duration d = dur!`hours`(2) + dur!`seconds`(1820);
+	string d_s = format!`%s`(d);
+	writeln(d);
+	exit(0);
+	+/
 	//JSONValue jv = parseJSON("[]");
 	JSONValue jv = parseJSON(`{"abc":123}`);
 	//auto jvm = jv["xyz"];
