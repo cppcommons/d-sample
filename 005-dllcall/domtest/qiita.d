@@ -18,6 +18,7 @@ import std.process;
 import std.regex;
 import std.stdio;
 import std.string;
+import std.variant;
 
 import d2sqlite3;
 import std.typecons : Nullable;
@@ -68,11 +69,57 @@ void handle_one_day(SysTime v_date)
 	exit(0);
 }
 
+Variant getJsonObjectProp(ref JSONValue jsonObj, string prop_name)
+{
+	Variant result;
+	if (jsonObj.type != JSON_TYPE.OBJECT)
+		return result;
+	auto member = (prop_name in jsonObj.object);
+	if (!member)
+		return result;
+	writeln(member.type);
+	switch (member.type)
+	{
+	case JSON_TYPE.FALSE:
+		//writeln(`1`);
+		result = false;
+		break;
+	case JSON_TYPE.TRUE:
+		//writeln(`2`);
+		result = true;
+		break;
+	case JSON_TYPE.FLOAT:
+		//writeln(`3`);
+		result = member.floating;
+		break;
+	case JSON_TYPE.INTEGER:
+		//writeln(`4`);
+		result = member.integer;
+		//writeln(`4b`);
+		break;
+	case JSON_TYPE.STRING:
+		//writeln(`5`);
+		result = member.str;
+		break;
+	default:
+		//writeln(`6`);
+		break;
+	}
+	return result;
+}
+
 int main(string[] args)
 {
 	//JSONValue jv = parseJSON("[]");
-	//JSONValue jv = parseJSON(`{"abc":123}`);
+	JSONValue jv = parseJSON(`{"abc":123}`);
 	//auto jvm = jv["xyz"];
+	Variant v;
+	v = getJsonObjectProp(jv, `abc`);
+	writeln(v.hasValue);
+	writeln(v.peek!(long));
+	writeln(v.get!(double));
+	writeln(v.peek!(string));
+	//exit(0);
 
 	const SysTime v_first_date = SysTime(DateTime(2011, 9, 16));
 	SysTime v_curr_time = Clock.currTime();
@@ -97,12 +144,32 @@ int main(string[] args)
 		writeln(rc);
 		if (rc != 0)
 			break _loop_a;
-		if (qhttp.headers["content-type"] != "application/json" && qhttp.headers["content-type"] != "application/json; charset=utf-8")
+		if (qhttp.headers["content-type"] != "application/json"
+				&& qhttp.headers["content-type"] != "application/json; charset=utf-8")
 		{
 			writeln(`not application/json`);
 			break _loop_a;
 		}
 		JSONValue jsonObj = parseJSON(cast(char[]) qhttp.data);
+		Variant v_type = getJsonObjectProp(jsonObj, `type`);
+		if (v_type == `rate_limit_exceeded`)
+		{
+			writeln(`rate_limit_exceeded error!(3)`);
+			long v_rate_reset = to!long(qhttp.headers["rate-reset"]);
+			writeln(v_rate_reset);
+			writeln(SysTime(unixTimeToStdTime(v_rate_reset)));
+			SysTime currentTime = Clock.currTime();
+			writeln(currentTime);
+			SysTime v_reset_time = SysTime(unixTimeToStdTime(v_rate_reset));
+			//auto diff = v_reset_time - currentTime;
+			Duration diff = v_reset_time - currentTime;
+			writeln(diff);
+			writeln(diff.total!"minutes");
+			writeln(diff.total!"seconds");
+			writeln(diff.total!"msecs");
+			break _loop_a;
+		}
+
 		bool v_is_rate_limit_exceeded = false;
 		try
 		{
