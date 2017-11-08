@@ -252,6 +252,7 @@ bool handle_one_day(SysTime v_date)
 			newJsonValue.appendArrayElement(val2);
 		}
 	}
+	writefln(`qhttp1.rateRemaining=%d`, qhttp1.rateRemaining);
 
 	writeln(`newJsonValue.array.length=`, newJsonValue.array.length);
 	if (newJsonValue.array.length != total_count)
