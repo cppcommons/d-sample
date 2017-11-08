@@ -33,17 +33,14 @@ private void exit(int code)
 
 private void sleep_seconds(long secs)
 {
-	//import core.stdc.stdio;
-	//import core.thread;
-
 	SysTime startTime = Clock.currTime();
 	SysTime targetTime = startTime + dur!`seconds`(secs);
 
 	int max_width = 0;
 	for (;;)
 	{
-		Thread.sleep(dur!("msecs")(500));
 		SysTime currTime = Clock.currTime();
+		if (currTime >= targetTime) break;
 		Duration leftTime = targetTime - currTime;
 		if (leftTime.total!`msecs` <= 0)
 			break;
@@ -55,6 +52,7 @@ private void sleep_seconds(long secs)
 		//printf("%s\r", cast(char*) toStringz(displayStr));
 		writef("%s\r", displayStr);
 		stdout.flush();
+		Thread.sleep(dur!("msecs")(500));
 	}
 	//printf("\n");
 	for (int i = 0; i < max_width; i++)
