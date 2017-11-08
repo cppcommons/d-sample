@@ -64,6 +64,9 @@ int main(string[] args)
 		assert(post.type == JSON_TYPE.OBJECT);
 		post.object.remove(`body`);
 		post.object.remove(`rendered_body`);
+		string v_created_at = post.object[`created_at`].str;
+		auto restoredTime = SysTime.fromISOExtString(v_created_at);
+		writeln(v_created_at, `=`, restoredTime);
 	}
 	File f = File(`___temp.json`, `wb`);
 	f.write(jsonObj.toPrettyString(JSONOptions.doNotEscapeSlashes));
