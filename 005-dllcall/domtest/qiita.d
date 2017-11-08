@@ -222,7 +222,7 @@ bool handle_one_day(SysTime v_date)
 
 	newJsonValue.array ~= qhttp1.jsonValue.array;
 
-	long real_count = qhttp1.jsonValue.array.length;
+	//long real_count = qhttp1.jsonValue.array.length;
 
 	long page_count = (total_count + per_page - 1) / per_page;
 	writeln(`page_count=`, page_count);
@@ -237,12 +237,20 @@ bool handle_one_day(SysTime v_date)
 		writeln(rc2);
 		if (rc2 != 0)
 			return false;
-		real_count += qhttp2.jsonValue.array.length;
+		//real_count += qhttp2.jsonValue.array.length;
 		newJsonValue.array ~= qhttp2.jsonValue.array;
 	}
 
-	writeln(`real_count=`, real_count);
+	//writeln(`real_count=`, real_count);
 	writeln(`newJsonValue.array.length=`, newJsonValue.array.length);
+	if (newJsonValue.array.length != total_count)
+	{
+		return false;
+	}
+
+	string json = newJsonValue.toPrettyString(JSONOptions.doNotEscapeSlashes);
+	writeln(json);
+
 	exit(0);
 	return true;
 }
