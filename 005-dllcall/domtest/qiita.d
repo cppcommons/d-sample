@@ -40,21 +40,18 @@ private void sleep_seconds(long secs)
 	for (;;)
 	{
 		SysTime currTime = Clock.currTime();
-		if (currTime >= targetTime) break;
-		Duration leftTime = targetTime - currTime;
-		if (leftTime.total!`msecs` <= 0)
+		if (currTime >= targetTime)
 			break;
+		Duration leftTime = targetTime - currTime;
 		string displayStr = format!`Sleeping: %s`(leftTime);
 		if (displayStr.length > max_width)
 			max_width = displayStr.length;
 		while (displayStr.length < max_width)
 			displayStr ~= ` `;
-		//printf("%s\r", cast(char*) toStringz(displayStr));
 		writef("%s\r", displayStr);
 		stdout.flush();
 		Thread.sleep(dur!("msecs")(500));
 	}
-	//printf("\n");
 	for (int i = 0; i < max_width; i++)
 		write(` `);
 	write("\r");
@@ -163,12 +160,6 @@ class C_QiitaApiServie
 	}
 }
 
-void handle_one_day(SysTime v_date)
-{
-
-	exit(0);
-}
-
 Variant getJsonObjectProp(ref JSONValue jsonObj, string prop_name)
 {
 	Variant result;
@@ -208,6 +199,48 @@ Variant getJsonObjectProp(ref JSONValue jsonObj, string prop_name)
 	return result;
 }
 
+bool handle_one_day(SysTime v_date)
+{
+	const int per_page = 100;
+	string v_period = format!`%04d-%02d-%02d`(v_date.year, v_date.month, v_date.day);
+	auto qhttp = new C_QiitaApiServie();
+	string url1 = format!`http://qiita.com/api/v2/items?query=created%%3A%s&per_page=%d`(
+			v_period, per_page);
+	int rc = qhttp.get(url1);
+	writeln(rc);
+	stdout.flush();
+	if (rc != 0)
+		return false;
+	writeln(qhttp.http.headers);
+	stdout.flush();
+	long total_count = to!long(qhttp.http.headers[`total-count`]);
+	writeln(`qhttp.rateRemaining=`, qhttp.rateRemaining);
+	writeln(`qhttp.rateResetTime=`, qhttp.rateResetTime);
+	writeln(`total_count=`, total_count);
+	stdout.flush();
+
+	long real_count = qhttp.jsonValue.array.length;
+
+	long page_count = (total_count + per_page - 1) / per_page;
+	writeln(`page_count=`, page_count);
+
+	for (int page_no = 2; page_no <= page_count; page_no++)
+	{
+		auto qhttp2 = new C_QiitaApiServie();
+		string url2 = format!`http://qiita.com/api/v2/items?query=created%%3A%s&per_page=%d&page=%d`(v_period,
+				per_page, page_no);
+		int rc2 = qhttp2.get(url2);
+		writeln(rc2);
+		if (rc2 != 0)
+			return false;
+		real_count += qhttp2.jsonValue.array.length;
+	}
+
+	writeln(`real_count=`, real_count);
+	exit(0);
+	return true;
+}
+
 int main(string[] args)
 {
 	/+
@@ -217,6 +250,7 @@ int main(string[] args)
 	exit(0);
 	+/
 	//JSONValue jv = parseJSON("[]");
+	/+
 	JSONValue jv = parseJSON(`{"abc":123}`);
 	//auto jvm = jv["xyz"];
 	Variant v;
@@ -229,8 +263,10 @@ int main(string[] args)
 	writeln(v.type);
 	writeln(typeid(int));
 	writeln(v.type == typeid(long));
+	+/
 
-	const SysTime v_first_date = SysTime(DateTime(2011, 9, 16));
+	//const SysTime v_first_date = SysTime(DateTime(2011, 9, 16));
+	const SysTime v_first_date = SysTime(DateTime(2016, 9, 16));
 	SysTime v_curr_time = Clock.currTime();
 	SysTime v_curr_date = SysTime(DateTime(v_curr_time.year, v_curr_time.month, v_curr_time.day));
 
@@ -240,10 +276,13 @@ int main(string[] args)
 		//writeln(v_date);
 		string v_str = format!`%04d-%02d-%02d`(v_date.year, v_date.month, v_date.day);
 		//writeln(v_str);
+		handle_one_day(v_date);
 		if (v_date == v_curr_date)
 			break a;
 		v_date += dur!`days`(1);
 	}
+
+	exit(0);
 
 	_loop_a: for (int i = 0; i < 2000; i++)
 	{
