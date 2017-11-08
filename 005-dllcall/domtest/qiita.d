@@ -229,7 +229,7 @@ bool handle_one_day(SysTime v_date)
 		}
 		if (jsonValue.length != total_count2)
 		{
-			exit(1);
+			//exit(1);
 		}
 		//writeln(json2);
 		//writefln(`[%s: complete (%d)]`, v_period, total_count2);
@@ -280,11 +280,17 @@ bool handle_one_day(SysTime v_date)
 			newJsonValue.appendArrayElement(val2);
 		}
 	}
+	writeln(`newJsonValue.array.length=`, newJsonValue.array.length);
 	writefln(`qhttp1.rateRemaining=%d`, qhttp1.rateRemaining);
 
-	writeln(`newJsonValue.array.length=`, newJsonValue.array.length);
+	version(none)
 	if (newJsonValue.array.length != total_count)
 	{
+		writeln(`total_count=`, total_count);
+		writeln(`exiting!`);
+		Thread.sleep(dur!`seconds`(3));
+		//writeln(cast(string)qhttp1.http.data);
+		//exit(1);
 		return false;
 	}
 
