@@ -377,16 +377,23 @@ private int handle_exe_output(string[] args)
 		else if (arg.startsWith(`[`))
 		{
 			arg = arg.replace("{:}", uuid);
-			auto re = regex(`^\[([^:]+)(:[^:]+)?(:[^:]+)?\]$`);
+			auto re = regex(`^\[([^:]+)(:[^:]*)?(:[^:]*)?\]$`);
 			auto m = matchFirst(arg, re);
 			if (m)
 			{
 				//writeln(`match!`);
 				//writefln(`match="%s" "%s" "%s"`, m[1], m[2], m[3]);
+				string m1 = m[1];
+				string m2 = m[2];
+				string m3 = m[3];
 				_PackageSpec spec;
-				spec._name = m[1].replace(uuid, `:`);
-				spec._version = m[2].empty ? "~master" : m[2][1 .. $].replace(uuid, `:`);
-				spec._sub_config = m[3].empty ? "" : m[3][1 .. $].replace(uuid, `:`);
+				spec._name = m1.replace(uuid, `:`);
+				if (m2.startsWith(`:`))
+					m2 = m2[1 .. $];
+				spec._version = m2.empty ? "~master" : m2.replace(uuid, `:`);
+				if (m3.startsWith(`:`))
+					m3 = m3[1 .. $];
+				spec._sub_config = m3.empty ? "" : m3.replace(uuid, `:`);
 				packages ~= spec;
 				//writeln("match end!");
 			}
