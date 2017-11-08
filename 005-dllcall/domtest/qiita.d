@@ -227,6 +227,8 @@ bool handle_one_day(SysTime v_date)
 
 	foreach (val1; qhttp1.jsonValue[])
 	{
+		val1.remove(`body`);
+		val1.remove(`rendered_body`);
 		newJsonValue.appendArrayElement(val1);
 	}
 
@@ -245,6 +247,8 @@ bool handle_one_day(SysTime v_date)
 			return false;
 		foreach (val2; qhttp2.jsonValue[])
 		{
+			val2.remove(`body`);
+			val2.remove(`rendered_body`);
 			newJsonValue.appendArrayElement(val2);
 		}
 	}
