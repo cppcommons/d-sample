@@ -93,7 +93,8 @@ int main(string[] args)
 
 	writeln("start!スタート!");
 	// Open a database in memory.
-	auto db = Database(":memory:");
+	//auto db = Database(":memory:");
+	auto db = Database("___test.db3");
 
 	// Create a table
 	db.run("DROP TABLE IF EXISTS person;

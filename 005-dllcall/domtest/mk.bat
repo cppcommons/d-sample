@@ -1,5 +1,6 @@
 chcp 65001
 
+goto skip
 edub domtest.exe build ^
 app.d ^
 characterencodings.d@https://github.com/adamdruppe/arsd/blob/master/characterencodings.d ^
@@ -15,9 +16,11 @@ control.d ^
 [jsonizer] [dateparser]
 if %errorlevel% neq 0 (exit /b)
 
+:skip
+
 edub qiita.exe run ^
 qiita.d ^
 sqlite-win-32bit-3200100-dm32.lib ^
 [jsonizer] [dateparser] ^
-[d2sqlite3::without-lib]
+"[d2sqlite3:  :without-lib]"
 if %errorlevel% neq 0 (exit /b)

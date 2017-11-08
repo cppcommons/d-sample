@@ -390,9 +390,11 @@ private int handle_exe_output(string[] args)
 				spec._name = m1.replace(uuid, `:`);
 				if (m2.startsWith(`:`))
 					m2 = m2[1 .. $];
+				m2 = m2.strip;
 				spec._version = m2.empty ? "~master" : m2.replace(uuid, `:`);
 				if (m3.startsWith(`:`))
 					m3 = m3[1 .. $];
+				m3 = m3.strip;
 				spec._sub_config = m3.empty ? "" : m3.replace(uuid, `:`);
 				packages ~= spec;
 				//writeln("match end!");
