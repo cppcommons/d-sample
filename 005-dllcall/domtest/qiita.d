@@ -203,29 +203,33 @@ bool handle_one_day(SysTime v_date)
 {
 	const int per_page = 100;
 	string v_period = format!`%04d-%02d-%02d`(v_date.year, v_date.month, v_date.day);
-	auto qhttp = new C_QiitaApiServie();
+	JSONValue newJsonValue = parseJSON(`[]`);
+
+	writefln(`[%s: page=1]`, v_period);
+	auto qhttp1 = new C_QiitaApiServie();
 	string url1 = format!`http://qiita.com/api/v2/items?query=created%%3A%s&per_page=%d`(
 			v_period, per_page);
-	int rc = qhttp.get(url1);
-	writeln(rc);
+	int rc1 = qhttp1.get(url1);
+	writeln(rc1);
 	stdout.flush();
-	if (rc != 0)
+	if (rc1 != 0)
 		return false;
-	writeln(qhttp.http.headers);
+	writeln(qhttp1.http.headers);
 	stdout.flush();
-	long total_count = to!long(qhttp.http.headers[`total-count`]);
-	writeln(`qhttp.rateRemaining=`, qhttp.rateRemaining);
-	writeln(`qhttp.rateResetTime=`, qhttp.rateResetTime);
+	long total_count = to!long(qhttp1.http.headers[`total-count`]);
 	writeln(`total_count=`, total_count);
 	stdout.flush();
 
-	long real_count = qhttp.jsonValue.array.length;
+	newJsonValue.array ~= qhttp1.jsonValue.array;
+
+	long real_count = qhttp1.jsonValue.array.length;
 
 	long page_count = (total_count + per_page - 1) / per_page;
 	writeln(`page_count=`, page_count);
 
 	for (int page_no = 2; page_no <= page_count; page_no++)
 	{
+		writefln(`[%s: page=%d]`, v_period, page_no);
 		auto qhttp2 = new C_QiitaApiServie();
 		string url2 = format!`http://qiita.com/api/v2/items?query=created%%3A%s&per_page=%d&page=%d`(v_period,
 				per_page, page_no);
@@ -234,9 +238,11 @@ bool handle_one_day(SysTime v_date)
 		if (rc2 != 0)
 			return false;
 		real_count += qhttp2.jsonValue.array.length;
+		newJsonValue.array ~= qhttp2.jsonValue.array;
 	}
 
 	writeln(`real_count=`, real_count);
+	writeln(`newJsonValue.array.length=`, newJsonValue.array.length);
 	exit(0);
 	return true;
 }
