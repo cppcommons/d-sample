@@ -120,6 +120,9 @@ int main(string[] args)
 	writeln(v.get!(double));
 	writeln(v.peek!(string));
 	//exit(0);
+	writeln(v.type);
+	writeln(typeid(int));
+	writeln(v.type == typeid(long));
 
 	const SysTime v_first_date = SysTime(DateTime(2011, 9, 16));
 	SysTime v_curr_time = Clock.currTime();
