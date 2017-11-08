@@ -331,8 +331,8 @@ int main(string[] args)
 	writeln(v.type == typeid(long));
 	+/
 
-	//const SysTime v_first_date = SysTime(DateTime(2011, 9, 16));
-	const SysTime v_first_date = SysTime(DateTime(2016, 9, 16));
+	const SysTime v_first_date = SysTime(DateTime(2011, 9, 16));
+	//const SysTime v_first_date = SysTime(DateTime(2016, 9, 16));
 	SysTime v_curr_time = Clock.currTime();
 	SysTime v_curr_date = SysTime(DateTime(v_curr_time.year, v_curr_time.month, v_curr_time.day));
 
