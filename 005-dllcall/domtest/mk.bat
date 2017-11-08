@@ -21,6 +21,6 @@ if %errorlevel% neq 0 (exit /b)
 edub qiita.exe run ^
 qiita.d ^
 sqlite-win-32bit-3200100-dm32.lib ^
-[jsonizer] [dateparser] ^
+[vibe-d] [jsonizer] [dateparser] ^
 "[d2sqlite3:  :without-lib]"
 if %errorlevel% neq 0 (exit /b)

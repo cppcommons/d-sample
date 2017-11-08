@@ -1,5 +1,7 @@
+import vibe.data.json;
 import dateparser;
-import jsonizer;
+
+//import jsonizer;
 
 //import core.sync.barrier;
 import core.sync.rwmutex;
@@ -12,7 +14,8 @@ import std.datetime;
 import std.datetime.systime;
 import std.file;
 import std.format;
-import std.json;
+
+//import std.json;
 import std.net.curl;
 import std.path;
 import std.process;
@@ -98,7 +101,8 @@ class C_QiitaApiHttp
 class C_QiitaApiServie
 {
 	C_QiitaApiHttp http;
-	JSONValue jsonValue;
+	//JSONValue jsonValue;
+	Json jsonValue;
 	long rateRemaining;
 	SysTime rateResetTime;
 	this()
@@ -130,10 +134,11 @@ class C_QiitaApiServie
 				return -1;
 			}
 			//JSONValue jsonObj = parseJSON(cast(char[]) this.http.data);
-			try {
-				this.jsonValue = parseJSON(cast(char[]) this.http.data);
+			try
+			{
+				this.jsonValue = parseJsonString(cast(string) this.http.data);
 			}
-			catch(JSONException ex)
+			catch (JSONException ex)
 			{
 				writeln(ex);
 				return -1;
@@ -167,41 +172,16 @@ class C_QiitaApiServie
 	}
 }
 
-Variant getJsonObjectProp(ref JSONValue jsonObj, string prop_name)
+Variant getJsonObjectProp(ref Json jsonObj, string prop_name)
 {
 	Variant result;
-	if (jsonObj.type != JSON_TYPE.OBJECT)
+	if (jsonObj.type != Json.Type.Object)
 		return result;
-	auto member = (prop_name in jsonObj.object);
-	if (!member)
-		return result;
-	writeln(member.type);
-	switch (member.type)
+	foreach (key, value; jsonObj.byKeyValue)
 	{
-	case JSON_TYPE.FALSE:
-		//writeln(`1`);
-		result = false;
-		break;
-	case JSON_TYPE.TRUE:
-		//writeln(`2`);
-		result = true;
-		break;
-	case JSON_TYPE.FLOAT:
-		//writeln(`3`);
-		result = member.floating;
-		break;
-	case JSON_TYPE.INTEGER:
-		//writeln(`4`);
-		result = member.integer;
-		//writeln(`4b`);
-		break;
-	case JSON_TYPE.STRING:
-		//writeln(`5`);
-		result = member.str;
-		break;
-	default:
-		//writeln(`6`);
-		break;
+		writefln("%s: %s", key, value);
+		if (key == prop_name)
+			result = value.to!string;
 	}
 	return result;
 }
@@ -228,7 +208,7 @@ bool handle_one_day(SysTime v_date)
 		return true;
 	}
 
-	JSONValue newJsonValue = parseJSON(`[]`);
+	Json newJsonValue = Json.emptyArray;
 
 	writefln(`[%s: page=1]`, v_period);
 	auto qhttp1 = new C_QiitaApiServie();
@@ -245,7 +225,10 @@ bool handle_one_day(SysTime v_date)
 	//writeln(`total_count=`, total_count);
 	//stdout.flush();
 
-	newJsonValue.array ~= qhttp1.jsonValue.array;
+	foreach (val1; qhttp1.jsonValue[])
+	{
+		newJsonValue.appendArrayElement(val1);
+	}
 
 	long page_count = (total_count + per_page - 1) / per_page;
 	//writeln(`page_count=`, page_count);
@@ -260,7 +243,10 @@ bool handle_one_day(SysTime v_date)
 		//writeln(rc2);
 		if (rc2 != 0)
 			return false;
-		newJsonValue.array ~= qhttp2.jsonValue.array;
+		foreach (val2; qhttp2.jsonValue[])
+		{
+			newJsonValue.appendArrayElement(val2);
+		}
 	}
 
 	writeln(`newJsonValue.array.length=`, newJsonValue.array.length);
@@ -269,7 +255,9 @@ bool handle_one_day(SysTime v_date)
 		return false;
 	}
 
-	string json = newJsonValue.toPrettyString(JSONOptions.doNotEscapeSlashes);
+	//string json = newJsonValue.serializeToJsonString();
+	string json = newJsonValue.toPrettyString();
+
 	//writeln(json);
 	Statement statement = g_db.prepare(
 			"INSERT INTO qiita_posts (post_date, total_count, json) VALUES (:post_date, :total_count, :json)");
@@ -284,6 +272,17 @@ bool handle_one_day(SysTime v_date)
 	{
 		auto rowid = g_db.execute("SELECT last_insert_rowid()").oneValue!long;
 		writeln("rowid=", rowid);
+	}
+	version (none)
+	{
+		ResultRange results = g_db.execute(
+				format!"SELECT *, rowid rid FROM qiita_posts WHERE post_date == '%s'"(v_period));
+		foreach (Row row; results)
+		{
+			auto json2 = row["json"].as!string;
+			writeln(json2);
+			exit(0);
+		}
 	}
 
 	return true;
@@ -349,67 +348,6 @@ int main(string[] args)
 	}
 
 	exit(0);
-	// Get with custom data receivers
-	//auto http = HTTP("http://qiita.com/api/v2/items/1a182f187fd2a8df29c2");
-	auto http = HTTP("http://qiita.com/api/v2/items?query=created%3A2016-12-01&per_page=100");
-	http.addRequestHeader(`Authorization`, `Bearer 06ade23e3803334f43a0671f2a7c5087305578bd`);
-	long v_rate_reset = 0;
-	http.onReceiveHeader = (in char[] key, in char[] value) {
-		writeln(key ~ ": " ~ value);
-		if (key == `rate-reset`)
-		{
-			v_rate_reset = to!long(value);
-		}
-	};
-	ubyte[] bytes;
-	http.onReceive = (ubyte[] data) { /+ drop +/
-		writeln(`onReceive`);
-		bytes ~= data;
-		return data.length;
-	};
-	int code = http.perform(No.throwOnError);
-	writeln(`code=`, code);
-	Thread.sleep(dur!`msecs`(2000));
-
-	//writeln(cast(char[]) bytes);
-	JSONValue jsonObj = parseJSON(cast(char[]) bytes);
-	assert(jsonObj.type == JSON_TYPE.ARRAY);
-	/+
-	assert(jsonObj.type == JSON_TYPE.OBJECT);
-	foreach (key; jsonObj.object.keys)
-	{
-		writeln(key);
-	}
-	+/
-	//writeln(jsonObj.object[`created_at`].toString);
-	foreach (ref post; jsonObj.array)
-	{
-		assert(post.type == JSON_TYPE.OBJECT);
-		post.object.remove(`body`);
-		post.object.remove(`rendered_body`);
-		string v_created_at = post.object[`created_at`].str;
-		auto restoredTime = SysTime.fromISOExtString(v_created_at);
-		writeln(v_created_at, `=`, restoredTime);
-	}
-	File f = File(`___temp.json`, `wb`);
-	f.write(jsonObj.toPrettyString(JSONOptions.doNotEscapeSlashes));
-	f.close();
-	writeln(v_rate_reset);
-	writeln(SysTime(unixTimeToStdTime(v_rate_reset)));
-	SysTime currentTime = Clock.currTime();
-	writeln(currentTime);
-	SysTime v_reset_time = SysTime(unixTimeToStdTime(v_rate_reset));
-	//auto diff = v_reset_time - currentTime;
-	Duration diff = v_reset_time - currentTime;
-	writeln(diff);
-	writeln(diff.total!"minutes");
-	writeln(diff.total!"seconds");
-	writeln(diff.total!"msecs");
-
-	string a = "";
-	string b = null;
-
-	writeln(a == b);
 
 	writeln("start!スタート!");
 	// Open a database in memory.
