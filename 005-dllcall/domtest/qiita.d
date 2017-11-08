@@ -41,6 +41,27 @@ static this()
 	)`);
 }
 
+class C_QiitaApiHttp
+{
+	int code;
+	string[string] headers;
+	ubyte[] data;
+	int get(string url)
+	{
+		auto http = HTTP(url);
+		http.addRequestHeader(`Authorization`, `Bearer 06ade23e3803334f43a0671f2a7c5087305578bd`);
+		http.onReceiveHeader = (in char[] key, in char[] value) {
+			this.headers[key] = to!string(value);
+		};
+		http.onReceive = (ubyte[] bytes) {
+			this.data ~= bytes;
+			return bytes.length;
+		};
+		this.code = http.perform(No.throwOnError);
+		return this.code;
+	}
+}
+
 void handle_one_day(SysTime v_date)
 {
 
@@ -56,15 +77,70 @@ int main(string[] args)
 	SysTime v_date = v_first_date;
 	a: for (;;)
 	{
-		writeln(v_date);
+		//writeln(v_date);
 		string v_str = format!`%04d-%02d-%02d`(v_date.year, v_date.month, v_date.day);
-		writeln(v_str);
+		//writeln(v_str);
 		if (v_date == v_curr_date)
 			break a;
 		v_date += dur!`days`(1);
 	}
 
-	//exit(0);
+	_loop_a: for (int i = 0; i < 2000; i++)
+	{
+		auto qhttp = new C_QiitaApiHttp();
+		int rc = qhttp.get("http://qiita.com/api/v2/items?query=created%3A2016-12-01&per_page=10");
+		writeln(qhttp.headers);
+		writeln(rc);
+		if (rc != 0)
+			break _loop_a;
+		if (qhttp.headers["content-type"] != "application/json")
+		{
+			writeln(`not application/json`);
+			break _loop_a;
+		}
+		JSONValue jsonObj = parseJSON(cast(char[]) qhttp.data);
+		if (jsonObj.type == JSON_TYPE.OBJECT)
+		{
+			auto type = `type` in jsonObj.object;
+			if (type && type.type == JSON_TYPE.STRING && type.str == `rate_limit_exceeded`)
+			{
+				writeln(`rate_limit_exceeded error!`);
+				long v_rate_reset = to!long(qhttp.headers["rate-reset"]);
+				writeln(v_rate_reset);
+				writeln(SysTime(unixTimeToStdTime(v_rate_reset)));
+				SysTime currentTime = Clock.currTime();
+				writeln(currentTime);
+				SysTime v_reset_time = SysTime(unixTimeToStdTime(v_rate_reset));
+				//auto diff = v_reset_time - currentTime;
+				Duration diff = v_reset_time - currentTime;
+				writeln(diff);
+				writeln(diff.total!"minutes");
+				writeln(diff.total!"seconds");
+				writeln(diff.total!"msecs");
+				break _loop_a;
+			}
+
+		}
+		if (("total-count" in qhttp.headers) == null)
+		{
+			writeln(cast(char[]) qhttp.data);
+			long v_rate_reset = to!long(qhttp.headers["rate-reset"]);
+			writeln(v_rate_reset);
+			writeln(SysTime(unixTimeToStdTime(v_rate_reset)));
+			SysTime currentTime = Clock.currTime();
+			writeln(currentTime);
+			SysTime v_reset_time = SysTime(unixTimeToStdTime(v_rate_reset));
+			//auto diff = v_reset_time - currentTime;
+			Duration diff = v_reset_time - currentTime;
+			writeln(diff);
+			writeln(diff.total!"minutes");
+			writeln(diff.total!"seconds");
+			writeln(diff.total!"msecs");
+			break _loop_a;
+		}
+	}
+
+	exit(0);
 	// Get with custom data receivers
 	//auto http = HTTP("http://qiita.com/api/v2/items/1a182f187fd2a8df29c2");
 	auto http = HTTP("http://qiita.com/api/v2/items?query=created%3A2016-12-01&per_page=100");
