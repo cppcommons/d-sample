@@ -126,7 +126,8 @@ class C_QiitaApiServie
 			this.rateRemaining = -1;
 			try
 			{
-				this.rateRemaining = to!long(this.http.headers["rate-remaining"]);
+				if ("rate-remaining" in this.http.headers)
+					this.rateRemaining = to!long(this.http.headers["rate-remaining"]);
 			}
 			catch (Exception ex)
 			{
@@ -134,7 +135,8 @@ class C_QiitaApiServie
 			long v_rate_reset = 0;
 			try
 			{
-				v_rate_reset = to!long(this.http.headers["rate-reset"]);
+				if ("rate-reset" in this.http.headers)
+					v_rate_reset = to!long(this.http.headers["rate-reset"]);
 			}
 			catch (Exception ex)
 			{
@@ -283,16 +285,16 @@ bool handle_one_day(SysTime v_date)
 	writeln(`newJsonValue.array.length=`, newJsonValue.array.length);
 	writefln(`qhttp1.rateRemaining=%d`, qhttp1.rateRemaining);
 
-	version(none)
-	if (newJsonValue.array.length != total_count)
-	{
-		writeln(`total_count=`, total_count);
-		writeln(`exiting!`);
-		Thread.sleep(dur!`seconds`(3));
-		//writeln(cast(string)qhttp1.http.data);
-		//exit(1);
-		return false;
-	}
+	version (none)
+		if (newJsonValue.array.length != total_count)
+		{
+			writeln(`total_count=`, total_count);
+			writeln(`exiting!`);
+			Thread.sleep(dur!`seconds`(3));
+			//writeln(cast(string)qhttp1.http.data);
+			//exit(1);
+			return false;
+		}
 
 	//string json = newJsonValue.serializeToJsonString();
 	string json = newJsonValue.toPrettyString();
