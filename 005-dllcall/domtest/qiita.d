@@ -70,6 +70,10 @@ void handle_one_day(SysTime v_date)
 
 int main(string[] args)
 {
+	//JSONValue jv = parseJSON("[]");
+	//JSONValue jv = parseJSON(`{"abc":123}`);
+	//auto jvm = jv["xyz"];
+
 	const SysTime v_first_date = SysTime(DateTime(2011, 9, 16));
 	SysTime v_curr_time = Clock.currTime();
 	SysTime v_curr_date = SysTime(DateTime(v_curr_time.year, v_curr_time.month, v_curr_time.day));
@@ -93,12 +97,39 @@ int main(string[] args)
 		writeln(rc);
 		if (rc != 0)
 			break _loop_a;
-		if (qhttp.headers["content-type"] != "application/json")
+		if (qhttp.headers["content-type"] != "application/json" && qhttp.headers["content-type"] != "application/json; charset=utf-8")
 		{
 			writeln(`not application/json`);
 			break _loop_a;
 		}
 		JSONValue jsonObj = parseJSON(cast(char[]) qhttp.data);
+		bool v_is_rate_limit_exceeded = false;
+		try
+		{
+			auto try_type = jsonObj[`type`];
+			if (try_type.type == JSON_TYPE.STRING && try_type.str == `rate_limit_exceeded`)
+				v_is_rate_limit_exceeded = true;
+		}
+		catch (JSONException ex)
+		{
+		}
+		if (v_is_rate_limit_exceeded)
+		{
+			writeln(`rate_limit_exceeded error!(2)`);
+			long v_rate_reset = to!long(qhttp.headers["rate-reset"]);
+			writeln(v_rate_reset);
+			writeln(SysTime(unixTimeToStdTime(v_rate_reset)));
+			SysTime currentTime = Clock.currTime();
+			writeln(currentTime);
+			SysTime v_reset_time = SysTime(unixTimeToStdTime(v_rate_reset));
+			//auto diff = v_reset_time - currentTime;
+			Duration diff = v_reset_time - currentTime;
+			writeln(diff);
+			writeln(diff.total!"minutes");
+			writeln(diff.total!"seconds");
+			writeln(diff.total!"msecs");
+			break _loop_a;
+		}
 		if (jsonObj.type == JSON_TYPE.OBJECT)
 		{
 			auto type = `type` in jsonObj.object;
