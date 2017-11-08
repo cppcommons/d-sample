@@ -204,7 +204,21 @@ bool handle_one_day(SysTime v_date)
 	//writefln(`count=%d`, count);
 	if (count)
 	{
-		writefln(`[%s: complete]`, v_period);
+		Row row = g_db.execute(format!"SELECT *, rowid rid FROM qiita_posts WHERE post_date == '%s'"(v_period))
+			.front();
+		auto total_count2 = row["total_count"].as!long;
+		auto json2 = row["json"].as!string;
+		Json jsonValue = parseJsonString(cast(string) json2);
+		if (jsonValue.type != Json.Type.Array)
+		{
+			exit(1);
+		}
+		if (jsonValue.length != total_count2)
+		{
+			exit(1);
+		}
+		//writeln(json2);
+		writefln(`[%s: complete (%d)]`, v_period, total_count2);
 		return true;
 	}
 
