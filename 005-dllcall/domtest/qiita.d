@@ -50,6 +50,7 @@ int main(string[] args)
 
 	//writeln(cast(char[]) bytes);
 	JSONValue jsonObj = parseJSON(cast(char[]) bytes);
+	assert(jsonObj.type == JSON_TYPE.ARRAY);
 	/+
 	assert(jsonObj.type == JSON_TYPE.OBJECT);
 	foreach (key; jsonObj.object.keys)
@@ -58,6 +59,12 @@ int main(string[] args)
 	}
 	+/
 	//writeln(jsonObj.object[`created_at`].toString);
+	foreach(ref post; jsonObj.array)
+	{
+		assert(post.type == JSON_TYPE.OBJECT);
+		post.object.remove(`body`);
+		post.object.remove(`rendered_body`);
+	}
 	File f = File(`___temp.json`, `wb`);
 	f.write(jsonObj.toPrettyString(JSONOptions.doNotEscapeSlashes));
 	f.close();
