@@ -5,6 +5,7 @@ import jsonizer;
 import core.sync.rwmutex;
 import core.sync.semaphore;
 import core.thread;
+import core.time;
 import std.array;
 import std.conv;
 import std.datetime;
@@ -49,6 +50,9 @@ class C_QiitaApiHttp
 	ubyte[] data;
 	int get(string url)
 	{
+		this.code = 0;
+		this.headers.clear();
+		this.data.length = 0;
 		auto http = HTTP(url);
 		http.addRequestHeader(`Authorization`, `Bearer 06ade23e3803334f43a0671f2a7c5087305578bd`);
 		http.onReceiveHeader = (in char[] key, in char[] value) {
@@ -60,6 +64,70 @@ class C_QiitaApiHttp
 		};
 		this.code = http.perform(No.throwOnError);
 		return this.code;
+	}
+}
+
+class C_QiitaApiServie
+{
+	C_QiitaApiHttp http;
+	JSONValue jsonValue;
+	long rateRemaining;
+	SysTime rateResetTime;
+	this()
+	{
+		this.http = new C_QiitaApiHttp();
+	}
+
+	~this()
+	{
+		delete this.http;
+	}
+
+	int get(string url)
+	{
+		_loop_a: for (;;)
+		{
+			this.jsonValue = null;
+			int rc = this.http.get(url);
+			if (rc != 0)
+				return rc;
+			this.rateRemaining = to!long(this.http.headers["rate-remaining"]);
+			long v_rate_reset = to!long(this.http.headers["rate-reset"]);
+			this.rateResetTime = SysTime(unixTimeToStdTime(v_rate_reset));
+			//writeln(this.http.headers);
+			if (this.http.headers["content-type"] != "application/json"
+					&& this.http.headers["content-type"] != "application/json; charset=utf-8")
+			{
+				writeln(`not application/json`);
+				return -1;
+			}
+			//JSONValue jsonObj = parseJSON(cast(char[]) this.http.data);
+			this.jsonValue = parseJSON(cast(char[]) this.http.data);
+			Variant v_type = getJsonObjectProp(this.jsonValue, `type`);
+			if (v_type == `rate_limit_exceeded`)
+			{
+				writeln(`rate_limit_exceeded error!(3)`);
+				//long v_rate_reset = to!long(this.http.headers["rate-reset"]);
+				//writeln(v_rate_reset);
+				//writeln(SysTime(unixTimeToStdTime(v_rate_reset)));
+				SysTime currentTime = Clock.currTime();
+				writeln(currentTime);
+				//SysTime v_reset_time = SysTime(unixTimeToStdTime(v_rate_reset));
+				//auto diff = v_reset_time - currentTime;
+				Duration diff = this.rateResetTime - currentTime;
+				writeln(diff);
+				Duration diff2 = diff + dur!`seconds`(60);
+				writeln(diff2);
+				writeln(diff.total!"minutes");
+				writeln(diff.total!"seconds");
+				writeln(diff.total!"msecs");
+				writeln(`Sleeping for: `, diff2);
+				Thread.sleep(diff2);
+				continue _loop_a;
+			}
+			break _loop_a;
+		}
+		return 0;
 	}
 }
 
@@ -141,104 +209,18 @@ int main(string[] args)
 
 	_loop_a: for (int i = 0; i < 2000; i++)
 	{
-		auto qhttp = new C_QiitaApiHttp();
+		auto qhttp = new C_QiitaApiServie();
 		int rc = qhttp.get("http://qiita.com/api/v2/items?query=created%3A2016-12-01&per_page=10");
-		writeln(qhttp.headers);
 		writeln(rc);
+		stdout.flush();
 		if (rc != 0)
 			break _loop_a;
-		if (qhttp.headers["content-type"] != "application/json"
-				&& qhttp.headers["content-type"] != "application/json; charset=utf-8")
-		{
-			writeln(`not application/json`);
-			break _loop_a;
-		}
-		JSONValue jsonObj = parseJSON(cast(char[]) qhttp.data);
-		Variant v_type = getJsonObjectProp(jsonObj, `type`);
-		if (v_type == `rate_limit_exceeded`)
-		{
-			writeln(`rate_limit_exceeded error!(3)`);
-			long v_rate_reset = to!long(qhttp.headers["rate-reset"]);
-			writeln(v_rate_reset);
-			writeln(SysTime(unixTimeToStdTime(v_rate_reset)));
-			SysTime currentTime = Clock.currTime();
-			writeln(currentTime);
-			SysTime v_reset_time = SysTime(unixTimeToStdTime(v_rate_reset));
-			//auto diff = v_reset_time - currentTime;
-			Duration diff = v_reset_time - currentTime;
-			writeln(diff);
-			writeln(diff.total!"minutes");
-			writeln(diff.total!"seconds");
-			writeln(diff.total!"msecs");
-			break _loop_a;
-		}
-
-		bool v_is_rate_limit_exceeded = false;
-		try
-		{
-			auto try_type = jsonObj[`type`];
-			if (try_type.type == JSON_TYPE.STRING && try_type.str == `rate_limit_exceeded`)
-				v_is_rate_limit_exceeded = true;
-		}
-		catch (JSONException ex)
-		{
-		}
-		if (v_is_rate_limit_exceeded)
-		{
-			writeln(`rate_limit_exceeded error!(2)`);
-			long v_rate_reset = to!long(qhttp.headers["rate-reset"]);
-			writeln(v_rate_reset);
-			writeln(SysTime(unixTimeToStdTime(v_rate_reset)));
-			SysTime currentTime = Clock.currTime();
-			writeln(currentTime);
-			SysTime v_reset_time = SysTime(unixTimeToStdTime(v_rate_reset));
-			//auto diff = v_reset_time - currentTime;
-			Duration diff = v_reset_time - currentTime;
-			writeln(diff);
-			writeln(diff.total!"minutes");
-			writeln(diff.total!"seconds");
-			writeln(diff.total!"msecs");
-			break _loop_a;
-		}
-		if (jsonObj.type == JSON_TYPE.OBJECT)
-		{
-			auto type = `type` in jsonObj.object;
-			if (type && type.type == JSON_TYPE.STRING && type.str == `rate_limit_exceeded`)
-			{
-				writeln(`rate_limit_exceeded error!`);
-				long v_rate_reset = to!long(qhttp.headers["rate-reset"]);
-				writeln(v_rate_reset);
-				writeln(SysTime(unixTimeToStdTime(v_rate_reset)));
-				SysTime currentTime = Clock.currTime();
-				writeln(currentTime);
-				SysTime v_reset_time = SysTime(unixTimeToStdTime(v_rate_reset));
-				//auto diff = v_reset_time - currentTime;
-				Duration diff = v_reset_time - currentTime;
-				writeln(diff);
-				writeln(diff.total!"minutes");
-				writeln(diff.total!"seconds");
-				writeln(diff.total!"msecs");
-				break _loop_a;
-			}
-
-		}
-		if (("total-count" in qhttp.headers) == null)
-		{
-			writeln(cast(char[]) qhttp.data);
-			long v_rate_reset = to!long(qhttp.headers["rate-reset"]);
-			writeln(v_rate_reset);
-			writeln(SysTime(unixTimeToStdTime(v_rate_reset)));
-			SysTime currentTime = Clock.currTime();
-			writeln(currentTime);
-			SysTime v_reset_time = SysTime(unixTimeToStdTime(v_rate_reset));
-			//auto diff = v_reset_time - currentTime;
-			Duration diff = v_reset_time - currentTime;
-			writeln(diff);
-			writeln(diff.total!"minutes");
-			writeln(diff.total!"seconds");
-			writeln(diff.total!"msecs");
-			break _loop_a;
-		}
+		writefln(`i=%d`, i);
+		stdout.flush();
+		writeln(qhttp.http.headers);
+		stdout.flush();
+		writeln(`qhttp.rateRemaining=`, qhttp.rateRemaining);
+		writeln(`qhttp.rateResetTime=`, qhttp.rateResetTime);
 	}
 
 	exit(0);
