@@ -29,8 +29,42 @@ private void exit(int code)
 	std.c.stdlib.exit(code);
 }
 
+private Database g_db;
+static this()
+{
+	g_db = Database("___g_db.db3");
+	g_db.run(`
+	CREATE TABLE IF NOT EXISTS qiita_posts (
+		post_date	text primary key,
+		total_count	integer not null,
+		json		text
+	)`);
+}
+
+void handle_one_day(SysTime v_date)
+{
+
+	exit(0);
+}
+
 int main(string[] args)
 {
+	const SysTime v_first_date = SysTime(DateTime(2011, 9, 16));
+	SysTime v_curr_time = Clock.currTime();
+	SysTime v_curr_date = SysTime(DateTime(v_curr_time.year, v_curr_time.month, v_curr_time.day));
+
+	SysTime v_date = v_first_date;
+	a: for (;;)
+	{
+		writeln(v_date);
+		string v_str = format!`%04d-%02d-%02d`(v_date.year, v_date.month, v_date.day);
+		writeln(v_str);
+		if (v_date == v_curr_date)
+			break a;
+		v_date += dur!`days`(1);
+	}
+
+	//exit(0);
 	// Get with custom data receivers
 	//auto http = HTTP("http://qiita.com/api/v2/items/1a182f187fd2a8df29c2");
 	auto http = HTTP("http://qiita.com/api/v2/items?query=created%3A2016-12-01&per_page=100");
@@ -49,7 +83,9 @@ int main(string[] args)
 		bytes ~= data;
 		return data.length;
 	};
-	http.perform();
+	int code = http.perform(No.throwOnError);
+	writeln(`code=`, code);
+	Thread.sleep(dur!`msecs`(2000));
 
 	//writeln(cast(char[]) bytes);
 	JSONValue jsonObj = parseJSON(cast(char[]) bytes);
