@@ -8,6 +8,8 @@ import core.sync.rwmutex;
 import core.sync.semaphore;
 import core.thread;
 import core.time;
+import std.algorithm.mutation;
+import std.algorithm.sorting;
 import std.array;
 import std.conv;
 import std.datetime;
@@ -123,6 +125,19 @@ class C_QiitaApiServie
 			int rc = this.http.get(url);
 			if (rc != 0)
 				return rc;
+			if (this.http.headers["content-type"] != "application/json"
+					&& this.http.headers["content-type"] != "application/json; charset=utf-8")
+			{
+				writeln(`not application/json`);
+				writeln(this.http.headers);
+				//writeln(cast(string) this.http.data);
+				//Duration diff1 = dur!`seconds`(10);
+				//writeln(`Sleeping for: `, diff1);
+				//sleep_seconds(diff1.total!`seconds`);
+				//exit(1);
+				//continue _loop_a;
+				return -1;
+			}
 			this.rateRemaining = -1;
 			try
 			{
@@ -143,12 +158,16 @@ class C_QiitaApiServie
 			}
 			this.rateResetTime = SysTime(unixTimeToStdTime(v_rate_reset));
 			//writeln(this.http.headers);
+			/+
 			if (this.http.headers["content-type"] != "application/json"
 					&& this.http.headers["content-type"] != "application/json; charset=utf-8")
 			{
 				writeln(`not application/json`);
+				writeln(this.http.headers);
+				writeln(cast(string) this.http.data);
 				return -1;
 			}
+			+/
 			//JSONValue jsonObj = parseJSON(cast(char[]) this.http.data);
 			try
 			{
@@ -242,7 +261,7 @@ bool handle_one_day(SysTime v_date)
 
 	writefln(`[%s: page=1]`, v_period);
 	auto qhttp1 = new C_QiitaApiServie();
-	string url1 = format!`http://qiita.com/api/v2/items?query=created%%3A%s&per_page=%d`(
+	string url1 = format!`http://qiita.com/api/v2/items?query=created%%3A%s&per_page=%d&page=1`(
 			v_period, per_page);
 	int rc1 = qhttp1.get(url1);
 	//writeln(rc1);
@@ -331,28 +350,6 @@ bool handle_one_day(SysTime v_date)
 
 int main(string[] args)
 {
-	/+
-	Duration d = dur!`hours`(2) + dur!`seconds`(1820);
-	string d_s = format!`%s`(d);
-	writeln(d);
-	exit(0);
-	+/
-	//JSONValue jv = parseJSON("[]");
-	/+
-	JSONValue jv = parseJSON(`{"abc":123}`);
-	//auto jvm = jv["xyz"];
-	Variant v;
-	v = getJsonObjectProp(jv, `abc`);
-	writeln(v.hasValue);
-	writeln(v.peek!(long));
-	writeln(v.get!(double));
-	writeln(v.peek!(string));
-	//exit(0);
-	writeln(v.type);
-	writeln(typeid(int));
-	writeln(v.type == typeid(long));
-	+/
-
 	const SysTime v_first_date = SysTime(DateTime(2011, 9, 16));
 	//const SysTime v_first_date = SysTime(DateTime(2016, 9, 16));
 	SysTime v_curr_time = Clock.currTime();
@@ -361,6 +358,9 @@ int main(string[] args)
 	SysTime v_date = v_first_date;
 	a: for (;;)
 	{
+		bool jmp = true;
+		if (jmp)
+			break;
 		//writeln(v_date);
 		string v_str = format!`%04d-%02d-%02d`(v_date.year, v_date.month, v_date.day);
 		//writeln(v_str);
@@ -369,6 +369,73 @@ int main(string[] args)
 			break a;
 		v_date += dur!`days`(1);
 	}
+	long count = 0;
+	ResultRange results = g_db.execute("SELECT *, rowid rid FROM qiita_posts ORDER BY post_date");
+	foreach (Row row; results)
+	{
+		auto post_date = row["post_date"].as!string;
+		writeln(post_date);
+		auto json = row["json"].as!string;
+		Json jsonValue = parseJsonString(json);
+		Json*[] reverse_array;
+		foreach (ref rec; jsonValue[])
+		{
+			reverse_array ~= &rec;
+		}
+		//reverse(reverse_array);
+		bool myComp(Json* x, Json* y)
+		{
+			return (*x)[`created_at`].get!string < (*y)[`created_at`].get!string;
+		};
+		sort!myComp(reverse_array);
+		foreach (ref rec; reverse_array)
+		{
+			count++;
+			//writeln(rec.toPrettyString);
+			writefln("%08d %s: %s %s", count, post_date, (*rec)[`created_at`], (*rec)[`title`]);
+		}
+		//writeln(json[0 .. 40]);
+	}
+
+	/+
+{
+        "reactions_count": 0,
+        "comments_count": 0,
+        "url": "http://qiita.com/shinofara/items/381c8f57bf39c52d240a",
+        "group": null,
+        "created_at": "2013-03-20T01:44:54+09:00",
+        "likes_count": 11,
+        "title": "シェルスクリプトで、マルチスレッド処理風実装",
+        "tags": [
+                {
+                        "name": "shell",
+                        "versions": []
+                }
+        ],
+        "id": "381c8f57bf39c52d240a",
+        "updated_at": "2013-03-20T01:58:35+09:00",
+        "coediting": false,
+        "private": false,
+        "user": {
+                "github_login_name": "shinofara",
+                "twitter_screen_name": "shinofara",
+                "description": "work:\r\nEmacs/VisualStudioCode\r\nGolang/PHP/Pyhton/Shell\r\nAWS/Docker/VirtualBox/Mac\r\nVagrant/Terraform
+/Packer/Ansible\r\nOSS/LT\r\n\r\nlike:\r\nPhoto/Diving/Snowboard\r\n\r\nhistory:\r\nY! -> schoo -> Y! -> MedPeer",
+                "items_count": 62,
+                "followees_count": 6,
+                "followers_count": 37,
+                "name": "しのふぁら",
+                "organization": "メドピア",
+                "profile_image_url": "https://qiita-image-store.s3.amazonaws.com/0/8529/profile-images/1473681060",
+                "website_url": "https://log.shinofara.xyz/",
+                "facebook_id": "shinofara",
+                "id": "shinofara",
+                "linkedin_id": "yuki-shinohara-a4476060",
+                "location": "Tokyo",
+                "permanent_id": 8529
+        }
+}
+^CTerminate batch job (Y/N)? y+/
 
 	exit(0);
 
@@ -390,6 +457,7 @@ int main(string[] args)
 
 	exit(0);
 
+	/+
 	writeln("start!スタート!");
 	// Open a database in memory.
 	//auto db = Database(":memory:");
@@ -466,6 +534,6 @@ int main(string[] args)
 			writeln("<NULL>");
 		}
 	}
-
+	+/
 	return 0;
 }
