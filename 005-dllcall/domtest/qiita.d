@@ -145,6 +145,11 @@ class C_QiitaApiServie
 			if (rc != 0)
 				return rc;
 			writefln("this.http.statusLine.code=%d", this.http.statusLine.code);
+			if (this.http.statusLine.code != 200)
+			{
+				write("\a");
+				return -1;
+			}
 			if (this.http.headers["content-type"] != "application/json"
 					&& this.http.headers["content-type"] != "application/json; charset=utf-8")
 			{
@@ -159,42 +164,19 @@ class C_QiitaApiServie
 				return -1;
 			}
 			this.rateRemaining = -1;
-			try
-			{
-				if ("rate-remaining" in this.http.headers)
-					this.rateRemaining = to!long(this.http.headers["rate-remaining"]);
-			}
-			catch (Exception ex)
-			{
-			}
+			if ("rate-remaining" in this.http.headers)
+				this.rateRemaining = to!long(this.http.headers["rate-remaining"]);
 			long v_rate_reset = 0;
-			try
-			{
-				if ("rate-reset" in this.http.headers)
-					v_rate_reset = to!long(this.http.headers["rate-reset"]);
-			}
-			catch (Exception ex)
-			{
-			}
+			if ("rate-reset" in this.http.headers)
+				v_rate_reset = to!long(this.http.headers["rate-reset"]);
 			this.rateResetTime = SysTime(unixTimeToStdTime(v_rate_reset));
-			//writeln(this.http.headers);
-			/+
-			if (this.http.headers["content-type"] != "application/json"
-					&& this.http.headers["content-type"] != "application/json; charset=utf-8")
-			{
-				writeln(`not application/json`);
-				writeln(this.http.headers);
-				writeln(cast(string) this.http.data);
-				return -1;
-			}
-			+/
-			//JSONValue jsonObj = parseJSON(cast(char[]) this.http.data);
 			try
 			{
 				this.jsonValue = parseJsonString(cast(string) this.http.data);
 			}
 			catch (JSONException ex)
 			{
+				write("\a");
 				writeln(ex);
 				return -1;
 			}
@@ -456,6 +438,9 @@ bool handle_one_day_2(SysTime v_date)
 
 int main(string[] args)
 {
+	//write("\a");
+	//stdout.flush();
+	//exit(0);
 	const SysTime v_first_date = SysTime(DateTime(2011, 9, 16));
 	//const SysTime v_first_date = SysTime(DateTime(2016, 9, 16));
 	SysTime v_curr_time = Clock.currTime();
