@@ -92,16 +92,20 @@ private void sleep_seconds(long secs)
 
 class C_QiitaApiHttp
 {
-	int code;
+	//int code;
+	HTTP.StatusLine statusLine;
 	string[string] headers;
 	ubyte[] data;
 	int get(string url)
 	{
-		this.code = 0;
+		//this.code = 0;
 		this.headers.clear();
 		this.data.length = 0;
 		auto http = HTTP(url);
 		http.addRequestHeader(`Authorization`, `Bearer 06ade23e3803334f43a0671f2a7c5087305578bd`);
+		http.onReceiveStatusLine = (in HTTP.StatusLine statusLine) {
+			this.statusLine = statusLine;
+		};
 		http.onReceiveHeader = (in char[] key, in char[] value) {
 			this.headers[key] = to!string(value);
 		};
@@ -109,8 +113,9 @@ class C_QiitaApiHttp
 			this.data ~= bytes;
 			return bytes.length;
 		};
-		this.code = http.perform(No.throwOnError);
-		return this.code;
+		//this.code = http.perform(No.throwOnError);
+		//return this.code;
+		return http.perform(No.throwOnError);
 	}
 }
 
@@ -139,6 +144,7 @@ class C_QiitaApiServie
 			int rc = this.http.get(url);
 			if (rc != 0)
 				return rc;
+			writefln("this.http.statusLine.code=%d", this.http.statusLine.code);
 			if (this.http.headers["content-type"] != "application/json"
 					&& this.http.headers["content-type"] != "application/json; charset=utf-8")
 			{
