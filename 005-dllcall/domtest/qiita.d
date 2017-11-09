@@ -1,5 +1,7 @@
+import arsd.dom;
 import vibe.data.json;
-import dateparser;
+
+//import dateparser;
 
 //import jsonizer;
 
@@ -28,6 +30,18 @@ import std.variant;
 
 import d2sqlite3;
 import std.typecons : Nullable;
+
+struct QPost
+{
+	string uuid;
+	long favCount;
+	string title;
+	string href;
+	string header;
+	string description;
+	string tags;
+	//string postDate;
+}
 
 private Database g_db;
 static this()
@@ -214,7 +228,7 @@ Variant getJsonObjectProp(ref Json jsonObj, string prop_name)
 		return result;
 	foreach (key, value; jsonObj.byKeyValue)
 	{
-		writefln("%s: %s", key, value);
+		//writefln("%s: %s", key, value);
 		if (key == prop_name)
 			result = value.to!string;
 	}
@@ -348,6 +362,92 @@ bool handle_one_day(SysTime v_date)
 	return true;
 }
 
+bool handle_one_day_2(SysTime v_date)
+{
+	string v_period = format!`%04d-%02d-%02d`(v_date.year, v_date.month, v_date.day);
+	auto count = g_db.execute(format!"SELECT count(*) FROM qiita_posts WHERE post_date == '%s'"(v_period))
+		.oneValue!long;
+	if (count)
+	{
+		return true;
+	}
+
+	writefln(`[%s: handle_one_day_2()]`, v_period);
+	//string[] uuid_list;
+	QPost[] posts;
+	for (int i = 0; i < int.max; i++)
+	{
+		string url = format!`https://qiita.com/search?sort=created&q=created%%3A%s&page=%d`(v_period,
+				i + 1);
+		writeln("url=", url);
+		string html = cast(string) get(url);
+		auto document = new Document();
+		document.parseGarbage(html);
+		Element[] elems = document.getElementsByClassName(`searchResult`);
+		writeln(elems.length);
+		if (!elems.length)
+			break;
+		foreach (ref elem; elems)
+		{
+			QPost post;
+			post.uuid = elem.getAttribute(`data-uuid`);
+			post.favCount = to!long(elem.getElementsByClassName(
+					`searchResult_statusList`)[0].innerText.strip);
+			post.title = elem.requireSelector(`.searchResult_itemTitle`).innerText;
+			post.href = elem.getElementsByClassName(`searchResult_itemTitle`)[0].requireSelector("a")
+				.getAttribute("href");
+			post.header = elem.getElementsByClassName(`searchResult_header`)[0].innerText;
+			/+
+			auto re = regex(` posted at ([a-zA-Z]+ [0-9]+, [0-9]+)$`);
+			auto m = matchFirst(post.header, re);
+			if (!m)
+			{
+				post.postDate = ``;
+			}
+			else
+			{
+				auto v_date = parse(m[1]);
+				post.postDate = format!`%04d-%02d-%02d`(v_date.year, v_date.month, v_date.day);
+			}
+			+/
+			post.description = elem.getElementsByClassName(`searchResult_snippet`)[0].innerText;
+			string[] tag_array;
+			foreach (ref tag; elem.getElementsByClassName(`tagList_item`))
+			{
+				//writefln("tag=%s", tag.innerText);
+				tag_array ~= tag.innerText;
+			}
+			post.tags = tag_array.join(`|`);
+			posts ~= post;
+		}
+	}
+	Json newJsonValue = Json.emptyArray;
+	foreach (post; posts)
+	{
+		writefln(`[%s: handle_one_day_2(): uuid=%s]`, v_period, post.uuid);
+		auto http = new C_QiitaApiServie();
+		string url = format!`http://qiita.com/api/v2/items/%s`(post.uuid);
+		int rc = http.get(url);
+		if (rc != 0)
+		{
+			writefln(`http://qiita.com%s  %s`, post.href, post.title);
+			//exit(1);
+			continue;
+		}
+		//writeln(cast(string) http.http.data);
+		newJsonValue.appendArrayElement(http.jsonValue);
+	}
+	string json = newJsonValue.toPrettyString();
+	Statement statement = g_db.prepare(
+			"INSERT INTO qiita_posts (post_date, total_count, json) VALUES (:post_date, :total_count, :json)");
+	statement.bind(":post_date", v_period);
+	statement.bind(":total_count", -1);
+	statement.bind(":json", json);
+	statement.execute();
+	statement.reset(); // Need to reset the statement after execution.
+	return true;
+}
+
 int main(string[] args)
 {
 	const SysTime v_first_date = SysTime(DateTime(2011, 9, 16));
@@ -358,13 +458,14 @@ int main(string[] args)
 	SysTime v_date = v_first_date;
 	a: for (;;)
 	{
-		bool jmp = true;
-		if (jmp)
-			break;
+		//bool jmp = true;
+		//if (jmp)
+		//	break;
 		//writeln(v_date);
 		string v_str = format!`%04d-%02d-%02d`(v_date.year, v_date.month, v_date.day);
 		//writeln(v_str);
-		handle_one_day(v_date);
+		if (!handle_one_day(v_date))
+			handle_one_day_2(v_date);
 		if (v_date == v_curr_date)
 			break a;
 		v_date += dur!`days`(1);
@@ -386,7 +487,8 @@ int main(string[] args)
 		bool myComp(Json* x, Json* y)
 		{
 			return (*x)[`created_at`].get!string < (*y)[`created_at`].get!string;
-		};
+		}
+
 		sort!myComp(reverse_array);
 		foreach (ref rec; reverse_array)
 		{
