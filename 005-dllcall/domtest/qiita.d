@@ -1,7 +1,7 @@
 import arsd.dom;
 import vibe.data.json;
 
-//import dateparser;
+import dateparser;
 
 //import jsonizer;
 
@@ -495,6 +495,7 @@ int main(string[] args)
 			count++;
 			//writeln(rec.toPrettyString);
 			writefln("%08d %s: %s %s", count, post_date, (*rec)[`created_at`], (*rec)[`title`]);
+			writeln(dateparser.parse((*rec)[`created_at`].get!string));
 		}
 		//writeln(json[0 .. 40]);
 	}
