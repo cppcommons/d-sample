@@ -10,8 +10,10 @@ import core.sync.rwmutex;
 import core.sync.semaphore;
 import core.thread;
 import core.time;
+import std.algorithm;
 import std.algorithm.mutation;
 import std.algorithm.sorting;
+import std.algorithm.setops;
 import std.array;
 import std.conv;
 import std.datetime;
@@ -124,8 +126,8 @@ class C_QiitaApiServie
 	C_QiitaApiHttp http;
 	//JSONValue jsonValue;
 	Json jsonValue;
-	long rateRemaining;
-	SysTime rateResetTime;
+	//long rateRemaining;
+	//SysTime rateResetTime;
 	this()
 	{
 		this.http = new C_QiitaApiHttp();
@@ -145,6 +147,34 @@ class C_QiitaApiServie
 			if (rc != 0)
 				return rc;
 			writefln("this.http.statusLine.code=%d", this.http.statusLine.code);
+			if (this.http.statusLine.code == 403)
+			{
+				string data = cast(string) this.http.data;
+				if (data.canFind(`"rate_limit_exceeded"`))
+				{
+					long rateRemaining;
+					SysTime rateResetTime;
+					//this.rateRemaining = -1;
+					if ("rate-remaining" in this.http.headers)
+						rateRemaining = to!long(this.http.headers["rate-remaining"]);
+					long v_rate_reset = 0;
+					if ("rate-reset" in this.http.headers)
+						v_rate_reset = to!long(this.http.headers["rate-reset"]);
+					rateResetTime = SysTime(unixTimeToStdTime(v_rate_reset));
+					writeln(`rate_limit_exceeded error!(4)`);
+					SysTime currentTime = Clock.currTime();
+					writeln(currentTime);
+					Duration diff = rateResetTime - currentTime;
+					writeln(diff);
+					Duration diff2 = diff + dur!`seconds`(60);
+					writeln(diff2);
+					writeln(`Sleeping for: `, diff2);
+					sleep_seconds(diff2.total!`seconds`);
+					continue _loop_a;
+				}
+				write("\a");
+				return -1;
+			}
 			if (this.http.statusLine.code != 200)
 			{
 				write("\a");
@@ -163,6 +193,7 @@ class C_QiitaApiServie
 				//continue _loop_a;
 				return -1;
 			}
+			/+
 			this.rateRemaining = -1;
 			if ("rate-remaining" in this.http.headers)
 				this.rateRemaining = to!long(this.http.headers["rate-remaining"]);
@@ -170,6 +201,7 @@ class C_QiitaApiServie
 			if ("rate-reset" in this.http.headers)
 				v_rate_reset = to!long(this.http.headers["rate-reset"]);
 			this.rateResetTime = SysTime(unixTimeToStdTime(v_rate_reset));
+			+/
 			try
 			{
 				this.jsonValue = parseJsonString(cast(string) this.http.data);
@@ -180,6 +212,7 @@ class C_QiitaApiServie
 				writeln(ex);
 				return -1;
 			}
+			/+
 			Variant v_type = getJsonObjectProp(this.jsonValue, `type`);
 			if (v_type == `rate_limit_exceeded`)
 			{
@@ -203,6 +236,7 @@ class C_QiitaApiServie
 				sleep_seconds(diff2.total!`seconds`);
 				continue _loop_a;
 			}
+			+/
 			break _loop_a;
 		}
 		return 0;
@@ -304,7 +338,7 @@ bool handle_one_day(SysTime v_date)
 		}
 	}
 	writeln(`newJsonValue.array.length=`, newJsonValue.array.length);
-	writefln(`qhttp1.rateRemaining=%d`, qhttp1.rateRemaining);
+	//writefln(`qhttp1.rateRemaining=%d`, qhttp1.rateRemaining);
 
 	version (none)
 		if (newJsonValue.array.length != total_count)
@@ -419,9 +453,14 @@ bool handle_one_day_2(SysTime v_date)
 		if (rc != 0)
 		{
 			writefln(`http://qiita.com%s  %s`, post.href, post.title);
-			//exit(1);
+			if (http.http.statusLine.code == 403)
+			{
+				writeln(cast(string) http.http.data);
+				sleep_seconds(10);
+			}
 			continue;
 		}
+		//writefln(`http.http.statusLine.code=%d`, http.http.statusLine.code);
 		//writeln(cast(string) http.http.data);
 		newJsonValue.appendArrayElement(http.jsonValue);
 	}
@@ -533,6 +572,7 @@ int main(string[] args)
 
 	exit(0);
 
+	/+
 	_loop_a: for (int i = 0; i < 2000; i++)
 	{
 		auto qhttp = new C_QiitaApiServie();
@@ -550,6 +590,7 @@ int main(string[] args)
 	}
 
 	exit(0);
+	+/
 
 	/+
 	writeln("start!スタート!");
