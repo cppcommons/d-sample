@@ -45,8 +45,8 @@ struct QPost
 	//string postDate;
 }
 
-private Database g_db;
-static this()
+private __gshared Database g_db;
+shared static this()
 {
 	g_db = Database("___g_db.db3");
 	g_db.run(`
