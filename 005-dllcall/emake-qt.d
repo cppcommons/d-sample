@@ -2,7 +2,7 @@ module main;
 import std.algorithm : startsWith, endsWith;
 import std.array : replace;
 import std.datetime.systime : Clock;
-import std.file : copy, setTimes, FileException, PreserveAttributes;
+import std.file : copy, exists, rmdirRecurse, setTimes, FileException, PreserveAttributes;
 import std.format : format;
 import std.path : baseName, extension;
 import std.process : execute, executeShell;
@@ -117,6 +117,8 @@ Debug:RCC_DIR = debug/.rcc
 Debug:UI_DIR = debug/.ui
 +/	
 	file1.close();
+	bool existing_release = exists("release");
+	bool existing_debug = exists("debug");
 	string makefile_name = project_base_name ~ ".mk";
 	string[] cmdLine = ["qmake", "-o", makefile_name, project_file_name];
 	writeln(cmdLine);
@@ -124,6 +126,20 @@ Debug:UI_DIR = debug/.ui
 	//if (dmd.status != 0) writeln("Compilation failed:\n", dmd.output);
 	write(cmd.output);
 	writeln("cmd.status=", cmd.status);
+	try
+	{
+		if (!existing_release) rmdirRecurse("release");
+	}
+	catch(Exception ex)
+	{
+	}
+	try
+	{
+		if (!existing_debug) rmdirRecurse("debug");
+	}
+	catch(Exception ex)
+	{
+	}
 	if (cmd.status != 0)
 		return cmd.status;
 	try
