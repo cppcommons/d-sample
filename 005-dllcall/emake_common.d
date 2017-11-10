@@ -30,7 +30,7 @@ int emake_run_command(string[] dub_cmdline)
 	return rc;
 }
 +/
-private int emake_run_command(string[] dub_cmdline)
+int emake_run_command(string[] dub_cmdline)
 {
 	auto pipes = pipeProcess(dub_cmdline, Redirect.stdout | Redirect.stderrToStdout);
 	foreach (line; pipes.stdout.byLine)
