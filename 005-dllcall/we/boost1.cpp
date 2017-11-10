@@ -9,6 +9,34 @@
 
 using namespace std;
 
+struct MYHANDLE
+{
+};
+void dummy(struct MYHANDLE *handle);
+
+struct MYHANDLE_IMPL : public MYHANDLE
+{
+	std::string m_s;
+	int64_t m_int64;
+};
+
+int64_t cos_add2(struct cos_context *context, int *argc, int64_t args[])
+{
+	if (!context)
+	{
+		(*argc) = 2;
+		return 3;
+	}
+	//cos_return_clear();
+	//cos_push_int32(0, 123);
+	//cos_push_int32(1, 456);
+	//cos_push_int32(2, 789);
+	//return cos_return_multi(3);
+	//return args[0];
+	//return cos_return_int32(123);
+	return 0;
+}
+
 struct C_Class1
 {
 	explicit C_Class1()
@@ -70,7 +98,8 @@ int main()
 	v1.push_back(StrPtr(new string("a")));
 	v1.push_back(s);
 
-	cout << *s << endl; // sをpush_backで他にコピーしたからと言って使えなくなったりしない
+	cout << *s << endl;						 // sをpush_backで他にコピーしたからと言って使えなくなったりしない
+	cout << "*s.get()=" << *s.get() << endl; // sをpush_backで他にコピーしたからと言って使えなくなったりしない
 
 	ClsPtr c1 = ClsPtr(new C_Class1());
 	ClsPtr c2 = ClsPtr(new C_Class1());
