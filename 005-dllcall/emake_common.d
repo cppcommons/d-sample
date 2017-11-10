@@ -29,7 +29,6 @@ int emake_run_command(string[] dub_cmdline)
 		writeln(line);
 	return rc;
 }
-+/
 int emake_run_command(string[] dub_cmdline)
 {
 	auto pipes = pipeProcess(dub_cmdline, Redirect.stdout | Redirect.stderrToStdout);
@@ -38,6 +37,14 @@ int emake_run_command(string[] dub_cmdline)
 	int rc = wait(pipes.pid);
 	return rc;
 }
++/
+int emake_run_command(string[] cmdline)
+{
+	import std.process : spawnProcess, wait;
+	auto pid = spawnProcess(cmdline);
+	return wait(pid);
+}
+
 
 class EmakeCommand
 {
