@@ -90,17 +90,17 @@ CONFIG -= app_bundle
 	file1.writeln();
 	file1.writefln(`Release:TARGET = %s`, exe_base_name);
 	file1.writeln(`Release:DESTDIR = $$OUT_PWD
-Release:OBJECTS_DIR = release/.obj
-Release:MOC_DIR = release/.moc
-Release:RCC_DIR = release/.rcc
-Release:UI_DIR = release/.ui`.replace(`release/`, format!`%s.exe.bin/release/`(exe_base_name)));
+Release:OBJECTS_DIR = $$OUT_PWD/release/.obj
+Release:MOC_DIR = $$OUT_PWD/release/.moc
+Release:RCC_DIR = $$OUT_PWD/release/.rcc
+Release:UI_DIR = $$OUT_PWD/release/.ui`.replace(`release/`, format!`%s.exe.bin/release/`(exe_base_name)));
 	file1.writeln();
 	file1.writefln(`Debug:TARGET = %s-d`, exe_base_name);
 	file1.writeln(`Debug:DESTDIR = $$OUT_PWD
-Debug:OBJECTS_DIR = debug/.obj
-Debug:MOC_DIR = debug/.moc
-Debug:RCC_DIR = debug/.rcc
-Debug:UI_DIR = debug/.ui`.replace(`debug/`, format!`%s.exe.bin/debug/`(exe_base_name)));
+Debug:OBJECTS_DIR = $$OUT_PWD/debug/.obj
+Debug:MOC_DIR = $$OUT_PWD/debug/.moc
+Debug:RCC_DIR = $$OUT_PWD/debug/.rcc
+Debug:UI_DIR = $$OUT_PWD/debug/.ui`.replace(`debug/`, format!`%s.exe.bin/debug/`(exe_base_name)));
 /+
 Release:TARGET = emake-gcc-r
 Release:DESTDIR = $$OUT_PWD
