@@ -258,17 +258,17 @@ int main(string[] args)
             "--build", emake_cmd.project_base_name ~ ".cbp"
         ];+/
 		string[] cb_command = [
-			"cmd", "/c", "start", "/w", "codeblocks", "/na", "/nd",
+			/*"cmd", "/c", "start", "/w",*/ "codeblocks", //"/na", "/nd",
 			"--target=Release", "--build", emake_cmd.project_base_name ~ ".cbp"
 		];
 		writeln(cb_command);
-		int rc = emake_run_command(cb_command);
+		int rc = emake_run_command_1(cb_command);
 		if (rc != 0)
 		{
 			cb_command = ["cmd", "/c", "start", "codeblocks", emake_cmd.project_base_name ~ ".cbp"];
 			writeln(cb_command);
 			/* rc = */
-			emake_run_command(cb_command);
+			emake_run_command_1(cb_command);
 			writeln("Build Failed!");
 			return rc;
 		}

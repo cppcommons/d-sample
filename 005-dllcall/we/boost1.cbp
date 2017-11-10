@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+    <FileVersion major="1" minor="6" />
+    <Project>
+        <Option title="boost1" />
+        <Option compiler="dmc" />
+        <Build>
+            <Target title="Debug">
+                <Option output="boost1_d" prefix_auto="1" extension_auto="1" />
+                <Option object_output="boost1.bin/dmc-obj/Debug/" />
+                <Option type="1" />
+                <Option compiler="dmc" />
+                <Option createDefFile="1" />
+                <Compiler>
+                    <Add option="-w-" />
+                    <Add option="-Ae" />
+                    <Add option="-g" />
+                    <Add directory="E:\d-dev\boost_1_34_1_headers" />
+                </Compiler>
+                <Linker>
+                    <Add option="-p512" />
+                </Linker>
+                <Linker />
+            </Target>
+            <Target title="Release">
+                <Option output="boost1" prefix_auto="1" extension_auto="1" />
+                <Option object_output="boost1.bin/dmc-obj/Release/" />
+                <Option type="1" />
+                <Option compiler="dmc" />
+                <Option createDefFile="1" />
+                <Compiler>
+                    <Add option="-w-" />
+                    <Add option="-Ae" />
+                    <Add option="-o" />
+                    <Add directory="E:\d-dev\boost_1_34_1_headers" />
+                </Compiler>
+                <Linker>
+                    <Add option="-p512" />
+                </Linker>
+                <Linker />
+            </Target>
+        </Build>
+        <Unit filename="boost1.cpp" />
+    </Project>
+</CodeBlocks_project_file>
