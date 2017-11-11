@@ -77,6 +77,8 @@ static int os_printf(const char *format, ...)
 	}
 }
 
+typedef ::int64_t os_integer_t;
+
 static int os_dbg(const char *format, ...)
 {
 	static stlsoft::winstl_project::thread_mutex v_mutex;
@@ -84,7 +86,7 @@ static int os_dbg(const char *format, ...)
 		os_thread_locker locker(v_mutex);
 		char v_buffer[1024 + 1];
 		v_buffer[1024] = 0;
-		wsprintfA((LPSTR)v_buffer, "[DEBUG] %s\n", format); // Win32 API
+		wsprintfA((LPSTR)v_buffer, "[DEBUG] %s\n", format);
 		va_list args;
 		va_start(args, format);
 		int len = os_write_consoleA(GetStdHandle(STD_OUTPUT_HANDLE), v_buffer, args);
@@ -96,7 +98,7 @@ static int os_dbg(const char *format, ...)
 struct os_thread_id : public os_struct
 {
 	DWORD id;
-	::int64_t no;
+	os_integer_t no;
 	const char *c_str()
 	{
 		std::stringstream v_stream;
@@ -118,8 +120,8 @@ os_thread_map_t g_os_thread_map;
 
 os_thread_id os_get_thread_id()
 {
-	static THREAD_LOCAL ::int64_t curr_thread_no = -1;
-	static ::int64_t v_thread_id_max = 0;
+	static THREAD_LOCAL os_integer_t curr_thread_no = -1;
+	static os_integer_t v_thread_id_max = 0;
 	static stlsoft::winstl_project::thread_mutex v_mutex;
 	{
 		os_thread_locker locker(v_mutex);
@@ -183,7 +185,7 @@ static bool os_is_thread_alive(DWORD thread_dword)
 	return true;
 }
 
-typedef ::int64_t os_oid_t;
+typedef os_integer_t os_oid_t;
 
 static os_oid_t g_last_oid = 100000;
 
@@ -210,17 +212,16 @@ struct os_object_entry_t : public os_struct
 		STRING
 	};
 	os_thread_id m_thread_id;
-	::int64_t m_link_count;
-	//::int64_t m_value;
+	os_integer_t m_link_count;
 	value_type_t m_type;
 	union {
-		::int64_t m_integer;
+		os_integer_t m_integer;
 		double m_real;
 		void *m_this;
 	} m_simple;
 	std::string m_string;
 	std::vector<os_oid_t> m_array;
-	void _init(os_thread_id &thread_id, ::int64_t link_count, ::int64_t value)
+	void _init(os_thread_id &thread_id, os_integer_t link_count, os_integer_t value)
 	{
 		m_thread_id = thread_id;
 		m_link_count = link_count;
@@ -232,7 +233,7 @@ struct os_object_entry_t : public os_struct
 	{
 		_init(os_get_thread_id(), 0, 0);
 	}
-	explicit os_object_entry_t(::int64_t value)
+	explicit os_object_entry_t(os_integer_t value)
 	{
 		_init(os_get_thread_id(), 0, value);
 		os_dbg("%s", c_str());
@@ -276,8 +277,7 @@ extern void os_oid_unlink(os_oid_t oid)
 	}
 }
 
-//os_oid_t os_new_int64(::int64_t value, bool prefer_direct = false)
-extern os_oid_t os_new_int64(::int64_t value)
+extern os_oid_t os_new_int64(os_integer_t value)
 {
 	/*
 	if (prefer_direct && value >= g_os_direct_value_min)
@@ -315,21 +315,15 @@ static os_object_entry_t *os_find_entry(os_oid_t oid)
 	}
 }
 
-extern ::int32_t os_get_int32(os_oid_t oid)
+extern os_integer_t os_get_integer(os_oid_t oid)
 {
-	/*
-	if (oid >= g_os_direct_value_min)
-	{
-		return (::int32_t)oid;
-	}
-	*/
 	os_object_entry_t *v_entry = os_find_entry(oid);
 	if (!v_entry)
 		return 0;
-	return (::int32_t)(*v_entry).m_simple.m_integer;
+	return (*v_entry).m_simple.m_integer;
 }
 
-extern void os_set_int32(os_oid_t oid, ::int32_t value)
+extern void os_set_integer(os_oid_t oid, os_integer_t value)
 {
 	os_object_entry_t *v_entry = os_find_entry(oid);
 	if (!v_entry)
@@ -347,8 +341,6 @@ static void os_dump_object_heap()
 		{
 			os_oid_t v_oid = it->first;
 			os_object_entry_t &v_entry = it->second;
-			//::int64_t v_diff = -(v_oid - g_os_direct_value_min);
-			//os_dbg("[DUMP] oid = %lld(%lld) : data = %s", v_oid, v_diff, v_entry.c_str());
 			os_dbg("[DUMP] oid = %lld : data = %s", v_oid, v_entry.c_str());
 		}
 	}
@@ -360,7 +352,7 @@ extern void os_gc()
 		os_thread_locker locker(g_os_thread_mutex);
 		os_thread_id v_thread_id = os_get_thread_id();
 		std::vector<DWORD> v_list = os_get_thread_dword_list();
-		std::map<DWORD, ::int64_t> v_map;
+		std::map<DWORD, os_integer_t> v_map;
 		for (size_t i = 0; i < v_list.size(); i++)
 		{
 			v_map[v_list[i]] = 0;
@@ -400,8 +392,8 @@ static os_oid_t cos_add2(int argc, os_oid_t args[])
 {
 	if (argc < 0)
 		return 2;
-	::int32_t a = os_get_int32(args[1]);
-	::int32_t b = os_get_int32(args[2]);
+	os_integer_t a = os_get_integer(args[1]);
+	os_integer_t b = os_get_integer(args[2]);
 	return os_new_int64(a + b);
 }
 
@@ -423,10 +415,10 @@ struct C_Class1
 	{
 		if (argc < 0)
 			return 2;
-		::int32_t a = os_get_int32(args[1]);
-		::int32_t b = os_get_int32(args[2]);
-		os_set_int32(args[1], a * 10);
-		os_set_int32(args[2], b * 10);
+		int a = (int)os_get_integer(args[1]);
+		int b = (int)os_get_integer(args[2]);
+		os_set_integer(args[1], a * 10);
+		os_set_integer(args[2], b * 10);
 		return os_new_int64(a + b);
 	}
 };
@@ -440,14 +432,14 @@ struct C_Variant
 	};
 	VariantType m_type;
 	std::string m_s;
-	::int64_t m_int64;
+	os_integer_t m_int64;
 	C_Variant(const std::string &x)
 	{
 		//this.m_s = x;
 		m_type = C_Variant::VariantType::STRING;
 		m_s = x;
 	}
-	C_Variant(::int64_t x)
+	C_Variant(os_integer_t x)
 	{
 		m_type = C_Variant::VariantType::INT64;
 		//this.m_int64 = x;
@@ -503,15 +495,16 @@ int main()
 	std::vector<os_oid_t> v_args(3);
 	v_args[1] = os_new_int64(111);
 	v_args[2] = os_new_int64(222);
+	os_dump_object_heap();
 	//v_args[2] = 333;
 	//v_args[2] = -12;
 	//os_oid_t v_answer = cos_add2(2, &v_args[0]);
 	os_oid_t v_answer = v_func2(2, &v_args[0]);
-	::int32_t v_answer32 = os_get_int32(v_answer);
+	os_integer_t v_answer32 = os_get_integer(v_answer);
 	os_oid_link(v_answer);
 	os_dbg("answer=%d", v_answer32);
-	os_dbg("v_args[1]=%d", os_get_int32(v_args[1]));
-	os_dbg("v_args[2]=%d", os_get_int32(v_args[2]));
+	os_dbg("v_args[1]=%lld", os_get_integer(v_args[1]));
+	os_dbg("v_args[2]=%lld", os_get_integer(v_args[2]));
 
 	os_dump_object_heap();
 	os_dbg("before gc");
