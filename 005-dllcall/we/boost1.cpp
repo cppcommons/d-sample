@@ -230,7 +230,7 @@ struct os_object_entry_t : public os_struct
 typedef std::map<os_oid_t, os_object_entry_t> os_object_map_t;
 os_object_map_t g_os_object_map;
 
-os_oid_t os_link_object(os_oid_t oid)
+os_oid_t os_oid_link(os_oid_t oid)
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
@@ -322,28 +322,11 @@ void os_gc()
 	}
 }
 
-void dummy()
-{
-	for (int i = 0; i < 5; i++)
-	{
-		os_new_int64((i + 1) * 10);
-	}
-}
-
+#if 0x0
 typedef std::map<std::string, void *> func_map_t;
 typedef stlsoft::shared_ptr<func_map_t> func_map_ptr_t;
 typedef stlsoft::shared_ptr<func_map_t> func_map_ptr_t2;
-
-struct MYHANDLE
-{
-};
-void dummy(struct MYHANDLE *handle);
-
-struct MYHANDLE_IMPL : public MYHANDLE
-{
-	std::string m_s;
-	::int64_t m_int64;
-};
+#endif
 
 enum OS_VALUE_TYPE
 {
@@ -483,9 +466,6 @@ int main()
 	C_Variant var2 = "abc";
 	var1 = "xyz";
 
-	dummy();
-
-	//os_thread_map_t	g_os_thread_map;
 	{
 		os_thread_map_t::iterator it;
 		for (it = g_os_thread_map.begin(); it != g_os_thread_map.end(); it++)
@@ -502,7 +482,7 @@ int main()
 	v_args[2] = os_new_int64(222);
 	os_oid_t v_status = cos_add2(2, &v_args[0]);
 	::int32_t answer = os_get_int32(v_args[0]);
-	os_link_object(v_args[0]);
+	os_oid_link(v_args[0]);
 	os_dbg("answer=%d", answer);
 
 	os_dump_object_heap();
