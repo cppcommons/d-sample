@@ -184,8 +184,13 @@ bool os_is_thread_alive(DWORD thread_dword)
 typedef ::int64_t os_oid_t;
 //os_oid_t g_max_oid = 0;
 //os_oid_t g_max_oid = 100000;
-os_oid_t g_max_oid = OS_UINT32_MAX;
-os_oid_t g_min_oid = (-OS_UINT32_MAX - 1);
+//os_oid_t g_max_oid = OS_UINT32_MAX;
+//os_oid_t g_min_oid = (-OS_UINT32_MAX - 1);
+//os_oid_t g_min_oid = (-OS_UINT32_MAX - 1);
+//os_oid_t g_os_direct_oid_range = 0xffffffffff;
+os_oid_t g_os_direct_value_range = 0x7fffffff;
+os_oid_t g_os_direct_value_min = (-g_os_direct_value_range - 1);
+os_oid_t g_min_oid = g_os_direct_value_min;
 
 os_oid_t os_get_next_oid()
 {
@@ -281,7 +286,7 @@ void os_oid_unlink(os_oid_t oid)
 os_oid_t os_new_int64(::int64_t value)
 {
 #if 0x0
-	if (value <= 0xffffffff)
+	if (value >= g_os_direct_value_min)
 	{
 		return (os_oid_t)value;
 	}
@@ -300,7 +305,7 @@ os_oid_t os_new_int64(::int64_t value)
 
 ::int32_t os_get_int32(os_oid_t oid)
 {
-	if (oid <= 0xffffffff)
+	if (oid >= g_os_direct_value_min)
 	{
 		return (::int32_t)oid;
 	}
