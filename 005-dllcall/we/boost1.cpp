@@ -1,7 +1,9 @@
 #include <iostream>
+#include <iomanip>
 #include <map>
 #include <string>
 #include <vector>
+#include <sstream>
 using namespace std;
 
 #include <stdint.h>
@@ -65,38 +67,61 @@ int os_printf(const char *format, ...)
 
 int os_dbg(const char *format, ...)
 {
-	//cout << "os_dbg(1)" << endl;
 	static stlsoft::winstl_project::thread_mutex v_mutex;
 	{
 		os_thread_locker locker(v_mutex);
-		//cout << "os_dbg(2)" << endl;
 		char v_buffer[1024 + 1];
 		v_buffer[1024] = 0;
 		wsprintfA((LPSTR)v_buffer, "[DEBUG] %s\n", format); // Win32 API
-		//cout << "os_dbg(3)" << endl;
 		va_list args;
 		va_start(args, format);
 		int len = os_write_consoleA(GetStdHandle(STD_OUTPUT_HANDLE), v_buffer, args);
 		va_end(args);
-		//cout << "os_dbg(4)" << endl;
 		return len;
 	}
 }
 
-::int64_t os_get_thread_id()
+struct os_thread_id
 {
-	static TLS_VARIABLE_DECL ::int64_t curr_thread_id = -1;
+	DWORD id;
+	::int64_t no;
+	const char *c_str()
+	{
+		std::stringstream v_stream;
+		v_stream << "[" << no
+				 << ":0x"
+				 << std::setw(8)
+				 << std::setfill('0')
+				 << std::hex
+				 << std::uppercase
+				 << id
+				 << "]";
+		m_output_str = v_stream.str();
+		return m_output_str.c_str();
+	}
+
+  private:
+	std::string m_output_str;
+};
+
+//::int64_t os_get_thread_id()
+os_thread_id os_get_thread_id()
+{
+	static TLS_VARIABLE_DECL ::int64_t curr_thread_no = -1;
 	static ::int64_t v_thread_id_max = 0;
 	static stlsoft::winstl_project::thread_mutex v_mutex;
 	{
 		os_thread_locker locker(v_mutex);
-		if (curr_thread_id == -1)
+		if (curr_thread_no == -1)
 		{
 			v_thread_id_max++;
-			curr_thread_id = v_thread_id_max;
+			curr_thread_no = v_thread_id_max;
 		}
 	}
-	return curr_thread_id;
+	os_thread_id result;
+	result.id = ::GetCurrentThreadId();
+	result.no = curr_thread_no;
+	return result;
 }
 
 struct os_object_entry_t
@@ -115,32 +140,6 @@ os_object_entry_t X2;
 typedef std::map<std::string, void *> func_map_t;
 typedef stlsoft::shared_ptr<func_map_t> func_map_ptr_t;
 typedef stlsoft::shared_ptr<func_map_t> func_map_ptr_t2;
-
-#if 0x0
-struct cos_state
-{
-	//void *func_map;
-	func_map_t *func_map;
-	//func_map_ptr_t func_map;
-	//func_map_t func_map;
-	explicit cos_state() : func_map(nullptr)
-	{
-		os_dbg("cos_state()");
-		func_map = new func_map_t;
-	}
-	/*virtual*/ ~cos_state()
-	{
-		os_dbg("~cos_state()");
-		delete func_map;
-	}
-};
-
-typedef stlsoft::shared_ptr<cos_state> cos_state_ptr;
-//static cos_state_ptr g_state;
-//static TLS_VARIABLE_DECL cos_state_ptr g_state;
-//static TLS_VARIABLE_DECL cos_state g_state;
-//static cos_state g_state;
-#endif
 
 struct MYHANDLE
 {
@@ -216,23 +215,16 @@ struct C_Variant
 	}
 };
 
-unsigned __stdcall sure1(void *p)
-{
-	puts((const char *)p);
-	_endthreadex(0);
-	return 0; //コンパイラの警告を殺す
-}
-
 DWORD WINAPI Thread(LPVOID *data)
 {
-	DWORD wintid = GetCurrentThreadId();
-	os_dbg("wintid=%u", wintid);
-	::int64_t tid1 = os_get_thread_id();
-	os_dbg("%ld", tid1);
+	//DWORD wintid = GetCurrentThreadId();
+	//os_dbg("wintid=%u", wintid);
+	os_thread_id tid1 = os_get_thread_id();
+	os_dbg("tid1=%s", tid1.c_str());
 	os_dbg("%s start", (const char *)data);
 	Sleep(1000);
-	::int64_t tid2 = os_get_thread_id();
-	os_dbg("%ld", tid2);
+	os_thread_id tid2 = os_get_thread_id();
+	os_dbg("tid2=%s", tid2.c_str());
 	os_dbg("%s end", (const char *)data);
 	ExitThread(0);
 	return 0;
@@ -240,8 +232,11 @@ DWORD WINAPI Thread(LPVOID *data)
 
 int main()
 {
-	::int64_t tid = os_get_thread_id();
-	os_dbg("%ld", tid);
+	DWORD wintid = GetCurrentThreadId();
+	os_dbg("wintid(0)=%u", wintid);
+	os_thread_id tid = os_get_thread_id();
+	os_dbg("%ld", tid.no);
+	os_dbg("tid=%s", tid.c_str());
 	HANDLE hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Thread, (LPVOID) "カウント数表示：", 0, NULL);
 
 #if 0x0
