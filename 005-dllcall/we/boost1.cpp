@@ -7,7 +7,7 @@
 using namespace std;
 
 #include <stdint.h>
-#include "common.h"
+//#include "common.h"
 
 #include <winstl/synch/thread_mutex.hpp>
 //#include <stlsoft/smartptr/shared_ptr.hpp>
@@ -17,6 +17,12 @@ using namespace std;
 #include <process.h>
 
 #include <tlhelp32.h> // CreateToolhelp32Snapshot()
+
+#ifdef __GNUC__
+#define TLS_VARIABLE_DECL __thread
+#else
+#define TLS_VARIABLE_DECL __declspec(thread)
+#endif
 
 //#define OS_UINT32_MAX 4294967295
 //#define OS_INT32_MIN (-2147483647L - 1)
