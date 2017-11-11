@@ -224,20 +224,33 @@ struct os_object_entry_t : public os_struct
 	}
 };
 
-os_object_entry_t X1(111);
-os_object_entry_t X2(222);
+//os_object_entry_t X1(111);
+//os_object_entry_t X2(222);
 
 typedef std::map<os_oid_t, os_object_entry_t> os_object_map_t;
 os_object_map_t g_os_object_map;
+
+os_oid_t os_new_int64(::int64_t value)
+{
+	{
+		os_thread_locker locker(g_os_thread_mutex);
+		os_oid_t v_oid = os_get_next_oid();
+		os_object_entry_t v_entry;
+		v_entry.m_value = value;
+		g_os_object_map[v_oid] = v_entry;
+		return v_oid;
+	}
+}
 
 void dummy()
 {
 #if 0x1
 	for (int i = 0; i < 5; i++)
 	{
-		os_oid_t key = os_get_next_oid();
-		os_object_entry_t myentry((i + 1) * 10);
-		g_os_object_map[key] = myentry;
+		/*os_oid_t*/ os_new_int64(i);
+		//os_oid_t key = os_get_next_oid();
+		//os_object_entry_t myentry((i + 1) * 10);
+		//g_os_object_map[key] = myentry;
 	}
 #endif
 	os_object_map_t::iterator map_ite;
