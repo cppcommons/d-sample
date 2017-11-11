@@ -16,6 +16,7 @@
                     <Add option="-Ae" />
                     <Add option="-g" />
                     <Add directory="E:\d-dev\boost_1_34_1_headers" />
+                    <Add directory="E:\d-dev\STLSoft-1.9.131\include" />
                 </Compiler>
                 <Linker>
                     <Add option="-p512" />
@@ -33,6 +34,7 @@
                     <Add option="-Ae" />
                     <Add option="-o" />
                     <Add directory="E:\d-dev\boost_1_34_1_headers" />
+                    <Add directory="E:\d-dev\STLSoft-1.9.131\include" />
                 </Compiler>
                 <Linker>
                     <Add option="-p512" />

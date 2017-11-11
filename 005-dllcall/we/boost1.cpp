@@ -1,13 +1,75 @@
+#include <iostream>
+#include <map>
 #include <string>
 #include <vector>
-#include <iostream>
-#include <boost/shared_ptr.hpp>
-//#include <boost/variant.hpp>
-
-//#include <cstdint>
-#include <stdint.h>
-
 using namespace std;
+
+#include <boost/shared_ptr.hpp>
+#include <stdint.h>
+#include "common.h"
+
+//#include <winstl_thread_mutex.h>
+#include <winstl/synch/thread_mutex.hpp>
+#include <stlsoft/smartptr/ref_ptr.hpp>
+#include <stlsoft/smartptr/shared_ptr.hpp>
+using namespace stlsoft::winstl_project;
+
+#include <windows.h>
+#define _MT
+#include <process.h>
+
+thread_mutex g_thread_mutex;
+
+class CoMutex
+{
+	CRITICAL_SECTION csect;
+
+  public:
+	explicit CoMutex()
+	{
+		InitializeCriticalSection(&csect);
+	}
+	virtual ~CoMutex()
+	{
+		DeleteCriticalSection(&csect);
+	}
+	void lock()
+	{
+		EnterCriticalSection(&csect);
+	}
+	void unlock()
+	{
+		LeaveCriticalSection(&csect);
+	}
+};
+
+typedef std::map<std::string, void *> func_map_t;
+typedef boost::shared_ptr<func_map_t> func_map_ptr_t;
+typedef stlsoft::shared_ptr<func_map_t> func_map_ptr_t2;
+
+struct cos_state
+{
+	//void *func_map;
+	func_map_t *func_map;
+	//func_map_ptr_t func_map;
+	//func_map_t func_map;
+	explicit cos_state() : func_map(nullptr)
+	{
+		cout << "cos_state()" << endl;
+		func_map = new func_map_t;
+	}
+	/*virtual*/ ~cos_state()
+	{
+		//cout << "~cos_state()" << endl;
+		//delete func_map;
+	}
+};
+
+typedef boost::shared_ptr<cos_state> cos_state_ptr;
+//static cos_state_ptr g_state;
+//static TLS_VARIABLE_DECL cos_state_ptr g_state;
+//static TLS_VARIABLE_DECL cos_state g_state;
+static cos_state g_state;
 
 struct MYHANDLE
 {
@@ -17,21 +79,15 @@ void dummy(struct MYHANDLE *handle);
 struct MYHANDLE_IMPL : public MYHANDLE
 {
 	std::string m_s;
-	int64_t m_int64;
+	::int64_t m_int64;
 };
 
-int64_t cos_add2(struct cos_context *context, int *argc, int64_t args[])
+::int64_t cos_add2(struct cos_context *context, int argc, ::int64_t args[])
 {
 	if (!context)
 	{
-		(*argc) = 2;
-		return 3;
+		return 2; /* return -1; */
 	}
-	//cos_return_clear();
-	//cos_push_int32(0, 123);
-	//cos_push_int32(1, 456);
-	//cos_push_int32(2, 789);
-	//return cos_return_multi(3);
 	//return args[0];
 	//return cos_return_int32(123);
 	return 0;
@@ -46,6 +102,10 @@ struct C_Class1
 	virtual ~C_Class1()
 	{
 		cout << "Destructor" << endl;
+	}
+	void Release()
+	{
+		delete this;
 	}
 };
 
@@ -64,14 +124,14 @@ struct C_Variant
 	};
 	VariantType m_type;
 	std::string m_s;
-	int64_t m_int64;
+	::int64_t m_int64;
 	C_Variant(const std::string &x)
 	{
 		//this.m_s = x;
 		m_type = C_Variant::VariantType::STRING;
 		m_s = x;
 	}
-	C_Variant(int64_t x)
+	C_Variant(::int64_t x)
 	{
 		m_type = C_Variant::VariantType::INT64;
 		//this.m_int64 = x;
@@ -85,11 +145,36 @@ struct C_Variant
 	}
 };
 
+unsigned __stdcall sure1(void *p)
+{
+	puts((const char *)p);
+	_endthreadex(0);
+	return 0; //コンパイラの警告を殺す
+}
+
+DWORD WINAPI Thread(LPVOID *data)
+{
+	printf("%s start\n", (const char *)data);
+	Sleep(1000);
+	printf("%s end\n", (const char *)data);
+	ExitThread(0);
+}
+
 int main()
 {
-	typedef boost::shared_ptr<string> StrPtr;
-	typedef boost::shared_ptr<C_Class1> ClsPtr;
+	HANDLE hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Thread, (LPVOID) "カウント数表示：", 0, NULL);
 
+#if 0x0
+	HANDLE handoru;
+
+	handoru = (HANDLE)_beginthreadex(NULL, 0, sure1, "sure1です。", 0, NULL);
+	//WaitForSingleObject(handoru, INFINITE); /* スレッドが終了するまで待つ。 */
+	//CloseHandle(handoru);					/* ハンドルを閉じる */
+#endif
+	thread_mutex_lock_traits(g_thread_mutex);
+
+#if 0x1
+	typedef stlsoft::shared_ptr<string> StrPtr;
 	StrPtr s = StrPtr(new string("pen"));
 	vector<StrPtr> v1;
 	// vectorに入れたり。
@@ -100,7 +185,8 @@ int main()
 
 	cout << *s << endl;						 // sをpush_backで他にコピーしたからと言って使えなくなったりしない
 	cout << "*s.get()=" << *s.get() << endl; // sをpush_backで他にコピーしたからと言って使えなくなったりしない
-
+#endif
+	typedef stlsoft::shared_ptr<C_Class1> ClsPtr;
 	ClsPtr c1 = ClsPtr(new C_Class1());
 	ClsPtr c2 = ClsPtr(new C_Class1());
 	/*ClsPtr c3 =*/ClsPtr(new C_Class1());
@@ -111,6 +197,8 @@ int main()
 	C_Variant var1 = 123;
 	C_Variant var2 = "abc";
 	var1 = "xyz";
+
+	WaitForSingleObject(hThread, INFINITE);
 
 	return 0;
 } // ここで全てdeleteされる。
