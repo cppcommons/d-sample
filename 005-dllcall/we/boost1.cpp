@@ -344,7 +344,8 @@ void os_dump_object_heap()
 		{
 			os_oid_t v_oid = it->first;
 			os_object_entry_t &v_entry = it->second;
-			os_dbg("[DUMP] oid = %lld : data = %s", v_oid, v_entry.c_str());
+			::int64_t v_diff = -(v_oid - g_os_direct_value_min);
+			os_dbg("[DUMP] oid = %lld(%lld) : data = %s", v_oid, v_diff, v_entry.c_str());
 		}
 	}
 }
