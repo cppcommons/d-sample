@@ -7,7 +7,6 @@
 using namespace std;
 
 #include <stdint.h>
-//#include "common.h"
 
 #include <winstl/synch/thread_mutex.hpp>
 //#include <stlsoft/smartptr/shared_ptr.hpp>
@@ -24,10 +23,7 @@ using namespace std;
 #define THREAD_LOCAL __declspec(thread)
 #endif
 
-//#define OS_UINT32_MAX 4294967295
-//#define OS_INT32_MIN (-2147483647L - 1)
-
-stlsoft::winstl_project::thread_mutex g_os_thread_mutex;
+static stlsoft::winstl_project::thread_mutex g_os_thread_mutex;
 
 struct os_struct
 {
@@ -68,7 +64,7 @@ static int os_write_consoleA(HANDLE hconsole, const char *format, va_list args)
 	return len;
 }
 
-int os_printf(const char *format, ...)
+static int os_printf(const char *format, ...)
 {
 	static stlsoft::winstl_project::thread_mutex v_mutex;
 	{
@@ -81,7 +77,7 @@ int os_printf(const char *format, ...)
 	}
 }
 
-int os_dbg(const char *format, ...)
+static int os_dbg(const char *format, ...)
 {
 	static stlsoft::winstl_project::thread_mutex v_mutex;
 	{
@@ -139,7 +135,7 @@ os_thread_id os_get_thread_id()
 	return result;
 }
 
-os_thread_id &os_register_curr_thread()
+static os_thread_id &os_register_curr_thread()
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
@@ -154,7 +150,7 @@ os_thread_id &os_register_curr_thread()
 	}
 }
 
-std::vector<DWORD> os_get_thread_dword_list()
+static std::vector<DWORD> os_get_thread_dword_list()
 {
 	std::vector<DWORD> result;
 	DWORD v_proc_id = ::GetCurrentProcessId();
@@ -179,7 +175,7 @@ Exit:
 	return result;
 }
 
-bool os_is_thread_alive(DWORD thread_dword)
+static bool os_is_thread_alive(DWORD thread_dword)
 {
 	std::vector<DWORD> v_list = os_get_thread_dword_list();
 	if (std::count(v_list.begin(), v_list.end(), thread_dword) == 0)
@@ -189,20 +185,14 @@ bool os_is_thread_alive(DWORD thread_dword)
 
 typedef ::int64_t os_oid_t;
 
-#if 0x0
-//os_oid_t g_os_direct_value_range = 0x7fffffff;
-os_oid_t g_os_direct_value_range = 0xffffffff;
-os_oid_t g_os_direct_value_min = (-g_os_direct_value_range - 1);
-os_oid_t g_min_oid = g_os_direct_value_min;
-#endif
-os_oid_t g_max_oid = 100000;
+static os_oid_t g_last_oid = 100000;
 
-os_oid_t os_get_next_oid()
+static os_oid_t os_get_next_oid()
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
-		g_max_oid++;
-		return g_max_oid;
+		g_last_oid++;
+		return g_last_oid;
 		//g_min_oid--;
 		//return g_min_oid;
 	}
@@ -263,7 +253,7 @@ struct os_object_entry_t : public os_struct
 typedef std::map<os_oid_t, os_object_entry_t> os_object_map_t;
 os_object_map_t g_os_object_map;
 
-os_oid_t os_oid_link(os_oid_t oid)
+extern os_oid_t os_oid_link(os_oid_t oid)
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
@@ -275,7 +265,7 @@ os_oid_t os_oid_link(os_oid_t oid)
 	}
 }
 
-void os_oid_unlink(os_oid_t oid)
+extern void os_oid_unlink(os_oid_t oid)
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
@@ -287,7 +277,7 @@ void os_oid_unlink(os_oid_t oid)
 }
 
 //os_oid_t os_new_int64(::int64_t value, bool prefer_direct = false)
-os_oid_t os_new_int64(::int64_t value)
+extern os_oid_t os_new_int64(::int64_t value)
 {
 	/*
 	if (prefer_direct && value >= g_os_direct_value_min)
@@ -307,7 +297,7 @@ os_oid_t os_new_int64(::int64_t value)
 	}
 }
 
-os_object_entry_t *os_find_entry(os_oid_t oid)
+static os_object_entry_t *os_find_entry(os_oid_t oid)
 {
 	/*
 	if (oid >= g_os_direct_value_min)
@@ -325,7 +315,7 @@ os_object_entry_t *os_find_entry(os_oid_t oid)
 	}
 }
 
-::int32_t os_get_int32(os_oid_t oid)
+extern ::int32_t os_get_int32(os_oid_t oid)
 {
 	/*
 	if (oid >= g_os_direct_value_min)
@@ -339,7 +329,7 @@ os_object_entry_t *os_find_entry(os_oid_t oid)
 	return (::int32_t)(*v_entry).m_simple.m_integer;
 }
 
-void os_set_int32(os_oid_t oid, ::int32_t value)
+extern void os_set_int32(os_oid_t oid, ::int32_t value)
 {
 	os_object_entry_t *v_entry = os_find_entry(oid);
 	if (!v_entry)
@@ -348,7 +338,7 @@ void os_set_int32(os_oid_t oid, ::int32_t value)
 	(*v_entry).m_simple.m_integer = value;
 }
 
-void os_dump_object_heap()
+static void os_dump_object_heap()
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
@@ -364,7 +354,7 @@ void os_dump_object_heap()
 	}
 }
 
-void os_gc()
+extern void os_gc()
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
@@ -406,7 +396,7 @@ void os_gc()
 
 typedef os_oid_t (*os_function_t)(int argc, os_oid_t args[]);
 
-os_oid_t cos_add2(int argc, os_oid_t args[])
+static os_oid_t cos_add2(int argc, os_oid_t args[])
 {
 	if (argc < 0)
 		return 2;
@@ -471,7 +461,7 @@ struct C_Variant
 	}
 };
 
-DWORD WINAPI Thread(LPVOID *data)
+static DWORD WINAPI Thread(LPVOID *data)
 {
 	//os_register_curr_thread();
 	os_new_int64(1234);
