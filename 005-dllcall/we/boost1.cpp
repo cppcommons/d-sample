@@ -373,8 +373,7 @@ os_oid_t cos_add2(int argc, os_oid_t args[])
 	}
 	::int32_t a = os_get_int32(args[1]);
 	::int32_t b = os_get_int32(args[2]);
-	args[0] = os_new_int64(a + b);
-	return 0; /* return Exception Object(plus) or Status(minus) when error. */
+	return os_new_int64(a + b);
 }
 
 struct C_Class1
@@ -491,8 +490,7 @@ int main()
 	std::vector<os_oid_t> v_args(3);
 	v_args[1] = os_new_int64(111);
 	v_args[2] = os_new_int64(222);
-	os_oid_t v_status = cos_add2(2, &v_args[0]);
-	os_oid_t v_answer = v_args[0];
+	os_oid_t v_answer = cos_add2(2, &v_args[0]);
 	::int32_t v_answer32 = os_get_int32(v_answer);
 	os_oid_link(v_answer);
 	os_dbg("answer=%d", v_answer32);
