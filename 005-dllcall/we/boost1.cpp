@@ -243,6 +243,19 @@ os_oid_t os_new_int64(::int64_t value)
 	}
 }
 
+::int32_t os_get_int32(os_oid_t oid)
+{
+	{
+		os_thread_locker locker(g_os_thread_mutex);
+		if (g_os_object_map.count(oid) == 0)
+		{
+			return 0;
+		}
+		::int32_t result = (::int32_t)g_os_object_map[oid].m_value;
+		return result;
+	}
+}
+
 void os_dump_object_heap()
 {
 	{
@@ -280,15 +293,42 @@ struct MYHANDLE_IMPL : public MYHANDLE
 	::int64_t m_int64;
 };
 
-::int64_t cos_add2(struct cos_context *context, int argc, ::int64_t args[])
+enum OS_VALUE_TYPE
 {
-	if (!context)
+	OS_TYPE_INT32 = -100001,
+	OS_TYPE_INT64 = -100002
+};
+
+enum OS_ARGS_LENGTH_TYPE
+{
+	OS_ARGS_END = -200001,
+	OS_ARGS_VARIABLE = -200002
+};
+
+enum OS_STATUS
+{
+	OS_STASUS_OK = 0,
+	OS_STASUS_NG = -1
+};
+
+os_oid_t cos_add2(int argc, os_oid_t args[])
+{
+	if (argc < 0)
 	{
-		return 2; /* return -1; */
+		switch (argc)
+		{
+		case -1:
+			return OS_TYPE_INT32; // return OS_TYPE_ANY;
+		case -2:
+			return OS_TYPE_INT32;
+		default:
+			return OS_ARGS_END; // return OS_ARGS_VARIABLE;
+		}
 	}
-	//return args[0];
-	//return cos_return_int32(123);
-	return 0;
+	::int32_t a = os_get_int32(args[1]);
+	::int32_t b = os_get_int32(args[2]);
+	args[0] = os_new_int64(a + b);
+	return 0; /* return Exception Object(plus) or Status(minus) when error. */
 }
 
 struct C_Class1
@@ -416,5 +456,14 @@ int main()
 		}
 	}
 	os_dump_object_heap();
+
+	//os_oid_t cos_add2(struct cos_context *context, int argc, os_oid_t args[])
+	std::vector<os_oid_t> v_args(3);
+	v_args[1] = os_new_int64(111);
+	v_args[2] = os_new_int64(222);
+	os_oid_t v_status = cos_add2(2, &v_args[0]);
+	::int32_t answer = os_get_int32(v_args[0]);
+	os_dbg("answer=%d", answer);
+
 	return 0;
-} // ここで全てdeleteされる。
+}
