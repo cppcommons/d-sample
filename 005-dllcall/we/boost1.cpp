@@ -193,12 +193,21 @@ os_oid_t os_get_next_oid()
 
 struct os_object_entry_t : public os_struct
 {
+	enum ValueType
+	{
+		ARRAY,
+		INTEGER,
+		REAL,
+		STRING,
+		NIL
+	};
 	os_thread_id m_thread_id;
 	::int64_t m_link_count;
 	::int64_t m_value;
+	std::vector<os_oid_t> m_array;
 	union {
 		::int64_t m_integer;
-		double m_double;
+		double m_real;
 	} m_number;
 	std::string m_string;
 	void _init(os_thread_id &thread_id, ::int64_t link_count, ::int64_t value)
