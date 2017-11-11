@@ -202,13 +202,14 @@ struct os_object_entry_t : public os_struct
 {
 	enum value_type_t
 	{
+		NIL,
 		ADDRESS,
 		BYTES,
 		CLASS,
 		INTEGER,
 		REAL,
 		STRING,
-		TYPE
+		VECTOR
 	};
 	os_thread_id m_thread_id;
 	os_integer_t m_link_count;
