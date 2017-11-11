@@ -4,7 +4,7 @@
 #include <vector>
 using namespace std;
 
-#include <boost/shared_ptr.hpp>
+//#include <boost/shared_ptr.hpp>
 #include <stdint.h>
 #include "common.h"
 
@@ -19,6 +19,37 @@ using namespace stlsoft::winstl_project;
 #include <process.h>
 
 thread_mutex g_thread_mutex;
+
+//TLS_VARIABLE_DECL ::int64_t tls_thread_id = -1;
+
+struct os_thread_locker
+{
+	thread_mutex &m_mutex;
+	explicit os_thread_locker(thread_mutex &mutex) : m_mutex(mutex)
+	{
+		m_mutex.lock();
+	}
+	virtual ~os_thread_locker()
+	{
+		m_mutex.unlock();
+	}
+};
+
+::int64_t os_get_thread_id()
+{
+	static TLS_VARIABLE_DECL ::int64_t curr_thread_id = -1;
+	static ::int64_t v_thread_id_max = 0;
+	static thread_mutex v_mutex;
+	{
+		os_thread_locker locker(v_mutex);
+		if (curr_thread_id == -1)
+		{
+			v_thread_id_max++;
+			curr_thread_id = v_thread_id_max;
+		}
+	}
+	return curr_thread_id;
+}
 
 class CoMutex
 {
@@ -44,7 +75,7 @@ class CoMutex
 };
 
 typedef std::map<std::string, void *> func_map_t;
-typedef boost::shared_ptr<func_map_t> func_map_ptr_t;
+typedef stlsoft::shared_ptr<func_map_t> func_map_ptr_t;
 typedef stlsoft::shared_ptr<func_map_t> func_map_ptr_t2;
 
 struct cos_state
@@ -60,16 +91,16 @@ struct cos_state
 	}
 	/*virtual*/ ~cos_state()
 	{
-		//cout << "~cos_state()" << endl;
-		//delete func_map;
+		cout << "~cos_state()" << endl;
+		delete func_map;
 	}
 };
 
-typedef boost::shared_ptr<cos_state> cos_state_ptr;
+typedef stlsoft::shared_ptr<cos_state> cos_state_ptr;
 //static cos_state_ptr g_state;
 //static TLS_VARIABLE_DECL cos_state_ptr g_state;
 //static TLS_VARIABLE_DECL cos_state g_state;
-static cos_state g_state;
+//static cos_state g_state;
 
 struct MYHANDLE
 {
@@ -154,14 +185,21 @@ unsigned __stdcall sure1(void *p)
 
 DWORD WINAPI Thread(LPVOID *data)
 {
+	::int64_t tid1 = os_get_thread_id();
+	cout << tid1 << endl;
 	printf("%s start\n", (const char *)data);
 	Sleep(1000);
+	::int64_t tid2 = os_get_thread_id();
+	cout << tid2 << endl;
 	printf("%s end\n", (const char *)data);
 	ExitThread(0);
+	return 0;
 }
 
 int main()
 {
+	::int64_t tid = os_get_thread_id();
+	cout << tid << endl;
 	HANDLE hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Thread, (LPVOID) "カウント数表示：", 0, NULL);
 
 #if 0x0
