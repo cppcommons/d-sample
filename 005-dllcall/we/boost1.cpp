@@ -465,5 +465,7 @@ int main()
 	::int32_t answer = os_get_int32(v_args[0]);
 	os_dbg("answer=%d", answer);
 
+	os_dump_object_heap();
+
 	return 0;
 }
