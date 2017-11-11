@@ -199,23 +199,27 @@ struct os_object_entry_t : public os_struct
 		INTEGER,
 		REAL,
 		STRING,
+		OBJECT,
 		NIL
 	};
 	os_thread_id m_thread_id;
 	::int64_t m_link_count;
-	::int64_t m_value;
+	//::int64_t m_value;
 	value_type_t m_type;
 	union {
 		::int64_t m_integer;
 		double m_real;
-	} m_number;
+		void *m_this;
+	} m_simple;
 	std::string m_string;
 	std::vector<os_oid_t> m_array;
 	void _init(os_thread_id &thread_id, ::int64_t link_count, ::int64_t value)
 	{
 		m_thread_id = thread_id;
 		m_link_count = link_count;
-		m_value = value;
+		//m_value = value;
+		m_type = value_type_t::INTEGER;
+		m_simple.m_integer = value;
 	}
 	explicit os_object_entry_t() //: m_link_count(0), m_value(0)
 	{
@@ -232,7 +236,7 @@ struct os_object_entry_t : public os_struct
 		std::stringstream v_stream;
 		v_stream << "os_object_entry_t { " << v_thread_id
 				 << " "
-				 << m_value
+				 << m_simple.m_integer
 				 << " }";
 		m_debug_output_string = v_stream.str();
 		return m_debug_output_string.c_str();
@@ -275,7 +279,8 @@ os_oid_t os_new_int64(::int64_t value)
 		os_register_curr_thread();
 		os_oid_t v_oid = os_get_next_oid();
 		os_object_entry_t v_entry;
-		v_entry.m_value = value;
+		v_entry.m_type = os_object_entry_t::value_type_t::INTEGER;
+		v_entry.m_simple.m_integer = value;
 		g_os_object_map[v_oid] = v_entry;
 		return v_oid;
 	}
@@ -289,7 +294,7 @@ os_oid_t os_new_int64(::int64_t value)
 		{
 			return 0;
 		}
-		::int32_t result = (::int32_t)g_os_object_map[oid].m_value;
+		::int32_t result = (::int32_t)g_os_object_map[oid].m_simple.m_integer;
 		return result;
 	}
 }
