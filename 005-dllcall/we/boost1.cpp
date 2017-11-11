@@ -10,7 +10,7 @@ using namespace std;
 #include "common.h"
 
 #include <winstl/synch/thread_mutex.hpp>
-#include <stlsoft/smartptr/shared_ptr.hpp>
+//#include <stlsoft/smartptr/shared_ptr.hpp>
 
 #include <windows.h>
 #define _MT
@@ -196,6 +196,11 @@ struct os_object_entry_t : public os_struct
 	os_thread_id m_thread_id;
 	::int64_t m_link_count;
 	::int64_t m_value;
+	union {
+		::int64_t m_integer;
+		double m_double;
+	} m_number;
+	std::string m_string;
 	void _init(os_thread_id &thread_id, ::int64_t link_count, ::int64_t value)
 	{
 		m_thread_id = thread_id;
@@ -333,48 +338,23 @@ void os_gc()
 	}
 }
 
-#if 0x0
-typedef std::map<std::string, void *> func_map_t;
-typedef stlsoft::shared_ptr<func_map_t> func_map_ptr_t;
-typedef stlsoft::shared_ptr<func_map_t> func_map_ptr_t2;
-#endif
-
-enum OS_VALUE_TYPE
-{
-	OS_TYPE_INT32 = -100001,
-	OS_TYPE_INT64 = -100002
-};
-
-enum OS_ARGS_LENGTH_TYPE
-{
-	OS_ARGS_END = -200001,
-	OS_ARGS_VARIABLE = -200002
-};
-
-enum OS_STATUS
-{
-	OS_STASUS_OK = 0,
-	OS_STASUS_NG = -1
-};
-
 os_oid_t cos_add2(int argc, os_oid_t args[])
 {
+	/*
 	if (argc < 0)
 	{
 		switch (argc)
 		{
 		case -1:
-			// return os_argtype_of("int32");
-			// return os_argtype_any();
-			return OS_TYPE_INT32; // return OS_TYPE_ANY;
+			return os_argtype_of("int32");
 		case -2:
-			return OS_TYPE_INT32;
+			return os_argtype_any();
 		default:
-			// return os_argtype_end();
+			return os_argtype_end();
 			// return os_argtype_variadic();
-			return OS_ARGS_END; // return OS_ARGS_VARIABLE;
 		}
 	}
+	*/
 	::int32_t a = os_get_int32(args[1]);
 	::int32_t b = os_get_int32(args[2]);
 	return os_new_int64(a + b);
@@ -455,7 +435,7 @@ int main()
 	os_dbg("tid1=%s", tid1.c_str());
 	HANDLE hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Thread, (LPVOID) "カウント数表示：", 0, NULL);
 
-#if 0x1
+#if 0x0
 	typedef stlsoft::shared_ptr<string> StrPtr;
 	StrPtr s = StrPtr(new string("pen"));
 	vector<StrPtr> v1;
@@ -467,7 +447,6 @@ int main()
 
 	os_dbg("%s", (*s).c_str());
 	os_dbg("%s", (*s.get()).c_str());
-#endif
 	typedef stlsoft::shared_ptr<C_Class1> ClsPtr;
 	ClsPtr c1 = ClsPtr(new C_Class1());
 	ClsPtr c2 = ClsPtr(new C_Class1());
@@ -475,6 +454,7 @@ int main()
 	ClsPtr c4 = c1;
 
 	os_dbg("c1.use_count()=%d", c1.use_count());
+#endif
 
 	C_Variant var1 = 123;
 	C_Variant var2 = "abc";
