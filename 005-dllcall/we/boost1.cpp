@@ -215,7 +215,8 @@ struct os_object_entry_t : public os_struct
 		INTEGER,
 		REAL,
 		STRING,
-		OBJECT
+		OBJECT,
+		POINTER
 	};
 	os_thread_id m_thread_id;
 	::int64_t m_link_count;
