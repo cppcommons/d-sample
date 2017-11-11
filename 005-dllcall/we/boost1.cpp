@@ -364,10 +364,14 @@ os_oid_t cos_add2(int argc, os_oid_t args[])
 		switch (argc)
 		{
 		case -1:
+			// return os_argtype_of("int32");
+			// return os_argtype_any();
 			return OS_TYPE_INT32; // return OS_TYPE_ANY;
 		case -2:
 			return OS_TYPE_INT32;
 		default:
+			// return os_argtype_end();
+			// return os_argtype_variadic();
 			return OS_ARGS_END; // return OS_ARGS_VARIABLE;
 		}
 	}
