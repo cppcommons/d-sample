@@ -148,26 +148,25 @@ os_thread_id &os_register_curr_thread()
 std::vector<DWORD> os_get_thread_dword_list()
 {
 	std::vector<DWORD> result;
-	DWORD v_curr_proc_id = GetCurrentProcessId();
-	HANDLE hSnapshot;
-	THREADENTRY32 entry;
-	hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
-	if (hSnapshot == INVALID_HANDLE_VALUE)
+	DWORD v_proc_id = ::GetCurrentProcessId();
+	HANDLE h_snapshot = ::CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+	if (h_snapshot == INVALID_HANDLE_VALUE)
 	{
 		return result;
 	}
-	entry.dwSize = sizeof(THREADENTRY32);
-	if (!Thread32First(hSnapshot, &entry))
+	THREADENTRY32 v_entry;
+	v_entry.dwSize = sizeof(THREADENTRY32);
+	if (!::Thread32First(h_snapshot, &v_entry))
 	{
 		goto Exit;
 	}
 	do
 	{
-		if (entry.th32OwnerProcessID == v_curr_proc_id)
-			result.push_back(entry.th32ThreadID);
-	} while (Thread32Next(hSnapshot, &entry));
+		if (v_entry.th32OwnerProcessID == v_proc_id)
+			result.push_back(v_entry.th32ThreadID);
+	} while (::Thread32Next(h_snapshot, &v_entry));
 Exit:
-	CloseHandle(hSnapshot);
+	::CloseHandle(h_snapshot);
 	return result;
 }
 
