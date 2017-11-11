@@ -242,6 +242,17 @@ os_oid_t os_oid_link(os_oid_t oid)
 	}
 }
 
+void os_oid_unlink(os_oid_t oid)
+{
+	{
+		os_thread_locker locker(g_os_thread_mutex);
+		os_object_map_t::iterator it;
+		if (g_os_object_map.count(oid) == 0)
+			return;
+		g_os_object_map[oid].m_link_count--;
+	}
+}
+
 os_oid_t os_new_int64(::int64_t value)
 {
 	{
@@ -481,9 +492,10 @@ int main()
 	v_args[1] = os_new_int64(111);
 	v_args[2] = os_new_int64(222);
 	os_oid_t v_status = cos_add2(2, &v_args[0]);
-	::int32_t answer = os_get_int32(v_args[0]);
-	os_oid_link(v_args[0]);
-	os_dbg("answer=%d", answer);
+	os_oid_t v_answer = v_args[0];
+	::int32_t v_answer32 = os_get_int32(v_answer);
+	os_oid_link(v_answer);
+	os_dbg("answer=%d", v_answer32);
 
 	os_dump_object_heap();
 	os_dbg("before gc");
@@ -502,6 +514,13 @@ int main()
 				   v_thread_dword, v_thread_id.c_str(), os_is_thread_alive(v_thread_dword));
 		}
 	}
+	os_dbg("before gc");
+	os_gc();
+	os_dbg("after gc");
+	os_dump_object_heap();
+	os_dbg("after dump");
+
+	os_oid_unlink(v_answer);
 	os_dbg("before gc");
 	os_gc();
 	os_dbg("after gc");
