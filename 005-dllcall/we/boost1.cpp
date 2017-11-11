@@ -46,6 +46,18 @@ struct os_thread_locker
 	return curr_thread_id;
 }
 
+struct os_object_entry_t
+{
+	::int64_t m_link_count;
+	::int64_t m_value;
+	explicit os_object_entry_t(): m_link_count(0), m_value(0)
+	{
+		cout << R"(\m_link_count\=)" << m_link_count << endl;
+	}
+};
+
+os_object_entry_t X1;
+os_object_entry_t X2;
 
 typedef std::map<std::string, void *> func_map_t;
 typedef stlsoft::shared_ptr<func_map_t> func_map_ptr_t;
@@ -158,6 +170,8 @@ unsigned __stdcall sure1(void *p)
 
 DWORD WINAPI Thread(LPVOID *data)
 {
+	DWORD wintid = GetCurrentThreadId();
+	cout << "wintid=" << wintid << endl;
 	::int64_t tid1 = os_get_thread_id();
 	cout << tid1 << endl;
 	printf("%s start\n", (const char *)data);
