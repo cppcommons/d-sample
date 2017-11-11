@@ -19,6 +19,7 @@ using namespace std;
 #include <tlhelp32.h> // CreateToolhelp32Snapshot()
 
 #define OS_UINT32_MAX 4294967295
+#define OS_INT32_MIN (-2147483647L - 1)
 
 stlsoft::winstl_project::thread_mutex g_os_thread_mutex;
 
@@ -184,13 +185,16 @@ typedef ::int64_t os_oid_t;
 //os_oid_t g_max_oid = 0;
 //os_oid_t g_max_oid = 100000;
 os_oid_t g_max_oid = OS_UINT32_MAX;
+os_oid_t g_min_oid = (-OS_UINT32_MAX - 1);
 
 os_oid_t os_get_next_oid()
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
-		g_max_oid++;
-		return g_max_oid;
+		//g_max_oid++;
+		//return g_max_oid;
+		g_min_oid--;
+		return g_min_oid;
 	}
 }
 
