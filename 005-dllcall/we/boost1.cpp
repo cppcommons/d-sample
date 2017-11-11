@@ -270,6 +270,46 @@ void os_dump_object_heap()
 	}
 }
 
+void os_gc()
+{
+	{
+		os_thread_locker locker(g_os_thread_mutex);
+		os_thread_id v_thread_id = os_get_thread_id();
+		std::vector<DWORD> v_list = os_get_thread_dword_list();
+		std::map<DWORD, ::int64_t> v_map;
+		for (size_t i = 0; i < v_list.size(); i++)
+		{
+			v_map[v_list[i]] = 0;
+		}
+		os_object_map_t::iterator it;
+		std::vector<os_oid_t> v_removed;
+		for (it = g_os_object_map.begin(); it != g_os_object_map.end(); it++)
+		{
+			os_oid_t v_oid = it->first;
+			os_object_entry_t &v_entry = it->second;
+			//os_dbg("[SCAN] oid = %lld : data = %s", v_oid, v_entry.c_str());
+			if (v_map.count(v_entry.m_thread_id.id) == 0)
+			{
+				//os_dbg("[GC-1] oid = %lld : data = %s", v_oid, v_entry.c_str());
+				v_removed.push_back(v_oid);
+			}
+			else if (v_entry.m_link_count > 0)
+			{
+				continue;
+			}
+			else if (v_entry.m_thread_id.no == v_thread_id.no)
+			{
+				//os_dbg("[GC-2] oid = %lld : data = %s", v_oid, v_entry.c_str());
+				v_removed.push_back(v_oid);
+			}
+		}
+		for (size_t i=0; i<v_removed.size(); i++)
+		{
+			g_os_object_map.erase(v_removed[i]);
+		}
+	}
+}
+
 void dummy()
 {
 	for (int i = 0; i < 5; i++)
@@ -444,6 +484,20 @@ int main()
 				   v_thread_dword, v_thread_id.c_str(), os_is_thread_alive(v_thread_dword));
 		}
 	}
+
+	std::vector<os_oid_t> v_args(3);
+	v_args[1] = os_new_int64(111);
+	v_args[2] = os_new_int64(222);
+	os_oid_t v_status = cos_add2(2, &v_args[0]);
+	::int32_t answer = os_get_int32(v_args[0]);
+	os_dbg("answer=%d", answer);
+
+	os_dump_object_heap();
+	os_dbg("before gc");
+	os_gc();
+	os_dbg("after gc");
+	os_dump_object_heap();
+
 	WaitForSingleObject(hThread, INFINITE);
 	{
 		os_thread_map_t::iterator it;
@@ -455,17 +509,11 @@ int main()
 				   v_thread_dword, v_thread_id.c_str(), os_is_thread_alive(v_thread_dword));
 		}
 	}
+	os_dbg("before gc");
+	os_gc();
+	os_dbg("after gc");
 	os_dump_object_heap();
-
-	//os_oid_t cos_add2(struct cos_context *context, int argc, os_oid_t args[])
-	std::vector<os_oid_t> v_args(3);
-	v_args[1] = os_new_int64(111);
-	v_args[2] = os_new_int64(222);
-	os_oid_t v_status = cos_add2(2, &v_args[0]);
-	::int32_t answer = os_get_int32(v_args[0]);
-	os_dbg("answer=%d", answer);
-
-	os_dump_object_heap();
+	os_dbg("after dump");
 
 	return 0;
 }
