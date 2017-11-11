@@ -230,6 +230,18 @@ struct os_object_entry_t : public os_struct
 typedef std::map<os_oid_t, os_object_entry_t> os_object_map_t;
 os_object_map_t g_os_object_map;
 
+os_oid_t os_link_add(os_oid_t oid)
+{
+	{
+		os_thread_locker locker(g_os_thread_mutex);
+		os_object_map_t::iterator it;
+		if (g_os_object_map.count(oid) == 0)
+			return 0;
+		g_os_object_map[oid].m_link_count++;
+		return oid;
+	}
+}
+
 os_oid_t os_new_int64(::int64_t value)
 {
 	{
@@ -303,7 +315,7 @@ void os_gc()
 				v_removed.push_back(v_oid);
 			}
 		}
-		for (size_t i=0; i<v_removed.size(); i++)
+		for (size_t i = 0; i < v_removed.size(); i++)
 		{
 			g_os_object_map.erase(v_removed[i]);
 		}
@@ -490,6 +502,7 @@ int main()
 	v_args[2] = os_new_int64(222);
 	os_oid_t v_status = cos_add2(2, &v_args[0]);
 	::int32_t answer = os_get_int32(v_args[0]);
+	os_link_add(v_args[0]);
 	os_dbg("answer=%d", answer);
 
 	os_dump_object_heap();
