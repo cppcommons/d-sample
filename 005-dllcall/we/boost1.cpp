@@ -18,6 +18,8 @@ using namespace std;
 
 #include <tlhelp32.h> // CreateToolhelp32Snapshot()
 
+#define OS_UINT32_MAX 4294967295
+
 stlsoft::winstl_project::thread_mutex g_os_thread_mutex;
 
 struct os_struct
@@ -180,7 +182,8 @@ bool os_is_thread_alive(DWORD thread_dword)
 
 typedef ::int64_t os_oid_t;
 //os_oid_t g_max_oid = 0;
-os_oid_t g_max_oid = 100000;
+//os_oid_t g_max_oid = 100000;
+os_oid_t g_max_oid = OS_UINT32_MAX;
 
 os_oid_t os_get_next_oid()
 {
@@ -273,6 +276,12 @@ void os_oid_unlink(os_oid_t oid)
 
 os_oid_t os_new_int64(::int64_t value)
 {
+#if 0x0
+	if (value <= 0xffffffff)
+	{
+		return (os_oid_t)value;
+	}
+#endif
 	{
 		os_thread_locker locker(g_os_thread_mutex);
 		os_register_curr_thread();
@@ -287,6 +296,10 @@ os_oid_t os_new_int64(::int64_t value)
 
 ::int32_t os_get_int32(os_oid_t oid)
 {
+	if (oid <= 0xffffffff)
+	{
+		return (::int32_t)oid;
+	}
 	{
 		os_thread_locker locker(g_os_thread_mutex);
 		if (g_os_object_map.count(oid) == 0)
@@ -453,33 +466,10 @@ int main()
 {
 	os_function_t v_func = cos_add2;
 	os_function_t v_func2 = C_Class1::cos_add2;
-	
-	//os_thread_id &tid0 = os_register_curr_thread();
-	//os_dbg("tid0=%s", tid0.c_str());
+
 	os_thread_id tid1 = os_get_thread_id();
 	os_dbg("tid1=%s", tid1.c_str());
 	HANDLE hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Thread, (LPVOID) "カウント数表示：", 0, NULL);
-
-#if 0x0
-	typedef stlsoft::shared_ptr<string> StrPtr;
-	StrPtr s = StrPtr(new string("pen"));
-	vector<StrPtr> v1;
-	// vectorに入れたり。
-	v1.push_back(StrPtr(new string("this")));
-	v1.push_back(StrPtr(new string("is")));
-	v1.push_back(StrPtr(new string("a")));
-	v1.push_back(s);
-
-	os_dbg("%s", (*s).c_str());
-	os_dbg("%s", (*s.get()).c_str());
-	typedef stlsoft::shared_ptr<C_Class1> ClsPtr;
-	ClsPtr c1 = ClsPtr(new C_Class1());
-	ClsPtr c2 = ClsPtr(new C_Class1());
-	/*ClsPtr c3 =*/ClsPtr(new C_Class1());
-	ClsPtr c4 = c1;
-
-	os_dbg("c1.use_count()=%d", c1.use_count());
-#endif
 
 	C_Variant var1 = 123;
 	C_Variant var2 = "abc";
@@ -498,7 +488,9 @@ int main()
 
 	std::vector<os_oid_t> v_args(3);
 	v_args[1] = os_new_int64(111);
-	v_args[2] = os_new_int64(222);
+	//v_args[2] = os_new_int64(222);
+	//v_args[2] = 333;
+	v_args[2] = -12;
 	//os_oid_t v_answer = cos_add2(2, &v_args[0]);
 	os_oid_t v_answer = v_func2(2, &v_args[0]);
 	::int32_t v_answer32 = os_get_int32(v_answer);
