@@ -126,16 +126,18 @@ os_thread_id os_get_thread_id()
 
 struct os_object_entry_t
 {
+	os_thread_id m_thread_id;
 	::int64_t m_link_count;
 	::int64_t m_value;
-	explicit os_object_entry_t() : m_link_count(0), m_value(0)
+	explicit os_object_entry_t(os_thread_id thread_id)
+		: m_thread_id(thread_id), m_link_count(0), m_value(0)
 	{
-		os_dbg(R"(\m_link_count\=%ld)", m_link_count);
+		os_dbg(R"(os_object_entry_t: \%s, m_link_count\=%ld)", m_thread_id.c_str(), m_link_count);
 	}
 };
 
-os_object_entry_t X1;
-os_object_entry_t X2;
+os_object_entry_t X1(os_get_thread_id());
+os_object_entry_t X2(os_get_thread_id());
 
 typedef std::map<std::string, void *> func_map_t;
 typedef stlsoft::shared_ptr<func_map_t> func_map_ptr_t;
