@@ -195,8 +195,6 @@ static os_oid_t os_get_next_oid()
 		os_thread_locker locker(g_os_thread_mutex);
 		g_last_oid++;
 		return g_last_oid;
-		//g_min_oid--;
-		//return g_min_oid;
 	}
 }
 
@@ -209,7 +207,8 @@ struct os_object_entry_t : public os_struct
 		CLASS,
 		INTEGER,
 		REAL,
-		STRING
+		STRING,
+		TYPE
 	};
 	os_thread_id m_thread_id;
 	os_integer_t m_link_count;
@@ -293,12 +292,6 @@ extern os_oid_t os_new_integer(os_integer_t value)
 
 static os_object_entry_t *os_find_entry(os_oid_t oid)
 {
-	/*
-	if (oid >= g_os_direct_value_min)
-	{
-		return nullptr;
-	}
-	*/
 	{
 		os_thread_locker locker(g_os_thread_mutex);
 		if (g_os_object_map.count(oid) == 0)
@@ -385,7 +378,7 @@ typedef os_oid_t (*os_function_t)(int argc, os_oid_t args[]);
 static os_oid_t cos_add2(int argc, os_oid_t args[])
 {
 	if (argc < 0)
-		return 2;
+		return os_new_integer(2);
 	os_integer_t a = os_get_integer(args[1]);
 	os_integer_t b = os_get_integer(args[2]);
 	return os_new_integer(a + b);
@@ -408,7 +401,7 @@ struct C_Class1
 	static os_oid_t cos_add2(int argc, os_oid_t args[])
 	{
 		if (argc < 0)
-			return 2;
+			return os_new_integer(2);
 		int a = (int)os_get_integer(args[1]);
 		int b = (int)os_get_integer(args[2]);
 		os_set_integer(args[1], a * 10);
@@ -490,8 +483,6 @@ int main()
 	v_args[1] = os_new_integer(111);
 	v_args[2] = os_new_integer(222);
 	os_dump_object_heap();
-	//v_args[2] = 333;
-	//v_args[2] = -12;
 	//os_oid_t v_answer = cos_add2(2, &v_args[0]);
 	os_oid_t v_answer = v_func2(2, &v_args[0]);
 	os_integer_t v_answer32 = os_get_integer(v_answer);
