@@ -18,8 +18,8 @@ using namespace std;
 
 #include <tlhelp32.h> // CreateToolhelp32Snapshot()
 
-#define OS_UINT32_MAX 4294967295
-#define OS_INT32_MIN (-2147483647L - 1)
+//#define OS_UINT32_MAX 4294967295
+//#define OS_INT32_MIN (-2147483647L - 1)
 
 stlsoft::winstl_project::thread_mutex g_os_thread_mutex;
 
@@ -182,12 +182,7 @@ bool os_is_thread_alive(DWORD thread_dword)
 }
 
 typedef ::int64_t os_oid_t;
-//os_oid_t g_max_oid = 0;
-//os_oid_t g_max_oid = 100000;
-//os_oid_t g_max_oid = OS_UINT32_MAX;
-//os_oid_t g_min_oid = (-OS_UINT32_MAX - 1);
-//os_oid_t g_min_oid = (-OS_UINT32_MAX - 1);
-//os_oid_t g_os_direct_oid_range = 0xffffffffff;
+
 os_oid_t g_os_direct_value_range = 0x7fffffff;
 os_oid_t g_os_direct_value_min = (-g_os_direct_value_range - 1);
 os_oid_t g_min_oid = g_os_direct_value_min;
@@ -283,14 +278,12 @@ void os_oid_unlink(os_oid_t oid)
 	}
 }
 
-os_oid_t os_new_int64(::int64_t value)
+os_oid_t os_new_int64(::int64_t value, bool prefer_direct = false)
 {
-#if 0x0
-	if (value >= g_os_direct_value_min)
+	if (prefer_direct && value >= g_os_direct_value_min)
 	{
 		return (os_oid_t)value;
 	}
-#endif
 	{
 		os_thread_locker locker(g_os_thread_mutex);
 		os_register_curr_thread();
@@ -395,7 +388,7 @@ os_oid_t cos_add2(int argc, os_oid_t args[])
 	*/
 	::int32_t a = os_get_int32(args[1]);
 	::int32_t b = os_get_int32(args[2]);
-	return os_new_int64(a + b);
+	return os_new_int64(a + b, true);
 }
 
 struct C_Class1
@@ -416,7 +409,7 @@ struct C_Class1
 	{
 		::int32_t a = os_get_int32(args[1]);
 		::int32_t b = os_get_int32(args[2]);
-		return os_new_int64(a + b);
+		return os_new_int64(a + b, true);
 	}
 };
 
