@@ -176,7 +176,6 @@ os_object_entry_t X2(os_get_thread_id());
 
 typedef ::int64_t os_oid_t;
 
-/*
 typedef std::map<os_oid_t, os_object_entry_t> os_object_map_t;
 os_object_map_t g_os_object_map;
 
@@ -197,7 +196,6 @@ void dummy()
 		os_dbg("key = %ld : data = %s", map_ite->first, map_ite->second.c_str());
 	}
 }
-*/
 
 typedef std::map<std::string, void *> func_map_t;
 typedef stlsoft::shared_ptr<func_map_t> func_map_ptr_t;
