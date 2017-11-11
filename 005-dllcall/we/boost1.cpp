@@ -199,6 +199,7 @@ struct os_object_entry_t : public os_struct
 		INTEGER,
 		REAL,
 		STRING,
+		TYPE,
 		NIL
 	};
 	os_thread_id m_thread_id;
