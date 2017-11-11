@@ -420,6 +420,8 @@ struct C_Class1
 			return 2;
 		::int32_t a = os_get_int32(args[1]);
 		::int32_t b = os_get_int32(args[2]);
+		os_set_int32(args[1], a * 10);
+		os_set_int32(args[2], b * 10);
 		return os_new_int64(a + b, true);
 	}
 };
@@ -503,6 +505,8 @@ int main()
 	::int32_t v_answer32 = os_get_int32(v_answer);
 	os_oid_link(v_answer);
 	os_dbg("answer=%d", v_answer32);
+	os_dbg("v_args[1]=%d", os_get_int32(v_args[1]));
+	os_dbg("v_args[2]=%d", os_get_int32(v_args[2]));
 
 	os_dump_object_heap();
 	os_dbg("before gc");
