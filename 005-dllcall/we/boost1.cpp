@@ -19,9 +19,9 @@ using namespace std;
 #include <tlhelp32.h> // CreateToolhelp32Snapshot()
 
 #ifdef __GNUC__
-#define TLS_VARIABLE_DECL __thread
+#define THREAD_LOCAL __thread
 #else
-#define TLS_VARIABLE_DECL __declspec(thread)
+#define THREAD_LOCAL __declspec(thread)
 #endif
 
 //#define OS_UINT32_MAX 4294967295
@@ -122,7 +122,7 @@ os_thread_map_t g_os_thread_map;
 
 os_thread_id os_get_thread_id()
 {
-	static TLS_VARIABLE_DECL ::int64_t curr_thread_no = -1;
+	static THREAD_LOCAL ::int64_t curr_thread_no = -1;
 	static ::int64_t v_thread_id_max = 0;
 	static stlsoft::winstl_project::thread_mutex v_mutex;
 	{
