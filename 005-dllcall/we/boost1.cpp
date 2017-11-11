@@ -205,8 +205,8 @@ struct os_object_entry_t : public os_struct
 		NIL,
 		ADDRESS,
 		BYTES,
-		CLASS,
 		INTEGER,
+		OBJECT,
 		REAL,
 		STRING,
 		VECTOR
