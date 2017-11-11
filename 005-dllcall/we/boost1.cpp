@@ -42,9 +42,12 @@ struct os_thread_locker
 
 static int os_write_consoleA(HANDLE hconsole, const char *format, va_list args)
 {
-	char v_buffer[1024 + 1];
-	v_buffer[1024] = 0;
-	int len = wvsprintfA((LPSTR)v_buffer, format, args); // Win32 API
+	const int BUFF_LEN = 10240;
+	static char v_buffer[BUFF_LEN + 1];
+	v_buffer[BUFF_LEN] = 0;
+	//int len = wvsprintfA((LPSTR)v_buffer, format, args); // Win32 API
+	int len = vsnprintf (v_buffer, BUFF_LEN, format, args); // Win32 API
+	
 	for (int i = 0; i < len; i++)
 	{
 		if (v_buffer[i] == 0)
@@ -173,7 +176,7 @@ struct os_object_entry_t : public os_struct
 		//: m_thread_id(thread_id), m_link_count(0), m_value(0)
 	{
 		_init(thread_id, 0, 0);
-		//os_dbg(R"(os_object_entry_t: \%s, m_link_count\=%ld)", m_thread_id.c_str(), m_link_count);
+		//os_dbg(R"(os_object_entry_t: \%s, m_link_count\=%lld)", m_thread_id.c_str(), m_link_count);
 		os_dbg("%s", c_str());
 	}*/
 	const char *c_str()
@@ -211,8 +214,9 @@ void dummy()
 	os_object_map_t::iterator map_ite;
 	for (map_ite = g_os_object_map.begin(); map_ite != g_os_object_map.end(); map_ite++)
 	{
-		os_dbg("key = %ld : data = %s", map_ite->first, map_ite->second.c_str());
-		os_dbg("m_value=%ld", map_ite->second.m_value);
+		os_dbg("key = %lld : data = [%s]", map_ite->first, map_ite->second.c_str());
+		//os_dbg("key = %lld : data = [0x%08x]", map_ite->first, map_ite->second.c_str());
+		os_dbg("m_value=%lld", map_ite->second.m_value);
 		os_dbg("c_str()=%s", map_ite->second.c_str());
 	}
 }
