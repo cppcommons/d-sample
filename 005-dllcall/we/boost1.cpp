@@ -153,28 +153,34 @@ struct os_object_entry_t : public os_struct
 	os_thread_id m_thread_id;
 	::int64_t m_link_count;
 	::int64_t m_value;
-	explicit os_object_entry_t(): m_link_count(0), m_value(0)
+	void _init(os_thread_id &thread_id, ::int64_t link_count, ::int64_t value)
 	{
+		m_thread_id = thread_id;
+		m_link_count = link_count;
+		m_value = value;
 	}
-	explicit os_object_entry_t(os_thread_id thread_id)
-		: m_thread_id(thread_id), m_link_count(0), m_value(0)
+	explicit os_object_entry_t()//: m_link_count(0), m_value(0)
 	{
-		os_dbg(R"(os_object_entry_t: \%s, m_link_count\=%ld)", m_thread_id.c_str(), m_link_count);
+		_init(os_get_thread_id(), 0, 0);
+	}
+	explicit os_object_entry_t(::int64_t value)
+	{
+		_init(os_get_thread_id(), 0, value);
+		os_dbg("%s", c_str());
 	}
 	/*
-	os_object_entry_t &operator=(const os_object_entry_t &o)
+	explicit os_object_entry_t(os_thread_id thread_id)
+		//: m_thread_id(thread_id), m_link_count(0), m_value(0)
 	{
-		m_thread_id = o.m_thread_id;
-		m_link_count = 0;
-		m_value = o.m_value;
-		return (*this);
-	}
-	*/
+		_init(thread_id, 0, 0);
+		//os_dbg(R"(os_object_entry_t: \%s, m_link_count\=%ld)", m_thread_id.c_str(), m_link_count);
+		os_dbg("%s", c_str());
+	}*/
 	const char *c_str()
 	{
 		std::string v_thread_id = m_thread_id.c_str();
 		std::stringstream v_stream;
-		v_stream << "{ " << v_thread_id
+		v_stream << "os_object_entry_t { " << v_thread_id
 				 << " "
 				 << m_value
 				 << " }";
@@ -183,8 +189,8 @@ struct os_object_entry_t : public os_struct
 	}
 };
 
-os_object_entry_t X1(os_get_thread_id());
-os_object_entry_t X2(os_get_thread_id());
+os_object_entry_t X1(111);
+os_object_entry_t X2(222);
 
 typedef ::int64_t os_oid_t;
 
@@ -197,8 +203,8 @@ void dummy()
 	for (int i = 0; i < 5; i++)
 	{
 		os_oid_t key = i + 1;
-		os_object_entry_t myentry(os_get_thread_id());
-		myentry.m_value = (i + 1) * 10;
+		os_object_entry_t myentry((i+1)*10);
+		//myentry.m_value = (i + 1) * 10;
 		g_os_object_map[key] = myentry;
 	}
 	#endif
@@ -206,6 +212,8 @@ void dummy()
 	for (map_ite = g_os_object_map.begin(); map_ite != g_os_object_map.end(); map_ite++)
 	{
 		os_dbg("key = %ld : data = %s", map_ite->first, map_ite->second.c_str());
+		os_dbg("m_value=%ld", map_ite->second.m_value);
+		os_dbg("c_str()=%s", map_ite->second.c_str());
 	}
 }
 
