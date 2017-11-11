@@ -242,17 +242,29 @@ os_oid_t os_new_int64(::int64_t value)
 	}
 }
 
+void os_dump_object_heap()
+{
+	{
+		os_thread_locker locker(g_os_thread_mutex);
+		os_object_map_t::iterator it;
+		for (it = g_os_object_map.begin(); it != g_os_object_map.end(); it++)
+		{
+			os_oid_t v_oid = it->first;
+			os_object_entry_t &v_entry = it->second;
+			os_dbg("[DUMP] oid = %lld : data = %s", v_oid, v_entry.c_str());
+		}
+	}
+}
+
 void dummy()
 {
 #if 0x1
 	for (int i = 0; i < 5; i++)
 	{
-		/*os_oid_t*/ os_new_int64(i);
-		//os_oid_t key = os_get_next_oid();
-		//os_object_entry_t myentry((i + 1) * 10);
-		//g_os_object_map[key] = myentry;
+		os_new_int64((i + 1) * 10);
 	}
 #endif
+#if 0x0
 	os_object_map_t::iterator map_ite;
 	for (map_ite = g_os_object_map.begin(); map_ite != g_os_object_map.end(); map_ite++)
 	{
@@ -261,6 +273,7 @@ void dummy()
 		os_dbg("m_value=%lld", map_ite->second.m_value);
 		os_dbg("c_str()=%s", map_ite->second.c_str());
 	}
+#endif
 }
 
 typedef std::map<std::string, void *> func_map_t;
@@ -412,6 +425,6 @@ int main()
 				   v_thread_dword, v_thread_id.c_str(), os_is_thread_alive(v_thread_dword));
 		}
 	}
-
+	os_dump_object_heap();
 	return 0;
 } // ここで全てdeleteされる。
