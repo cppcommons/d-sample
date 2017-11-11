@@ -17,9 +17,15 @@ using namespace std;
 #define _MT
 #include <process.h>
 
-#define DBG(format, ...) os_printf("[DEBUG] " format "\n", ##__VA_ARGS__)
+//#define DBG(format, ...) os_printf("[DEBUG] " format "\n", ##__VA_ARGS__)
 
 stlsoft::winstl_project::thread_mutex g_os_thread_mutex;
+
+///*TLS_VARIABLE_DECL*/ std::string debug_output_string;
+struct os_struct
+{
+	std::string m_debug_output_string;
+};
 
 struct os_thread_locker
 {
@@ -81,7 +87,7 @@ int os_dbg(const char *format, ...)
 	}
 }
 
-struct os_thread_id
+struct os_thread_id : public os_struct
 {
 	DWORD id;
 	::int64_t no;
@@ -96,12 +102,12 @@ struct os_thread_id
 				 << std::uppercase
 				 << id
 				 << "]";
-		m_output_str = v_stream.str();
-		return m_output_str.c_str();
+		m_debug_output_string = v_stream.str();
+		return m_debug_output_string.c_str();
 	}
 
-  private:
-	std::string m_output_str;
+//  private:
+//	std::string m_output_str;
 };
 
 std::vector<os_thread_id> g_os_thread_list;
@@ -142,7 +148,7 @@ os_thread_id &os_register_curr_thread()
 	}
 }
 
-struct os_object_entry_t
+struct os_object_entry_t : public os_struct
 {
 	os_thread_id m_thread_id;
 	::int64_t m_link_count;
@@ -152,10 +158,46 @@ struct os_object_entry_t
 	{
 		os_dbg(R"(os_object_entry_t: \%s, m_link_count\=%ld)", m_thread_id.c_str(), m_link_count);
 	}
+	const char *c_str()
+	{
+		std::string v_thread_id = m_thread_id.c_str();
+		std::stringstream v_stream;
+		v_stream << "{ " << v_thread_id
+				 << " "
+				 << m_value
+				 << " }";
+		m_debug_output_string = v_stream.str();
+		return m_debug_output_string.c_str();
+	}
 };
 
 os_object_entry_t X1(os_get_thread_id());
 os_object_entry_t X2(os_get_thread_id());
+
+typedef ::int64_t os_oid_t;
+
+/*
+typedef std::map<os_oid_t, os_object_entry_t> os_object_map_t;
+os_object_map_t g_os_object_map;
+
+void dummy()
+{
+	#if 0x0
+	for (int i = 0; i < 5; i++)
+	{
+		os_oid_t key = i + 1;
+		os_object_entry_t entry(os_get_thread_id());
+		entry.m_value = (i + 1) * 10;
+		g_os_object_map[key] = entry;
+	}
+	#endif
+	os_object_map_t::iterator map_ite;
+	for (map_ite = g_os_object_map.begin(); map_ite != g_os_object_map.end(); map_ite++)
+	{
+		os_dbg("key = %ld : data = %s", map_ite->first, map_ite->second.c_str());
+	}
+}
+*/
 
 typedef std::map<std::string, void *> func_map_t;
 typedef stlsoft::shared_ptr<func_map_t> func_map_ptr_t;
@@ -257,7 +299,7 @@ int main()
 	os_dbg("tid1=%s", tid1.c_str());
 	HANDLE hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Thread, (LPVOID) "カウント数表示：", 0, NULL);
 
-	#if 0x1
+#if 0x1
 	typedef stlsoft::shared_ptr<string> StrPtr;
 	StrPtr s = StrPtr(new string("pen"));
 	vector<StrPtr> v1;
@@ -283,6 +325,8 @@ int main()
 	var1 = "xyz";
 
 	WaitForSingleObject(hThread, INFINITE);
+
+	//dummy();
 
 	return 0;
 } // ここで全てdeleteされる。
