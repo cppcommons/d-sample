@@ -213,6 +213,7 @@ struct os_object_entry_t : public os_struct
 	enum value_type_t
 	{
 		ADDRESS,
+		BYTES,
 		CLASS,
 		INTEGER,
 		REAL,
