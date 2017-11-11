@@ -11,17 +11,15 @@ using namespace std;
 
 #include <winstl/synch/thread_mutex.hpp>
 #include <stlsoft/smartptr/shared_ptr.hpp>
-//using namespace stlsoft::winstl_project;
 
 #include <windows.h>
 #define _MT
 #include <process.h>
 
-//#define DBG(format, ...) os_printf("[DEBUG] " format "\n", ##__VA_ARGS__)
+#include <tlhelp32.h> // CreateToolhelp32Snapshot()
 
 stlsoft::winstl_project::thread_mutex g_os_thread_mutex;
 
-///*TLS_VARIABLE_DECL*/ std::string debug_output_string;
 struct os_struct
 {
 	std::string m_debug_output_string;
@@ -46,8 +44,8 @@ static int os_write_consoleA(HANDLE hconsole, const char *format, va_list args)
 	static char v_buffer[BUFF_LEN + 1];
 	v_buffer[BUFF_LEN] = 0;
 	//int len = wvsprintfA((LPSTR)v_buffer, format, args); // Win32 API
-	int len = vsnprintf (v_buffer, BUFF_LEN, format, args); // Win32 API
-	
+	int len = vsnprintf(v_buffer, BUFF_LEN, format, args); // Win32 API
+
 	for (int i = 0; i < len; i++)
 	{
 		if (v_buffer[i] == 0)
@@ -102,21 +100,18 @@ struct os_thread_id : public os_struct
 				 << std::setw(8)
 				 << std::setfill('0')
 				 << std::hex
-				 << std::uppercase
+				 //<< std::uppercase
 				 << id
 				 << "]";
 		m_debug_output_string = v_stream.str();
 		return m_debug_output_string.c_str();
 	}
-
-//  private:
-//	std::string m_output_str;
 };
 
-std::vector<os_thread_id> g_os_thread_list;
-std::map<DWORD, os_thread_id> g_os_thread_map;
+////std::vector<os_thread_id> g_os_thread_list;
+typedef std::map<DWORD, os_thread_id> os_thread_map_t;
+os_thread_map_t g_os_thread_map;
 
-//::int64_t os_get_thread_id()
 os_thread_id os_get_thread_id()
 {
 	static TLS_VARIABLE_DECL ::int64_t curr_thread_no = -1;
@@ -162,7 +157,7 @@ struct os_object_entry_t : public os_struct
 		m_link_count = link_count;
 		m_value = value;
 	}
-	explicit os_object_entry_t()//: m_link_count(0), m_value(0)
+	explicit os_object_entry_t() //: m_link_count(0), m_value(0)
 	{
 		_init(os_get_thread_id(), 0, 0);
 	}
@@ -171,14 +166,6 @@ struct os_object_entry_t : public os_struct
 		_init(os_get_thread_id(), 0, value);
 		os_dbg("%s", c_str());
 	}
-	/*
-	explicit os_object_entry_t(os_thread_id thread_id)
-		//: m_thread_id(thread_id), m_link_count(0), m_value(0)
-	{
-		_init(thread_id, 0, 0);
-		//os_dbg(R"(os_object_entry_t: \%s, m_link_count\=%lld)", m_thread_id.c_str(), m_link_count);
-		os_dbg("%s", c_str());
-	}*/
 	const char *c_str()
 	{
 		std::string v_thread_id = m_thread_id.c_str();
@@ -202,15 +189,15 @@ os_object_map_t g_os_object_map;
 
 void dummy()
 {
-	#if 0x1
+#if 0x1
 	for (int i = 0; i < 5; i++)
 	{
 		os_oid_t key = i + 1;
-		os_object_entry_t myentry((i+1)*10);
+		os_object_entry_t myentry((i + 1) * 10);
 		//myentry.m_value = (i + 1) * 10;
 		g_os_object_map[key] = myentry;
 	}
-	#endif
+#endif
 	os_object_map_t::iterator map_ite;
 	for (map_ite = g_os_object_map.begin(); map_ite != g_os_object_map.end(); map_ite++)
 	{
@@ -346,9 +333,49 @@ int main()
 	C_Variant var2 = "abc";
 	var1 = "xyz";
 
-	WaitForSingleObject(hThread, INFINITE);
 
 	dummy();
+
+	//os_thread_map_t	g_os_thread_map;
+	os_thread_map_t::iterator it;
+	for (it = g_os_thread_map.begin(); it != g_os_thread_map.end(); it++)
+	{
+		DWORD v_thread_dword = it->first;
+		os_thread_id &v_thread_id = it->second;
+		os_dbg("v_thread_dword=0x%08x v_thread_id.c_str()=%s", v_thread_dword, v_thread_id.c_str());
+	}
+	//GetExitCodeThread は、渡された DWORD 型のアドレスで STILL_ACTIVE
+	DWORD v_curr_proc_id = GetCurrentProcessId();
+	HANDLE hSnapshot;
+	THREADENTRY32 entry;
+
+	hSnapshot = CreateToolhelp32Snapshot(
+		TH32CS_SNAPTHREAD,
+		0 //Ignored
+	);
+
+	if (hSnapshot == INVALID_HANDLE_VALUE)
+	{
+		return 1;
+	}
+
+	entry.dwSize = sizeof(THREADENTRY32);
+
+	if (!Thread32First(hSnapshot, &entry))
+	{
+		goto Exit;
+	}
+
+	do
+	{
+		if (entry.th32OwnerProcessID == v_curr_proc_id)
+			printf("ProcessID=%lu ThreadID = 0x%08x\n", entry.th32OwnerProcessID, entry.th32ThreadID);
+	} while (Thread32Next(hSnapshot, &entry));
+
+Exit:
+	CloseHandle(hSnapshot);
+
+	WaitForSingleObject(hThread, INFINITE);
 
 	return 0;
 } // ここで全てdeleteされる。
