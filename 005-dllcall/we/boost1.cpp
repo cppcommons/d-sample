@@ -23,6 +23,10 @@ using namespace std;
 #define THREAD_LOCAL __declspec(thread)
 #endif
 
+typedef ::int64_t os_integer_t;
+
+typedef os_integer_t os_oid_t;
+
 static stlsoft::winstl_project::thread_mutex g_os_thread_mutex;
 
 struct os_struct
@@ -76,8 +80,6 @@ static int os_printf(const char *format, ...)
 		return len;
 	}
 }
-
-typedef ::int64_t os_integer_t;
 
 static int os_dbg(const char *format, ...)
 {
@@ -185,14 +187,11 @@ static bool os_is_thread_alive(DWORD thread_dword)
 	return true;
 }
 
-typedef os_integer_t os_oid_t;
-
-static os_oid_t g_last_oid = 100000;
-
 static os_oid_t os_get_next_oid()
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
+		static os_oid_t g_last_oid = 100000;
 		g_last_oid++;
 		return g_last_oid;
 	}
