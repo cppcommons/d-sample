@@ -277,14 +277,8 @@ extern void os_oid_unlink(os_oid_t oid)
 	}
 }
 
-extern os_oid_t os_new_int64(os_integer_t value)
+extern os_oid_t os_new_integer(os_integer_t value)
 {
-	/*
-	if (prefer_direct && value >= g_os_direct_value_min)
-	{
-		return (os_oid_t)value;
-	}
-	*/
 	{
 		os_thread_locker locker(g_os_thread_mutex);
 		os_register_curr_thread();
@@ -394,7 +388,7 @@ static os_oid_t cos_add2(int argc, os_oid_t args[])
 		return 2;
 	os_integer_t a = os_get_integer(args[1]);
 	os_integer_t b = os_get_integer(args[2]);
-	return os_new_int64(a + b);
+	return os_new_integer(a + b);
 }
 
 struct C_Class1
@@ -419,7 +413,7 @@ struct C_Class1
 		int b = (int)os_get_integer(args[2]);
 		os_set_integer(args[1], a * 10);
 		os_set_integer(args[2], b * 10);
-		return os_new_int64(a + b);
+		return os_new_integer(a + b);
 	}
 };
 
@@ -456,7 +450,7 @@ struct C_Variant
 static DWORD WINAPI Thread(LPVOID *data)
 {
 	//os_register_curr_thread();
-	os_new_int64(1234);
+	os_new_integer(1234);
 	os_thread_id tid1 = os_get_thread_id();
 	os_dbg("tid1=%s", tid1.c_str());
 	os_dbg("%s start", (const char *)data);
@@ -493,8 +487,8 @@ int main()
 	}
 
 	std::vector<os_oid_t> v_args(3);
-	v_args[1] = os_new_int64(111);
-	v_args[2] = os_new_int64(222);
+	v_args[1] = os_new_integer(111);
+	v_args[2] = os_new_integer(222);
 	os_dump_object_heap();
 	//v_args[2] = 333;
 	//v_args[2] = -12;
