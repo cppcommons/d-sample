@@ -189,19 +189,22 @@ bool os_is_thread_alive(DWORD thread_dword)
 
 typedef ::int64_t os_oid_t;
 
+#if 0x0
 //os_oid_t g_os_direct_value_range = 0x7fffffff;
 os_oid_t g_os_direct_value_range = 0xffffffff;
 os_oid_t g_os_direct_value_min = (-g_os_direct_value_range - 1);
 os_oid_t g_min_oid = g_os_direct_value_min;
+#endif
+os_oid_t g_max_oid = 100000;
 
 os_oid_t os_get_next_oid()
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
-		//g_max_oid++;
-		//return g_max_oid;
-		g_min_oid--;
-		return g_min_oid;
+		g_max_oid++;
+		return g_max_oid;
+		//g_min_oid--;
+		//return g_min_oid;
 	}
 }
 
@@ -282,12 +285,15 @@ void os_oid_unlink(os_oid_t oid)
 	}
 }
 
-os_oid_t os_new_int64(::int64_t value, bool prefer_direct = false)
+//os_oid_t os_new_int64(::int64_t value, bool prefer_direct = false)
+os_oid_t os_new_int64(::int64_t value)
 {
+	/*
 	if (prefer_direct && value >= g_os_direct_value_min)
 	{
 		return (os_oid_t)value;
 	}
+	*/
 	{
 		os_thread_locker locker(g_os_thread_mutex);
 		os_register_curr_thread();
@@ -302,10 +308,12 @@ os_oid_t os_new_int64(::int64_t value, bool prefer_direct = false)
 
 os_object_entry_t *os_find_entry(os_oid_t oid)
 {
+	/*
 	if (oid >= g_os_direct_value_min)
 	{
 		return nullptr;
 	}
+	*/
 	{
 		os_thread_locker locker(g_os_thread_mutex);
 		if (g_os_object_map.count(oid) == 0)
@@ -318,19 +326,23 @@ os_object_entry_t *os_find_entry(os_oid_t oid)
 
 ::int32_t os_get_int32(os_oid_t oid)
 {
+	/*
 	if (oid >= g_os_direct_value_min)
 	{
 		return (::int32_t)oid;
 	}
+	*/
 	os_object_entry_t *v_entry = os_find_entry(oid);
-	if (!v_entry) return 0;
+	if (!v_entry)
+		return 0;
 	return (::int32_t)(*v_entry).m_simple.m_integer;
 }
 
 void os_set_int32(os_oid_t oid, ::int32_t value)
 {
 	os_object_entry_t *v_entry = os_find_entry(oid);
-	if (!v_entry) return;
+	if (!v_entry)
+		return;
 	(*v_entry).m_type = os_object_entry_t::value_type_t::INTEGER;
 	(*v_entry).m_simple.m_integer = value;
 }
@@ -344,8 +356,9 @@ void os_dump_object_heap()
 		{
 			os_oid_t v_oid = it->first;
 			os_object_entry_t &v_entry = it->second;
-			::int64_t v_diff = -(v_oid - g_os_direct_value_min);
-			os_dbg("[DUMP] oid = %lld(%lld) : data = %s", v_oid, v_diff, v_entry.c_str());
+			//::int64_t v_diff = -(v_oid - g_os_direct_value_min);
+			//os_dbg("[DUMP] oid = %lld(%lld) : data = %s", v_oid, v_diff, v_entry.c_str());
+			os_dbg("[DUMP] oid = %lld : data = %s", v_oid, v_entry.c_str());
 		}
 	}
 }
@@ -398,7 +411,7 @@ os_oid_t cos_add2(int argc, os_oid_t args[])
 		return 2;
 	::int32_t a = os_get_int32(args[1]);
 	::int32_t b = os_get_int32(args[2]);
-	return os_new_int64(a + b, true);
+	return os_new_int64(a + b);
 }
 
 struct C_Class1
@@ -423,7 +436,7 @@ struct C_Class1
 		::int32_t b = os_get_int32(args[2]);
 		os_set_int32(args[1], a * 10);
 		os_set_int32(args[2], b * 10);
-		return os_new_int64(a + b, true);
+		return os_new_int64(a + b);
 	}
 };
 
@@ -498,9 +511,9 @@ int main()
 
 	std::vector<os_oid_t> v_args(3);
 	v_args[1] = os_new_int64(111);
-	//v_args[2] = os_new_int64(222);
+	v_args[2] = os_new_int64(222);
 	//v_args[2] = 333;
-	v_args[2] = -12;
+	//v_args[2] = -12;
 	//os_oid_t v_answer = cos_add2(2, &v_args[0]);
 	os_oid_t v_answer = v_func2(2, &v_args[0]);
 	::int32_t v_answer32 = os_get_int32(v_answer);
