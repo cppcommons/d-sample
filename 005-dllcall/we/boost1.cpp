@@ -108,7 +108,6 @@ struct os_thread_id : public os_struct
 	}
 };
 
-////std::vector<os_thread_id> g_os_thread_list;
 typedef std::map<DWORD, os_thread_id> os_thread_map_t;
 os_thread_map_t g_os_thread_map;
 
@@ -144,6 +143,40 @@ os_thread_id &os_register_curr_thread()
 		v_old_id.no = v_id.no;
 		return v_old_id;
 	}
+}
+
+std::vector<DWORD> os_get_thread_dword_list()
+{
+	std::vector<DWORD> result;
+	DWORD v_curr_proc_id = GetCurrentProcessId();
+	HANDLE hSnapshot;
+	THREADENTRY32 entry;
+	hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+	if (hSnapshot == INVALID_HANDLE_VALUE)
+	{
+		return result;
+	}
+	entry.dwSize = sizeof(THREADENTRY32);
+	if (!Thread32First(hSnapshot, &entry))
+	{
+		goto Exit;
+	}
+	do
+	{
+		if (entry.th32OwnerProcessID == v_curr_proc_id)
+			result.push_back(entry.th32ThreadID);
+	} while (Thread32Next(hSnapshot, &entry));
+Exit:
+	CloseHandle(hSnapshot);
+	return result;
+}
+
+bool os_is_thread_alive(DWORD thread_dword)
+{
+	std::vector<DWORD> v_list = os_get_thread_dword_list();
+	if (std::count(v_list.begin(), v_list.end(), thread_dword) == 0)
+		return false;
+	return true;
 }
 
 struct os_object_entry_t : public os_struct
@@ -333,49 +366,30 @@ int main()
 	C_Variant var2 = "abc";
 	var1 = "xyz";
 
-
 	dummy();
 
 	//os_thread_map_t	g_os_thread_map;
-	os_thread_map_t::iterator it;
-	for (it = g_os_thread_map.begin(); it != g_os_thread_map.end(); it++)
 	{
-		DWORD v_thread_dword = it->first;
-		os_thread_id &v_thread_id = it->second;
-		os_dbg("v_thread_dword=0x%08x v_thread_id.c_str()=%s", v_thread_dword, v_thread_id.c_str());
+		os_thread_map_t::iterator it;
+		for (it = g_os_thread_map.begin(); it != g_os_thread_map.end(); it++)
+		{
+			DWORD v_thread_dword = it->first;
+			os_thread_id &v_thread_id = it->second;
+			os_dbg("v_thread_dword=0x%08x v_thread_id.c_str()=%s ALIVE=%d",
+				   v_thread_dword, v_thread_id.c_str(), os_is_thread_alive(v_thread_dword));
+		}
 	}
-	//GetExitCodeThread は、渡された DWORD 型のアドレスで STILL_ACTIVE
-	DWORD v_curr_proc_id = GetCurrentProcessId();
-	HANDLE hSnapshot;
-	THREADENTRY32 entry;
-
-	hSnapshot = CreateToolhelp32Snapshot(
-		TH32CS_SNAPTHREAD,
-		0 //Ignored
-	);
-
-	if (hSnapshot == INVALID_HANDLE_VALUE)
-	{
-		return 1;
-	}
-
-	entry.dwSize = sizeof(THREADENTRY32);
-
-	if (!Thread32First(hSnapshot, &entry))
-	{
-		goto Exit;
-	}
-
-	do
-	{
-		if (entry.th32OwnerProcessID == v_curr_proc_id)
-			printf("ProcessID=%lu ThreadID = 0x%08x\n", entry.th32OwnerProcessID, entry.th32ThreadID);
-	} while (Thread32Next(hSnapshot, &entry));
-
-Exit:
-	CloseHandle(hSnapshot);
-
 	WaitForSingleObject(hThread, INFINITE);
+	{
+		os_thread_map_t::iterator it;
+		for (it = g_os_thread_map.begin(); it != g_os_thread_map.end(); it++)
+		{
+			DWORD v_thread_dword = it->first;
+			os_thread_id &v_thread_id = it->second;
+			os_dbg("v_thread_dword=0x%08x v_thread_id.c_str()=%s ALIVE=%d",
+				   v_thread_dword, v_thread_id.c_str(), os_is_thread_alive(v_thread_dword));
+		}
+	}
 
 	return 0;
 } // ここで全てdeleteされる。
