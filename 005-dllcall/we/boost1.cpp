@@ -153,11 +153,23 @@ struct os_object_entry_t : public os_struct
 	os_thread_id m_thread_id;
 	::int64_t m_link_count;
 	::int64_t m_value;
+	explicit os_object_entry_t(): m_link_count(0), m_value(0)
+	{
+	}
 	explicit os_object_entry_t(os_thread_id thread_id)
 		: m_thread_id(thread_id), m_link_count(0), m_value(0)
 	{
 		os_dbg(R"(os_object_entry_t: \%s, m_link_count\=%ld)", m_thread_id.c_str(), m_link_count);
 	}
+	/*
+	os_object_entry_t &operator=(const os_object_entry_t &o)
+	{
+		m_thread_id = o.m_thread_id;
+		m_link_count = 0;
+		m_value = o.m_value;
+		return (*this);
+	}
+	*/
 	const char *c_str()
 	{
 		std::string v_thread_id = m_thread_id.c_str();
@@ -181,13 +193,13 @@ os_object_map_t g_os_object_map;
 
 void dummy()
 {
-	#if 0x0
+	#if 0x1
 	for (int i = 0; i < 5; i++)
 	{
 		os_oid_t key = i + 1;
-		os_object_entry_t entry(os_get_thread_id());
-		entry.m_value = (i + 1) * 10;
-		g_os_object_map[key] = entry;
+		os_object_entry_t myentry(os_get_thread_id());
+		myentry.m_value = (i + 1) * 10;
+		g_os_object_map[key] = myentry;
 	}
 	#endif
 	os_object_map_t::iterator map_ite;
@@ -324,7 +336,7 @@ int main()
 
 	WaitForSingleObject(hThread, INFINITE);
 
-	//dummy();
+	dummy();
 
 	return 0;
 } // ここで全てdeleteされる。
