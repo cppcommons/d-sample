@@ -189,7 +189,8 @@ bool os_is_thread_alive(DWORD thread_dword)
 
 typedef ::int64_t os_oid_t;
 
-os_oid_t g_os_direct_value_range = 0x7fffffff;
+//os_oid_t g_os_direct_value_range = 0x7fffffff;
+os_oid_t g_os_direct_value_range = 0xffffffff;
 os_oid_t g_os_direct_value_min = (-g_os_direct_value_range - 1);
 os_oid_t g_min_oid = g_os_direct_value_min;
 
@@ -255,9 +256,6 @@ struct os_object_entry_t : public os_struct
 	}
 };
 
-//os_object_entry_t X1(111);
-//os_object_entry_t X2(222);
-
 typedef std::map<os_oid_t, os_object_entry_t> os_object_map_t;
 os_object_map_t g_os_object_map;
 
@@ -302,21 +300,39 @@ os_oid_t os_new_int64(::int64_t value, bool prefer_direct = false)
 	}
 }
 
+os_object_entry_t *os_find_entry(os_oid_t oid)
+{
+	if (oid >= g_os_direct_value_min)
+	{
+		return nullptr;
+	}
+	{
+		os_thread_locker locker(g_os_thread_mutex);
+		if (g_os_object_map.count(oid) == 0)
+		{
+			return nullptr;
+		}
+		return &g_os_object_map[oid];
+	}
+}
+
 ::int32_t os_get_int32(os_oid_t oid)
 {
 	if (oid >= g_os_direct_value_min)
 	{
 		return (::int32_t)oid;
 	}
-	{
-		os_thread_locker locker(g_os_thread_mutex);
-		if (g_os_object_map.count(oid) == 0)
-		{
-			return 0;
-		}
-		::int32_t result = (::int32_t)g_os_object_map[oid].m_simple.m_integer;
-		return result;
-	}
+	os_object_entry_t *v_entry = os_find_entry(oid);
+	if (!v_entry) return 0;
+	return (::int32_t)(*v_entry).m_simple.m_integer;
+}
+
+void os_set_int32(os_oid_t oid, ::int32_t value)
+{
+	os_object_entry_t *v_entry = os_find_entry(oid);
+	if (!v_entry) return;
+	(*v_entry).m_type = os_object_entry_t::value_type_t::INTEGER;
+	(*v_entry).m_simple.m_integer = value;
 }
 
 void os_dump_object_heap()
@@ -408,12 +424,6 @@ struct C_Class1
 	}
 };
 
-/*
-enum VariantType
-{
-	STRING,
-	INT64
-};*/
 struct C_Variant
 {
 	enum VariantType
