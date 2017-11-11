@@ -4,28 +4,23 @@
 #include <vector>
 using namespace std;
 
-//#include <boost/shared_ptr.hpp>
 #include <stdint.h>
 #include "common.h"
 
-//#include <winstl_thread_mutex.h>
 #include <winstl/synch/thread_mutex.hpp>
-#include <stlsoft/smartptr/ref_ptr.hpp>
 #include <stlsoft/smartptr/shared_ptr.hpp>
-using namespace stlsoft::winstl_project;
+//using namespace stlsoft::winstl_project;
 
 #include <windows.h>
 #define _MT
 #include <process.h>
 
-thread_mutex g_thread_mutex;
-
-//TLS_VARIABLE_DECL ::int64_t tls_thread_id = -1;
+//stlsoft::winstl_project::thread_mutex g_thread_mutex;
 
 struct os_thread_locker
 {
-	thread_mutex &m_mutex;
-	explicit os_thread_locker(thread_mutex &mutex) : m_mutex(mutex)
+	stlsoft::winstl_project::thread_mutex &m_mutex;
+	explicit os_thread_locker(stlsoft::winstl_project::thread_mutex &mutex) : m_mutex(mutex)
 	{
 		m_mutex.lock();
 	}
@@ -39,7 +34,7 @@ struct os_thread_locker
 {
 	static TLS_VARIABLE_DECL ::int64_t curr_thread_id = -1;
 	static ::int64_t v_thread_id_max = 0;
-	static thread_mutex v_mutex;
+	static stlsoft::winstl_project::thread_mutex v_mutex;
 	{
 		os_thread_locker locker(v_mutex);
 		if (curr_thread_id == -1)
@@ -51,28 +46,6 @@ struct os_thread_locker
 	return curr_thread_id;
 }
 
-class CoMutex
-{
-	CRITICAL_SECTION csect;
-
-  public:
-	explicit CoMutex()
-	{
-		InitializeCriticalSection(&csect);
-	}
-	virtual ~CoMutex()
-	{
-		DeleteCriticalSection(&csect);
-	}
-	void lock()
-	{
-		EnterCriticalSection(&csect);
-	}
-	void unlock()
-	{
-		LeaveCriticalSection(&csect);
-	}
-};
 
 typedef std::map<std::string, void *> func_map_t;
 typedef stlsoft::shared_ptr<func_map_t> func_map_ptr_t;
@@ -209,7 +182,6 @@ int main()
 	//WaitForSingleObject(handoru, INFINITE); /* スレッドが終了するまで待つ。 */
 	//CloseHandle(handoru);					/* ハンドルを閉じる */
 #endif
-	thread_mutex_lock_traits(g_thread_mutex);
 
 #if 0x1
 	typedef stlsoft::shared_ptr<string> StrPtr;
