@@ -234,6 +234,7 @@ os_oid_t os_new_int64(::int64_t value)
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
+		os_register_curr_thread();
 		os_oid_t v_oid = os_get_next_oid();
 		os_object_entry_t v_entry;
 		v_entry.m_value = value;
@@ -258,22 +259,10 @@ void os_dump_object_heap()
 
 void dummy()
 {
-#if 0x1
 	for (int i = 0; i < 5; i++)
 	{
 		os_new_int64((i + 1) * 10);
 	}
-#endif
-#if 0x0
-	os_object_map_t::iterator map_ite;
-	for (map_ite = g_os_object_map.begin(); map_ite != g_os_object_map.end(); map_ite++)
-	{
-		os_dbg("key = %lld : data = [%s]", map_ite->first, map_ite->second.c_str());
-		//os_dbg("key = %lld : data = [0x%08x]", map_ite->first, map_ite->second.c_str());
-		os_dbg("m_value=%lld", map_ite->second.m_value);
-		os_dbg("c_str()=%s", map_ite->second.c_str());
-	}
-#endif
 }
 
 typedef std::map<std::string, void *> func_map_t;
@@ -356,7 +345,8 @@ struct C_Variant
 
 DWORD WINAPI Thread(LPVOID *data)
 {
-	os_register_curr_thread();
+	//os_register_curr_thread();
+	os_new_int64(1234);
 	os_thread_id tid1 = os_get_thread_id();
 	os_dbg("tid1=%s", tid1.c_str());
 	os_dbg("%s start", (const char *)data);
@@ -370,8 +360,8 @@ DWORD WINAPI Thread(LPVOID *data)
 
 int main()
 {
-	os_thread_id &tid0 = os_register_curr_thread();
-	os_dbg("tid0=%s", tid0.c_str());
+	//os_thread_id &tid0 = os_register_curr_thread();
+	//os_dbg("tid0=%s", tid0.c_str());
 	os_thread_id tid1 = os_get_thread_id();
 	os_dbg("tid1=%s", tid1.c_str());
 	HANDLE hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Thread, (LPVOID) "カウント数表示：", 0, NULL);
