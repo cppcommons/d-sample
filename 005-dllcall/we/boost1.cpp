@@ -1,5 +1,5 @@
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <map>
 #include <string>
 #include <vector>
@@ -19,7 +19,7 @@ using namespace std;
 
 #define DBG(format, ...) os_printf("[DEBUG] " format "\n", ##__VA_ARGS__)
 
-//stlsoft::winstl_project::thread_mutex g_thread_mutex;
+stlsoft::winstl_project::thread_mutex g_os_thread_mutex;
 
 struct os_thread_locker
 {
@@ -104,6 +104,9 @@ struct os_thread_id
 	std::string m_output_str;
 };
 
+std::vector<os_thread_id> g_os_thread_list;
+std::map<DWORD, os_thread_id> g_os_thread_map;
+
 //::int64_t os_get_thread_id()
 os_thread_id os_get_thread_id()
 {
@@ -122,6 +125,21 @@ os_thread_id os_get_thread_id()
 	result.id = ::GetCurrentThreadId();
 	result.no = curr_thread_no;
 	return result;
+}
+
+os_thread_id &os_register_curr_thread()
+{
+	{
+		os_thread_locker locker(g_os_thread_mutex);
+		os_thread_id v_id = os_get_thread_id();
+		if (g_os_thread_map.count(v_id.id) == 0)
+		{
+			g_os_thread_map[v_id.id] = v_id;
+		}
+		os_thread_id &v_old_id = g_os_thread_map[v_id.id];
+		v_old_id.no = v_id.no;
+		return v_old_id;
+	}
 }
 
 struct os_object_entry_t
@@ -219,8 +237,7 @@ struct C_Variant
 
 DWORD WINAPI Thread(LPVOID *data)
 {
-	//DWORD wintid = GetCurrentThreadId();
-	//os_dbg("wintid=%u", wintid);
+	os_register_curr_thread();
 	os_thread_id tid1 = os_get_thread_id();
 	os_dbg("tid1=%s", tid1.c_str());
 	os_dbg("%s start", (const char *)data);
@@ -234,22 +251,13 @@ DWORD WINAPI Thread(LPVOID *data)
 
 int main()
 {
-	DWORD wintid = GetCurrentThreadId();
-	os_dbg("wintid(0)=%u", wintid);
-	os_thread_id tid = os_get_thread_id();
-	os_dbg("%ld", tid.no);
-	os_dbg("tid=%s", tid.c_str());
+	os_thread_id &tid0 = os_register_curr_thread();
+	os_dbg("tid0=%s", tid0.c_str());
+	os_thread_id tid1 = os_get_thread_id();
+	os_dbg("tid1=%s", tid1.c_str());
 	HANDLE hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Thread, (LPVOID) "カウント数表示：", 0, NULL);
 
-#if 0x0
-	HANDLE handoru;
-
-	handoru = (HANDLE)_beginthreadex(NULL, 0, sure1, "sure1です。", 0, NULL);
-	//WaitForSingleObject(handoru, INFINITE); /* スレッドが終了するまで待つ。 */
-	//CloseHandle(handoru);					/* ハンドルを閉じる */
-#endif
-
-#if 0x1
+	#if 0x1
 	typedef stlsoft::shared_ptr<string> StrPtr;
 	StrPtr s = StrPtr(new string("pen"));
 	vector<StrPtr> v1;
