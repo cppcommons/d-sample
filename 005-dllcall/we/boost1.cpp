@@ -371,21 +371,8 @@ typedef os_oid_t (*os_function_t)(int argc, os_oid_t args[]);
 
 os_oid_t cos_add2(int argc, os_oid_t args[])
 {
-	/*
 	if (argc < 0)
-	{
-		switch (argc)
-		{
-		case -1:
-			return os_argtype_of("int32");
-		case -2:
-			return os_argtype_any();
-		default:
-			return os_argtype_end();
-			// return os_argtype_variadic();
-		}
-	}
-	*/
+		return 2;
 	::int32_t a = os_get_int32(args[1]);
 	::int32_t b = os_get_int32(args[2]);
 	return os_new_int64(a + b, true);
@@ -407,6 +394,8 @@ struct C_Class1
 	}
 	static os_oid_t cos_add2(int argc, os_oid_t args[])
 	{
+		if (argc < 0)
+			return 2;
 		::int32_t a = os_get_int32(args[1]);
 		::int32_t b = os_get_int32(args[2]);
 		return os_new_int64(a + b, true);
