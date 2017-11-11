@@ -178,6 +178,19 @@ bool os_is_thread_alive(DWORD thread_dword)
 	return true;
 }
 
+typedef ::int64_t os_oid_t;
+//os_oid_t g_max_oid = 0;
+os_oid_t g_max_oid = 100000;
+
+os_oid_t os_get_next_oid()
+{
+	{
+		os_thread_locker locker(g_os_thread_mutex);
+		g_max_oid++;
+		return g_max_oid;
+	}
+}
+
 struct os_object_entry_t : public os_struct
 {
 	os_thread_id m_thread_id;
@@ -214,8 +227,6 @@ struct os_object_entry_t : public os_struct
 os_object_entry_t X1(111);
 os_object_entry_t X2(222);
 
-typedef ::int64_t os_oid_t;
-
 typedef std::map<os_oid_t, os_object_entry_t> os_object_map_t;
 os_object_map_t g_os_object_map;
 
@@ -224,9 +235,8 @@ void dummy()
 #if 0x1
 	for (int i = 0; i < 5; i++)
 	{
-		os_oid_t key = i + 1;
+		os_oid_t key = os_get_next_oid();
 		os_object_entry_t myentry((i + 1) * 10);
-		//myentry.m_value = (i + 1) * 10;
 		g_os_object_map[key] = myentry;
 	}
 #endif
