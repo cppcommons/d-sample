@@ -46,9 +46,8 @@ void main(string[] args)
 	string s = "abc漢字";
 	os_value mystr = os_new_string(cast(char*) s.ptr, s.length);
 	os_dump_object_heap();
-	os_oid_link(mystr);
+	os_link(mystr);
 	os_cleanup();
-	writeln();
 	os_dump_object_heap();
 	//char *ptr = os_get_string(mystr);
 	//writeln(toString(ptr));
