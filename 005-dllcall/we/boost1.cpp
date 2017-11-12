@@ -483,9 +483,9 @@ extern void os_gc()
 	}
 }
 
-typedef os_oid_t (*os_function_t)(int argc, os_oid_t args[]);
+typedef os_oid_t (*os_function_t)(long argc, os_oid_t args[]);
 
-static os_oid_t cos_add2(int argc, os_oid_t args[])
+static os_oid_t cos_add2(long argc, os_oid_t args[])
 {
 	if (argc < 0)
 		return os_new_integer(2);
@@ -508,7 +508,7 @@ struct C_Class1
 	{
 		delete this;
 	}
-	static os_oid_t cos_add2(int argc, os_oid_t args[])
+	static os_oid_t cos_add2(long argc, os_oid_t args[])
 	{
 		if (argc < 0)
 			return os_new_integer(2);
