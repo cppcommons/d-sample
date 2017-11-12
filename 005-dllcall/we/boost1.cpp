@@ -11,6 +11,12 @@
 #define THREAD_LOCAL __declspec(thread)
 #endif
 
+extern os_integer_t os_arg_count(os_function_t fn)
+{
+	os_value v_count = fn(-1, nullptr);
+	return os_get_integer(v_count);
+}
+
 static os_value cos_add2(long argc, os_value args[])
 {
 	if (argc < 0)
@@ -48,19 +54,8 @@ struct C_Class1
 
 static DWORD WINAPI Thread(LPVOID *data)
 {
-	//os_register_curr_thread();
 	os_new_integer(1234);
-	#if 0x0
-	os_thread_id tid1 = os_get_thread_id();
-	os_dbg("tid1=%s", tid1.c_str());
-	os_dbg("%s start", (const char *)data);
-	#endif
 	Sleep(1000);
-	#if 0x0
-	os_thread_id tid2 = os_get_thread_id();
-	os_dbg("tid2=%s", tid2.c_str());
-	os_dbg("%s end", (const char *)data);
-	#endif
 	ExitThread(0);
 	return 0;
 }
@@ -72,6 +67,11 @@ int main()
 	os_new_string("STRING(2)", 3);
 	os_function_t v_func = cos_add2;
 	os_function_t v_func2 = C_Class1::cos_add2;
+
+	os_integer_t cnt1 = os_arg_count(v_func);
+	os_integer_t cnt2 = os_arg_count(v_func2);
+	os_dbg("cnt1=%lld", cnt1);
+	os_dbg("cnt2=%lld", cnt2);
 
 	#if 0x0
 	os_thread_id tid1 = os_get_thread_id();
