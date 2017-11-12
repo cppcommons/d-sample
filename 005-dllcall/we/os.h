@@ -14,7 +14,6 @@ typedef os_value (*os_function_t)(long argc, os_value argv[]);
 enum os_type_t
 {
 	OS_NIL,
-	OS_ADDRESS,
 	OS_ARRAY,
 	OS_BYTES,
 	OS_INTEGER,

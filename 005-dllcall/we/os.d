@@ -19,7 +19,6 @@ alias os_value  function(int argc, os_value *argv)os_function_t;
 //C     enum os_type_t
 //C     {
 //C     	OS_NIL,
-//C     	OS_ADDRESS,
 //C     	OS_ARRAY,
 //C     	OS_BYTES,
 //C     	OS_INTEGER,
@@ -29,7 +28,6 @@ alias os_value  function(int argc, os_value *argv)os_function_t;
 enum os_type_t
 {
     OS_NIL,
-    OS_ADDRESS,
     OS_ARRAY,
     OS_BYTES,
     OS_INTEGER,
