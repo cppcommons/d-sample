@@ -22,7 +22,6 @@ using namespace std;
 #define THREAD_LOCAL __declspec(thread)
 #endif
 
-
 typedef os_integer_t os_oid_t;
 
 struct os_data
@@ -200,8 +199,10 @@ struct os_thread_id : public os_struct
 	}
 };
 
+#if 0x0
 typedef std::map<DWORD, os_thread_id> os_thread_map_t;
 os_thread_map_t g_os_thread_map;
+#endif
 
 static os_thread_id os_get_thread_id()
 {
@@ -222,6 +223,7 @@ static os_thread_id os_get_thread_id()
 	return result;
 }
 
+#if 0x0
 static os_thread_id &os_register_curr_thread()
 {
 	{
@@ -236,6 +238,7 @@ static os_thread_id &os_register_curr_thread()
 		return v_old_id;
 	}
 }
+#endif
 
 static std::set<DWORD> os_get_thread_dword_list()
 {
@@ -342,7 +345,9 @@ static inline os_value os_new_value(os_data *data)
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
+#if 0x0
 		os_register_curr_thread();
+#endif
 		os_oid_t v_oid = os_get_next_oid();
 		os_value entry = new os_variant_t(v_oid);
 		entry->set_value(data);
