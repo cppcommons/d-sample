@@ -29,7 +29,6 @@ wchar[] toString(wchar* s)
 
 void main(string[] args)
 {
-	//import core.stdc.stdio;
 	import core.thread;
 	import std.stdio;
 	import std.string;
@@ -43,6 +42,7 @@ void main(string[] args)
 	HINTERNET hInet;
 	HINTERNET hFile;
 	char[1024] lpszBuf;
+	//char[16] lpszBuf;
 	DWORD dwSize;
 
 	/* ハンドル作成 */
@@ -55,6 +55,7 @@ void main(string[] args)
 	while (InternetReadFile(hFile, cast(char*) lpszBuf.ptr, lpszBuf.length, &dwSize) && dwSize > 0)
 	{
 		result ~= lpszBuf[0 .. dwSize];
+		//result ~= "||";
 	}
 	writeln(result);
 
