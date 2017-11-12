@@ -23,7 +23,8 @@ static DWORD WINAPI Thread(LPVOID *data)
 
 int main()
 {
-	os_value *ary = os_new_array(3);
+	os_value ary_ = os_new_array(3);
+	os_value *ary = os_get_array(ary_);
 	for (int i=0; i<4; i++)
 	{
 		os_value v = ary[i];
@@ -57,7 +58,9 @@ int main()
 	os_dbg("v_args[0]=%lld", os_get_integer(v_args[0]));
 	os_dbg("v_args[1]=%lld", os_get_integer(v_args[1]));
 
-	os_value *ary2 = os_new_array(2);
+	os_value ary2_ = os_new_array(2);
+	os_link(ary2_);
+	os_value *ary2 = os_get_array(ary2_);
 	ary2[0] = os_new_integer(11);
 	ary2[1] = os_new_integer(22);
 	os_dump_heap();

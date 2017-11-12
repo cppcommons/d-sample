@@ -316,11 +316,21 @@ static inline os_value os_new_value(os_data *data)
 	}
 }
 
-extern os_value *os_new_array(long long len)
+extern os_value os_new_array(long long len)
 {
+	return os_new_value(new os_array(len));
+#if 0x0
 	os_array *v_array = new os_array(len);
 	os_new_value(v_array); // os_value not returned.
 	return v_array->get_array();
+#endif
+}
+
+extern os_value *os_get_array(os_value value)
+{
+	if (!value)
+		return nullptr;
+	return value->m_value->get_array();
 }
 
 extern os_value os_new_integer(long long data)
