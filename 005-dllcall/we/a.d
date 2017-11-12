@@ -52,11 +52,5 @@ void main(string[] args)
 	char *ptr = os_get_string(mystr);
 	writefln("[%s]", toString(ptr));
 
-	INTERNET_PORT defport = 443; //実際は引数にしている
-
-	wstring protocol = ("https"); //実際はurlから分割関数を書いてる
-	wstring address = ("www.none.com");
-	wstring content = ("index.html");
-
 	exit(0);
 }
