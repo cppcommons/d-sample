@@ -1,4 +1,11 @@
 #include "os.h"
+#ifdef __cplusplus /* C++ only */
+#include <string>
+static inline os_value os_new_string(const std::string &data)
+{
+	return os_new_string(data.c_str(), data.size());
+}
+#endif /* __cplusplus (C++ only) */
 
 #include <windows.h>
 #define _MT

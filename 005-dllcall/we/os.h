@@ -36,13 +36,12 @@ extern os_integer_t os_arg_count(os_function_t fn);
 }
 #endif
 
-#ifdef __cplusplus /* C++ only */
-#include <string>
-//static inline os_value os_new_std_string(const std::string &data)
-static inline os_value os_new_string(const std::string &data)
-{
-	return os_new_string(data.c_str(), data.size());
-}
-#endif /* __cplusplus (C++ only) */
+//#ifdef __cplusplus /* C++ only */
+//#include <string>
+//static inline os_value os_new_string(const std::string &data)
+//{
+//	return os_new_string(data.c_str(), data.size());
+//}
+//#endif /* __cplusplus (C++ only) */
 
 #endif /* OS_H */

@@ -4,3 +4,5 @@ emake-cpp build=release boost1.exe boost1.cpp os.lib -IE:\d-dev\boost_1_34_1_hea
 if %errorlevel% neq 0 ( exit /b )
 chcp 65001
 boost1.exe
+c:\dm\bin\htod -cpp os.h
+if %errorlevel% neq 0 ( exit /b )
