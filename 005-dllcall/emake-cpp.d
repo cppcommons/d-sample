@@ -137,7 +137,8 @@ int main(string[] args)
 
 	writefln("Command type: %s", emake_cmd.command_type);
 
-	File file1 = File(emake_cmd.project_base_name ~ ".cbp", "w");
+	//File file1 = File(emake_cmd.project_base_name ~ ".cbp", "w");
+	File file1 = File(emake_cmd.project_file_name ~ ".cbp", "w");
 	file1.writeln(`<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>`);
 
 	auto doc = new Document(new Tag("CodeBlocks_project_file"));
@@ -261,13 +262,15 @@ int main(string[] args)
         ];+/
 		string[] cb_command = [
 			/*"cmd", "/c", "start", "/w",*/ "codeblocks", //"/na", "/nd",
-			"--target=Release", "--build", emake_cmd.project_base_name ~ ".cbp"
+			//"--target=Release", "--build", emake_cmd.project_base_name ~ ".cbp"
+			"--target=Release", "--build", emake_cmd.project_file_name ~ ".cbp"
 		];
 		writeln(cb_command);
 		int rc = emake_run_command_1(cb_command);
 		if (rc != 0)
 		{
-			cb_command = ["cmd", "/c", "start", "codeblocks", emake_cmd.project_base_name ~ ".cbp"];
+			//cb_command = ["cmd", "/c", "start", "codeblocks", emake_cmd.project_base_name ~ ".cbp"];
+			cb_command = ["codeblocks", emake_cmd.project_file_name ~ ".cbp"];
 			writeln(cb_command);
 			/* rc = */
 			emake_run_command_1(cb_command);
