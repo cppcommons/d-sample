@@ -38,6 +38,7 @@ void main(string[] args)
 	string url = "https://raw.githubusercontent.com/cyginst/ms2inst-v1/master/ms2inst.bat";
 
 	char* appZ = cast(char*) toStringz(app);
+	char* urlZ = cast(char*) toStringz(url);
 
 	HINTERNET hInet;
 	HINTERNET hFile;
@@ -48,19 +49,19 @@ void main(string[] args)
 	//lpszBuf = (char *)GlobalAlloc(GPTR, 1024);
 
 	/* ハンドル作成 */
-	hInet = InternetOpenA("TEST", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
+	hInet = InternetOpenA(appZ, INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
 
 	/* URLオープン */
-	hFile = InternetOpenUrlA(hInet,//"http://www.sm.rim.or.jp/~shishido/src/httpt.txt",
-			"https://raw.githubusercontent.com/cyginst/cyginst-v1/master/cyginst.bat",
-			NULL, 0, INTERNET_FLAG_RELOAD, 0);
+	hFile = InternetOpenUrlA(hInet, //"http://www.sm.rim.or.jp/~shishido/src/httpt.txt",
+			//"https://raw.githubusercontent.com/cyginst/cyginst-v1/master/cyginst.bat",
+			urlZ, NULL, 0, INTERNET_FLAG_RELOAD, 0);
 
 	char[] result;
-	while (InternetReadFile(hFile, cast(char *)lpszBuf.ptr, 1023, &dwSize) && dwSize > 0)
+	while (InternetReadFile(hFile, cast(char*) lpszBuf.ptr, 1023, &dwSize) && dwSize > 0)
 	{
 		//printf("%s", lpszBuf);
 		//result.append(lpszBuf, dwSize);
-		result ~= lpszBuf[0..dwSize];
+		result ~= lpszBuf[0 .. dwSize];
 	}
 	//printf("\n");
 	//printf("%s\n", result.c_str());
