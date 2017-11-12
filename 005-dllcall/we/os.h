@@ -31,7 +31,7 @@ extern int os_dbg(const char *format, ...);
 extern os_value os_new_integer(os_integer_t data);
 extern os_integer_t os_get_integer(os_value value);
 extern os_value os_new_string(const char *data, os_integer_t len);
-extern void os_dump_object_heap();
+extern void os_dump_heap();
 extern void os_link(os_value entry);
 extern void os_unlink(os_value entry);
 extern void os_cleanup();

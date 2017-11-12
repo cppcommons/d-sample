@@ -36,7 +36,7 @@ void main(string[] args)
 	argv ~= os_new_integer(11);
 	argv ~= os_new_integer(22);
 	os_value answer = my_add2(argv.length, &argv[0]);
-	os_dump_object_heap();
+	os_dump_heap();
 	os_integer_t answer2 = os_get_integer(answer);
 	writeln(answer2);
 	long arg0 = os_get_integer(argv[0]);
@@ -45,10 +45,10 @@ void main(string[] args)
 	writeln(`arg1=`, arg1);
 	string s = "abc漢字";
 	os_value mystr = os_new_string(cast(char*) s.ptr, s.length);
-	os_dump_object_heap();
+	os_dump_heap();
 	os_link(mystr);
 	os_cleanup();
-	os_dump_object_heap();
+	os_dump_heap();
 	//char *ptr = os_get_string(mystr);
 	//writeln(toString(ptr));
 

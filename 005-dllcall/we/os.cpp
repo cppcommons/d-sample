@@ -285,7 +285,7 @@ extern os_integer_t os_get_integer(os_value value)
 	return value->m_value->get_integer();
 }
 
-extern void os_dump_object_heap()
+extern void os_dump_heap()
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
