@@ -7,15 +7,12 @@
 #include <sstream>
 using namespace std;
 
-//#include <stdint.h>
-
 #include <winstl/synch/thread_mutex.hpp>
 //#include <stlsoft/smartptr/shared_ptr.hpp>
 
 #include <windows.h>
 #define _MT
 #include <process.h>
-
 #include <tlhelp32.h> // CreateToolhelp32Snapshot()
 
 #ifdef __GNUC__
@@ -25,6 +22,9 @@ using namespace std;
 #endif
 
 static int os_dbg(const char *format, ...);
+
+struct os_handle_t;
+typedef os_handle_t *os_value;
 
 typedef long long os_integer_t;
 
@@ -40,10 +40,8 @@ enum os_type_t
 	OS_REAL,
 	OS_STRING
 };
-struct os_value;
-typedef os_value *os_value_t;
 
-struct os_value
+struct os_data
 {
 	virtual void release() = 0;
 	virtual os_type_t type() = 0;
@@ -53,7 +51,7 @@ struct os_value
 	virtual os_integer_t get_length() = 0;
 };
 
-struct os_integer : public os_value
+struct os_integer : public os_data
 {
 	os_integer_t m_value;
 	explicit os_integer(os_integer_t value)
@@ -87,7 +85,7 @@ struct os_integer : public os_value
 	}
 };
 
-struct os_string : public os_value
+struct os_string : public os_data
 {
 	std::string m_value;
 	explicit os_string(const std::string &value)
@@ -299,12 +297,12 @@ static os_oid_t os_get_next_oid()
 	}
 }
 
-struct os_value_entry_t : public os_struct
+struct os_handle_t : public os_struct
 {
 	os_oid_t m_oid;
 	os_thread_id m_thread_id;
 	os_integer_t m_link_count;
-	os_value *m_value;
+	os_data *m_value;
 #if 0x0
 	void _init(os_thread_id &thread_id)
 	{
@@ -313,20 +311,20 @@ struct os_value_entry_t : public os_struct
 		m_value = nullptr;
 	}
 #endif
-	explicit os_value_entry_t(os_oid_t oid)
+	explicit os_handle_t(os_oid_t oid)
 	{
 		m_oid = oid;
 		m_thread_id = os_get_thread_id();
 		m_link_count = 0;
 		m_value = nullptr;
 	}
-	void set_value(os_value *value)
+	void set_value(os_data *value)
 	{
 		if (m_value)
 			m_value->release();
 		m_value = value;
 	}
-	virtual ~os_value_entry_t()
+	virtual ~os_handle_t()
 	{
 		if (m_value)
 			m_value->release();
@@ -335,7 +333,7 @@ struct os_value_entry_t : public os_struct
 	{
 		std::string v_thread_id = m_thread_id.c_str();
 		std::stringstream v_stream;
-		v_stream << "os_value_entry_t { " << v_thread_id
+		v_stream << "os_handle_t { " << v_thread_id
 				 << " ";
 		m_value->to_ss(v_stream);
 		v_stream << " }";
@@ -344,12 +342,10 @@ struct os_value_entry_t : public os_struct
 	}
 };
 
-//typedef std::map<os_oid_t, os_value_entry_t *> os_object_map_t;
-//os_object_map_t g_os_object_map;
-typedef std::set<os_value_entry_t *> os_value_set_t;
+typedef std::set<os_handle_t *> os_value_set_t;
 static os_value_set_t g_os_value_set;
 
-extern void os_oid_link(os_value_entry_t *entry)
+extern void os_oid_link(os_value entry)
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
@@ -357,7 +353,7 @@ extern void os_oid_link(os_value_entry_t *entry)
 	}
 }
 
-extern void os_oid_unlink(os_value_entry_t *entry)
+extern void os_oid_unlink(os_value entry)
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
@@ -365,68 +361,53 @@ extern void os_oid_unlink(os_value_entry_t *entry)
 	}
 }
 
-extern os_value_entry_t *os_new_integer(os_integer_t value)
+extern os_value os_new_integer(os_integer_t value)
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
 		os_register_curr_thread();
 		os_oid_t v_oid = os_get_next_oid();
-		os_value_entry_t *entry = new os_value_entry_t(v_oid);
+		os_value entry = new os_handle_t(v_oid);
 		entry->set_value(new os_integer(value));
 		g_os_value_set.insert(entry);
 		return entry;
 	}
 }
 
-static os_value_entry_t *os_new_std_string(const std::string &value)
+static os_value os_new_std_string(const std::string &value)
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
 		os_register_curr_thread();
 		os_oid_t v_oid = os_get_next_oid();
-		os_value_entry_t *entry = new os_value_entry_t(v_oid);
+		os_value entry = new os_handle_t(v_oid);
 		entry->set_value(new os_string(value));
 		g_os_value_set.insert(entry);
 		return entry;
 	}
 }
 
-extern os_value_entry_t *os_new_string(const char *value, os_integer_t len)
+extern os_value os_new_string(const char *value, os_integer_t len)
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
 		os_register_curr_thread();
 		os_oid_t v_oid = os_get_next_oid();
-		os_value_entry_t *entry = new os_value_entry_t(v_oid);
+		os_value entry = new os_handle_t(v_oid);
 		entry->set_value(new os_string(value, len));
 		g_os_value_set.insert(entry);
 		return entry;
 	}
 }
 
-#if 0x0
-static os_value_entry_t *os_find_entry(os_oid_t oid)
-{
-	{
-		os_thread_locker locker(g_os_thread_mutex);
-		if (g_os_object_map.count(oid) == 0)
-		{
-			return nullptr;
-		}
-		//return &g_os_object_map[oid];
-		return g_os_object_map[oid];
-	}
-}
-#endif
-
-extern os_integer_t os_get_integer(os_value_entry_t *entry)
+extern os_integer_t os_get_integer(os_value entry)
 {
 	if (!entry)
 		return 0;
 	return entry->m_value->get_integer();
 }
 
-extern void os_set_integer(os_value_entry_t *entry, os_integer_t value)
+extern void os_set_integer(os_value entry, os_integer_t value)
 {
 	if (!entry)
 		return;
@@ -440,7 +421,7 @@ static void os_dump_object_heap()
 		os_value_set_t::iterator it;
 		for (it = g_os_value_set.begin(); it != g_os_value_set.end(); it++)
 		{
-			os_value_entry_t *v_entry = *it;
+			os_value v_entry = *it;
 			os_oid_t v_oid = v_entry->m_oid;
 			os_dbg("[DUMP] oid = %lld : data = %s", v_oid, v_entry->c_str());
 		}
@@ -453,11 +434,11 @@ extern void os_cleanup()
 		os_thread_locker locker(g_os_thread_mutex);
 		os_thread_id v_thread_id = os_get_thread_id();
 		std::set<DWORD> v_thread_list = os_get_thread_dword_list();
-		std::vector<os_value_entry_t *> v_removed;
+		std::vector<os_handle_t *> v_removed;
 		os_value_set_t::iterator it;
 		for (it = g_os_value_set.begin(); it != g_os_value_set.end(); it++)
 		{
-			os_value_entry_t *v_entry = *it;
+			os_handle_t *v_entry = *it;
 			os_oid_t v_oid = v_entry->m_oid;
 			//os_dbg("[SCAN] oid = %lld : data = %s", v_oid, v_entry.c_str());
 			if (v_thread_list.count(v_entry->m_thread_id.id) == 0)
@@ -483,9 +464,9 @@ extern void os_cleanup()
 	}
 }
 
-typedef os_value_entry_t *(*os_function_t)(long argc, os_value_entry_t *args[]);
+typedef os_value (*os_function_t)(long argc, os_value args[]);
 
-static os_value_entry_t *cos_add2(long argc, os_value_entry_t *args[])
+static os_value cos_add2(long argc, os_value args[])
 {
 	if (argc < 0)
 		return os_new_integer(2);
@@ -508,7 +489,7 @@ struct C_Class1
 	{
 		delete this;
 	}
-	static os_value_entry_t *cos_add2(long argc, os_value_entry_t *args[])
+	static os_value cos_add2(long argc, os_value args[])
 	{
 		if (argc < 0)
 			return os_new_integer(2);
@@ -558,12 +539,12 @@ int main()
 		}
 	}
 
-	std::vector<os_value_entry_t *> v_args(3);
+	std::vector<os_value> v_args(3);
 	v_args[1] = os_new_integer(111);
 	v_args[2] = os_new_integer(222);
 	os_dump_object_heap();
 	//os_oid_t v_answer = cos_add2(2, &v_args[0]);
-	os_value_entry_t *v_answer = v_func2(2, &v_args[0]);
+	os_value v_answer = v_func2(2, &v_args[0]);
 	os_integer_t v_answer32 = os_get_integer(v_answer);
 	os_oid_link(v_answer);
 	os_dbg("answer=%d", v_answer32);
