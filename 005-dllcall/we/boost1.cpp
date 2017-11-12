@@ -450,8 +450,8 @@ static os_value cos_add2(long argc, os_value args[])
 {
 	if (argc < 0)
 		return os_new_integer(2);
-	os_integer_t a = os_get_integer(args[1]);
-	os_integer_t b = os_get_integer(args[2]);
+	os_integer_t a = os_get_integer(args[0]);
+	os_integer_t b = os_get_integer(args[1]);
 	return os_new_integer(a + b);
 }
 
@@ -473,10 +473,10 @@ struct C_Class1
 	{
 		if (argc < 0)
 			return os_new_integer(2);
-		int a = (int)os_get_integer(args[1]);
-		int b = (int)os_get_integer(args[2]);
-		os_set_integer(args[1], a * 10);
-		os_set_integer(args[2], b * 10);
+		int a = (int)os_get_integer(args[0]);
+		int b = (int)os_get_integer(args[1]);
+		os_set_integer(args[0], a * 10);
+		os_set_integer(args[1], b * 10);
 		return os_new_integer(a + b);
 	}
 };
@@ -519,17 +519,19 @@ int main()
 		}
 	}
 
-	std::vector<os_value> v_args(3);
-	v_args[1] = os_new_integer(111);
-	v_args[2] = os_new_integer(222);
+	std::vector<os_value> v_args;
+	v_args.push_back(os_new_integer(111));
+	v_args.push_back(os_new_integer(222));
+	//v_args[0] = os_new_integer(111);
+	//v_args[1] = os_new_integer(222);
 	os_dump_object_heap();
-	//os_oid_t v_answer = cos_add2(2, &v_args[0]);
-	os_value v_answer = v_func2(2, &v_args[0]);
+	//os_oid_t v_answer = cos_add2(v_args.size(), &v_args[0]);
+	os_value v_answer = v_func2(v_args.size(), &v_args[0]);
 	os_integer_t v_answer32 = os_get_integer(v_answer);
 	os_oid_link(v_answer);
 	os_dbg("answer=%d", v_answer32);
+	os_dbg("v_args[0]=%lld", os_get_integer(v_args[0]));
 	os_dbg("v_args[1]=%lld", os_get_integer(v_args[1]));
-	os_dbg("v_args[2]=%lld", os_get_integer(v_args[2]));
 
 	os_dump_object_heap();
 	os_dbg("before gc");
