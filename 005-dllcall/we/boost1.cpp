@@ -11,12 +11,16 @@
 #define THREAD_LOCAL __declspec(thread)
 #endif
 
-static os_value cos_add2(long argc, os_value args[])
+static os_value cos_add2(long argc, os_value argv[])
 {
-	if (argc < 0)
+	if (argv == nullptr)
+	{
 		return os_new_integer(2);
-	os_integer_t a = os_get_integer(args[0]);
-	os_integer_t b = os_get_integer(args[1]);
+	}
+	//if (argc < 0)
+	//	return os_new_integer(2);
+	os_integer_t a = os_get_integer(argv[0]);
+	os_integer_t b = os_get_integer(argv[1]);
 	return os_new_integer(a + b);
 }
 
@@ -30,18 +34,18 @@ struct C_Class1
 	{
 		os_dbg("Destructor");
 	}
-	void Release()
+	static os_value cos_add2(long argc, os_value argv[])
 	{
-		delete this;
-	}
-	static os_value cos_add2(long argc, os_value args[])
-	{
-		if (argc < 0)
+		if (argv == nullptr)
+		{
 			return os_new_integer(2);
-		int a = (int)os_get_integer(args[0]);
-		int b = (int)os_get_integer(args[1]);
-		os_set_integer(args[0], a * 10);
-		os_set_integer(args[1], b * 10);
+		}
+		//if (argc < 0)
+		//	return os_new_integer(2);
+		int a = (int)os_get_integer(argv[0]);
+		int b = (int)os_get_integer(argv[1]);
+		os_set_integer(argv[0], a * 10);
+		os_set_integer(argv[1], b * 10);
 		return os_new_integer(a + b);
 	}
 };
@@ -67,24 +71,11 @@ int main()
 	os_dbg("cnt1=%lld", cnt1);
 	os_dbg("cnt2=%lld", cnt2);
 
-	#if 0x0
+#if 0x0
 	os_thread_id tid1 = os_get_thread_id();
 	os_dbg("tid1=%s", tid1.c_str());
-	#endif
+#endif
 	HANDLE hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Thread, (LPVOID) "カウント数表示：", 0, NULL);
-
-	#if 0x0
-	{
-		os_thread_map_t::iterator it;
-		for (it = g_os_thread_map.begin(); it != g_os_thread_map.end(); it++)
-		{
-			DWORD v_thread_dword = it->first;
-			os_thread_id &v_thread_id = it->second;
-			os_dbg("v_thread_dword=0x%08x v_thread_id.c_str()=%s ALIVE=%d",
-				   v_thread_dword, v_thread_id.c_str(), os_is_thread_alive(v_thread_dword));
-		}
-	}
-	#endif
 
 	std::vector<os_value> v_args;
 	v_args.push_back(os_new_integer(111));
@@ -107,18 +98,7 @@ int main()
 	os_dump_object_heap();
 
 	WaitForSingleObject(hThread, INFINITE);
-	#if 0x0
-	{
-		os_thread_map_t::iterator it;
-		for (it = g_os_thread_map.begin(); it != g_os_thread_map.end(); it++)
-		{
-			DWORD v_thread_dword = it->first;
-			os_thread_id &v_thread_id = it->second;
-			os_dbg("v_thread_dword=0x%08x v_thread_id.c_str()=%s ALIVE=%d",
-				   v_thread_dword, v_thread_id.c_str(), os_is_thread_alive(v_thread_dword));
-		}
-	}
-	#endif
+
 	os_dbg("before gc");
 	os_cleanup();
 	os_dbg("after gc");

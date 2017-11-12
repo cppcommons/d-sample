@@ -7,7 +7,7 @@ extern "C" {
 
 struct os_variant_t;
 typedef os_variant_t *os_value;
-typedef os_value (*os_function_t)(long argc, os_value args[]);
+typedef os_value (*os_function_t)(long argc, os_value argv[]);
 typedef long long os_integer_t;
 enum os_type_t
 {
@@ -24,7 +24,6 @@ extern int os_printf(const char *format, ...);
 extern int os_dbg(const char *format, ...);
 extern os_value os_new_integer(os_integer_t data);
 extern os_integer_t os_get_integer(os_value value);
-//extern void os_set_integer(os_value value, os_integer_t data);
 extern bool os_set_integer(os_value value, os_integer_t data);
 extern os_value os_new_string(const char *data, os_integer_t len);
 extern void os_dump_object_heap();
