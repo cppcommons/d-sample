@@ -7,6 +7,8 @@ static inline os_value os_new_string(const std::string &data)
 }
 #endif /* __cplusplus (C++ only) */
 
+#include "lib1.h"
+
 #include <windows.h>
 #define _MT
 #include <process.h>
@@ -18,6 +20,7 @@ static inline os_value os_new_string(const std::string &data)
 #define THREAD_LOCAL __declspec(thread)
 #endif
 
+#if 0x0
 static os_value cos_add2(long argc, os_value argv[])
 {
 	if (argv == nullptr)
@@ -56,6 +59,7 @@ struct C_Class1
 		return os_new_integer(a + b);
 	}
 };
+#endif
 
 static DWORD WINAPI Thread(LPVOID *data)
 {
@@ -71,12 +75,13 @@ int main()
 	os_new_string("test string テスト文字列");
 	os_new_string("string(1)", -1);
 	os_new_string("STRING(2)", 3);
-	os_function_t v_func = cos_add2;
-	os_function_t v_func2 = C_Class1::cos_add2;
+	//os_function_t v_func = cos_add2;
+	//os_function_t v_func2 = C_Class1::cos_add2;
+	os_function_t v_func2 = my_add2;
 
-	os_integer_t cnt1 = os_arg_count(v_func);
+	//os_integer_t cnt1 = os_arg_count(v_func);
 	os_integer_t cnt2 = os_arg_count(v_func2);
-	os_dbg("cnt1=%lld", cnt1);
+	//os_dbg("cnt1=%lld", cnt1);
 	os_dbg("cnt2=%lld", cnt2);
 
 	HANDLE hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Thread, (LPVOID) "カウント数表示：", 0, NULL);
