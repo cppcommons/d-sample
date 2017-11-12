@@ -47,7 +47,7 @@ void main(string[] args)
 	os_value mystr = os_new_string(cast(char*) s.ptr, s.length);
 	os_dump_heap();
 	os_link(mystr);
-	os_cleanup();
+	os_sweep();
 	os_dump_heap();
 	char *ptr = os_get_string(mystr);
 	writefln("[%s]", toString(ptr));

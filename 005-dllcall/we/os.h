@@ -35,7 +35,7 @@ extern const char *os_get_string(os_value value);
 extern void os_dump_heap();
 extern bool os_link(os_value entry);
 extern bool os_unlink(os_value entry);
-extern void os_cleanup();
+extern void os_sweep();
 extern long long os_arg_count(os_function_t fn);
 
 #ifdef __cplusplus

@@ -59,8 +59,8 @@ void  os_dump_heap();
 bool  os_link(os_value entry);
 //C     extern bool os_unlink(os_value entry);
 bool  os_unlink(os_value entry);
-//C     extern void os_cleanup();
-void  os_cleanup();
+//C     extern void os_sweep();
+void  os_sweep();
 //C     extern long long os_arg_count(os_function_t fn);
 long  os_arg_count(os_function_t fn);
 

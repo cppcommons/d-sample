@@ -71,21 +71,21 @@ int main()
 
 	os_dump_heap();
 	os_dbg("before gc");
-	os_cleanup();
+	os_sweep();
 	os_dbg("after gc");
 	os_dump_heap();
 
 	WaitForSingleObject(hThread, INFINITE);
 
 	os_dbg("before gc");
-	os_cleanup();
+	os_sweep();
 	os_dbg("after gc");
 	os_dump_heap();
 	os_dbg("after dump");
 
 	os_unlink(v_answer);
 	os_dbg("before gc");
-	os_cleanup();
+	os_sweep();
 	os_dbg("after gc");
 	os_dump_heap();
 	os_dbg("after dump");

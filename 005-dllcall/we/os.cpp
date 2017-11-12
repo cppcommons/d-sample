@@ -381,7 +381,7 @@ extern void os_dump_heap()
 	}
 }
 
-extern void os_cleanup()
+extern void os_sweep()
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
