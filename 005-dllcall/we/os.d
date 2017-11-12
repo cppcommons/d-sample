@@ -40,6 +40,8 @@ enum os_type_t
 //C     extern int os_printf(const char *format, ...);
 //C     extern int os_dbg(const char *format, ...);
 //C     #endif /* !__HTOD__ */
+//C     extern os_value *os_new_array(long long len);
+os_value * os_new_array(long len);
 //C     extern os_value os_new_integer(long long data);
 os_value  os_new_integer(long data);
 //C     extern long long os_get_integer(os_value value);

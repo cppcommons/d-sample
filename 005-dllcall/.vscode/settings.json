@@ -14,7 +14,8 @@
 		"xutility": "cpp",
 		"chrono": "cpp",
 		"xlocale": "cpp",
-		"mutex": "cpp"
+		"mutex": "cpp",
+		"type_traits": "cpp"
 	},
 	"terminal.integrated.shell.windows": "C:\\Windows\\System32\\cmd.exe",
 	"terminal.integrated.fontSize": 20,

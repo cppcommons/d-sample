@@ -29,6 +29,7 @@ struct os_data
 	virtual long long get_integer() = 0;
 	virtual const char *get_string() = 0;
 	virtual long long get_length() = 0;
+	virtual os_value *get_array() = 0;
 };
 
 struct os_integer : public os_data
@@ -62,6 +63,10 @@ struct os_integer : public os_data
 	virtual long long get_length()
 	{
 		return 0;
+	}
+	virtual os_value *get_array()
+	{
+		return nullptr;
 	}
 };
 
@@ -103,6 +108,49 @@ struct os_string : public os_data
 	virtual long long get_length()
 	{
 		return m_value.size();
+	}
+	virtual os_value *get_array()
+	{
+		return nullptr;
+	}
+};
+
+struct os_array : public os_data
+{
+	std::vector<os_value> m_value;
+	explicit os_array(long long len)
+	{
+		m_value.resize(len + 1);
+	}
+	virtual void release()
+	{
+		size_t sz = (m_value.size() - 1);
+		os_dbg("os_array::release(): length=%zu", sz);
+		delete this;
+	}
+	virtual os_type_t type()
+	{
+		return OS_ARRAY;
+	}
+	virtual void to_ss(std::stringstream &stream)
+	{
+		stream << "{array of " << (m_value.size() - 1) << " elements}";
+	}
+	virtual long long get_integer()
+	{
+		return 0;
+	}
+	virtual const char *get_string()
+	{
+		return "";
+	}
+	virtual long long get_length()
+	{
+		return m_value.size();
+	}
+	virtual os_value *get_array()
+	{
+		return &m_value[0];
 	}
 };
 
@@ -266,6 +314,13 @@ static inline os_value os_new_value(os_data *data)
 		g_os_value_set.insert(entry);
 		return entry;
 	}
+}
+
+extern os_value *os_new_array(long long len)
+{
+	os_array *v_array = new os_array(len);
+	os_new_value(v_array); // os_value not returned.
+	return v_array->get_array();
 }
 
 extern os_value os_new_integer(long long data)

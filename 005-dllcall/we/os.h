@@ -25,6 +25,7 @@ enum os_type_t
 extern int os_printf(const char *format, ...);
 extern int os_dbg(const char *format, ...);
 #endif /* !__HTOD__ */
+extern os_value *os_new_array(long long len);
 extern os_value os_new_integer(long long data);
 extern long long os_get_integer(os_value value);
 extern os_value os_new_string(const char *data, long long len);
