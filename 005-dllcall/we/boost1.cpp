@@ -25,7 +25,8 @@ using namespace std;
 
 static int os_dbg(const char *format, ...);
 
-typedef ::int64_t os_integer_t;
+//typedef ::int64_t os_integer_t;
+typedef long long os_integer_t;
 
 typedef os_integer_t os_oid_t;
 enum os_type_t
@@ -520,6 +521,7 @@ struct C_Class1
 	}
 };
 
+#if 0x0
 struct C_Variant
 {
 	enum VariantType
@@ -549,6 +551,7 @@ struct C_Variant
 		return (*this);
 	}
 };
+#endif
 
 static DWORD WINAPI Thread(LPVOID *data)
 {
@@ -576,10 +579,6 @@ int main()
 	os_thread_id tid1 = os_get_thread_id();
 	os_dbg("tid1=%s", tid1.c_str());
 	HANDLE hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Thread, (LPVOID) "カウント数表示：", 0, NULL);
-
-	C_Variant var1 = 123;
-	C_Variant var2 = "abc";
-	var1 = "xyz";
 
 	{
 		os_thread_map_t::iterator it;
