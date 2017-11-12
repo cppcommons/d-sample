@@ -63,7 +63,7 @@ void main(string[] args)
 	InternetCloseHandle(hFile);
 	InternetCloseHandle(hInet);
 
-	exit(0);
+	//exit(0);
 
 	os_value[] argv;
 	argv ~= os_new_integer(11);
@@ -79,11 +79,12 @@ void main(string[] args)
 	string s = "abc漢字";
 	os_value mystr = os_new_string(cast(char*) s.ptr, s.length);
 	os_dump_heap();
-	os_link(mystr);
+	os_mark(mystr);
 	os_sweep();
 	os_dump_heap();
 	char* ptr = os_get_string(mystr);
 	writefln("[%s]", toString(ptr));
+	os_reset();
 
 	exit(0);
 }
