@@ -23,9 +23,64 @@ using namespace std;
 #define THREAD_LOCAL __declspec(thread)
 #endif
 
+static int os_dbg(const char *format, ...);
+
 typedef ::int64_t os_integer_t;
 
 typedef os_integer_t os_oid_t;
+enum os_type_t
+{
+	OS_NIL,
+	OS_ADDRESS,
+	OS_ARRAY,
+	OS_BYTES,
+	OS_INTEGER,
+	OS_OBJECT,
+	OS_REAL,
+	OS_STRING
+};
+struct os_value;
+typedef os_value *os_value_t;
+
+struct os_value
+{
+	virtual void release() = 0;
+	virtual os_type_t type() = 0;
+	virtual void to_ss(std::stringstream &stream) = 0;
+	virtual os_integer_t get_integer() = 0;
+};
+
+struct os_integer : public os_value
+{
+	os_integer_t m_value;
+	explicit os_integer(os_integer_t value)
+	{
+		m_value = value;
+	}
+#if 0x0
+	virtual ~os_integer()
+	{
+		os_dbg("~os_integer(): %lld", m_value);
+	}
+#endif
+	virtual void release()
+	{
+		os_dbg("os_integer::release(): %lld", m_value);
+		delete this;
+	}
+	virtual os_type_t type()
+	{
+		return OS_INTEGER;
+	}
+	virtual void to_ss(std::stringstream &stream)
+	{
+		stream << m_value;
+	}
+	virtual os_integer_t get_integer()
+	{
+		return m_value;
+	}
+};
 
 static stlsoft::winstl_project::thread_mutex g_os_thread_mutex;
 
@@ -203,48 +258,54 @@ struct os_object_entry_t : public os_struct
 	{
 		NIL,
 		ADDRESS,
+		ARRAY,
 		BYTES,
 		INTEGER,
 		OBJECT,
 		REAL,
-		STRING,
-		VECTOR
+		STRING
 	};
 	os_thread_id m_thread_id;
 	os_integer_t m_link_count;
-	value_type_t m_type;
-	union {
-		os_integer_t m_integer;
-		double m_real;
-		void *m_this;
-	} m_simple;
-	std::string m_string;
-	std::vector<os_oid_t> m_array;
-	void _init(os_thread_id &thread_id, os_integer_t link_count, os_integer_t value)
+	os_value *m_value;
+	void _init(os_thread_id &thread_id)
 	{
 		m_thread_id = thread_id;
-		m_link_count = link_count;
-		//m_value = value;
-		m_type = value_type_t::INTEGER;
-		m_simple.m_integer = value;
+		m_link_count = 0;
+		m_value = nullptr;
 	}
-	explicit os_object_entry_t() //: m_link_count(0), m_value(0)
+	explicit os_object_entry_t()
 	{
-		_init(os_get_thread_id(), 0, 0);
+		_init(os_get_thread_id());
 	}
+#if 0x0
 	explicit os_object_entry_t(os_integer_t value)
 	{
-		_init(os_get_thread_id(), 0, value);
+		_init(os_get_thread_id());
+		m_value = new os_integer(value);
 		os_dbg("%s", c_str());
+	}
+#endif
+	void set_value(os_value *value)
+	{
+		if (m_value)
+			m_value->release();
+		m_value = value;
+	}
+	virtual ~os_object_entry_t()
+	{
+		//set_value(nullptr);
+		if (m_value)
+			m_value->release();
 	}
 	const char *c_str()
 	{
 		std::string v_thread_id = m_thread_id.c_str();
 		std::stringstream v_stream;
 		v_stream << "os_object_entry_t { " << v_thread_id
-				 << " "
-				 << m_simple.m_integer
-				 << " }";
+				 << " ";
+		m_value->to_ss(v_stream);
+		v_stream << " }";
 		m_debug_output_string = v_stream.str();
 		return m_debug_output_string.c_str();
 	}
@@ -282,10 +343,11 @@ extern os_oid_t os_new_integer(os_integer_t value)
 		os_thread_locker locker(g_os_thread_mutex);
 		os_register_curr_thread();
 		os_oid_t v_oid = os_get_next_oid();
+		#if 0x1
 		os_object_entry_t v_entry;
-		v_entry.m_type = os_object_entry_t::value_type_t::INTEGER;
-		v_entry.m_simple.m_integer = value;
 		g_os_object_map[v_oid] = v_entry;
+		g_os_object_map[v_oid].set_value(new os_integer(value));
+		#endif
 		return v_oid;
 	}
 }
@@ -307,7 +369,7 @@ extern os_integer_t os_get_integer(os_oid_t oid)
 	os_object_entry_t *v_entry = os_find_entry(oid);
 	if (!v_entry)
 		return 0;
-	return (*v_entry).m_simple.m_integer;
+	return (*v_entry).m_value->get_integer();
 }
 
 extern void os_set_integer(os_oid_t oid, os_integer_t value)
@@ -315,8 +377,8 @@ extern void os_set_integer(os_oid_t oid, os_integer_t value)
 	os_object_entry_t *v_entry = os_find_entry(oid);
 	if (!v_entry)
 		return;
-	(*v_entry).m_type = os_object_entry_t::value_type_t::INTEGER;
-	(*v_entry).m_simple.m_integer = value;
+	//(*v_entry).m_type = os_object_entry_t::value_type_t::INTEGER;
+	//(*v_entry).m_simple.m_integer = value;
 }
 
 static void os_dump_object_heap()
