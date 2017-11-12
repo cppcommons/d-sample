@@ -72,7 +72,8 @@ static DWORD WINAPI Thread(LPVOID *data)
 int main()
 {
 	//os_new_std_string("test string テスト文字列");
-	os_new_string("test string テスト文字列");
+	os_value s = os_new_string("test string テスト文字列");
+	os_dbg("s=[%s]", os_get_string(s));
 	os_new_string("string(1)", -1);
 	os_new_string("STRING(2)", 3);
 	//os_function_t v_func = cos_add2;

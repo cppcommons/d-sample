@@ -285,6 +285,13 @@ extern os_integer_t os_get_integer(os_value value)
 	return value->m_value->get_integer();
 }
 
+extern const char* os_get_string(os_value value)
+{
+	if (!value)
+		return 0;
+	return value->m_value->get_string();
+}
+
 extern void os_dump_heap()
 {
 	{

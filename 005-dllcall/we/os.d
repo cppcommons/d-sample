@@ -55,6 +55,8 @@ os_value  os_new_integer(os_integer_t data);
 os_integer_t  os_get_integer(os_value value);
 //C     extern os_value os_new_string(const char *data, os_integer_t len);
 os_value  os_new_string(char *data, os_integer_t len);
+//C     extern const char *os_get_string(os_value value);
+char * os_get_string(os_value value);
 //C     extern void os_dump_heap();
 void  os_dump_heap();
 //C     extern void os_link(os_value entry);
