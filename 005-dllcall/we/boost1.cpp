@@ -93,6 +93,13 @@ struct os_string : public os_value
 	{
 		m_value = value;
 	}
+	explicit os_string(const char *value, os_integer_t len)
+	{
+		if (len < 0)
+			m_value = std::string(value);
+		else
+			m_value = std::string(value, len);
+	}
 	virtual void release()
 	{
 		os_dbg("os_string::release(): %s", m_value.c_str());
@@ -368,7 +375,7 @@ extern os_oid_t os_new_integer(os_integer_t value)
 	}
 }
 
-extern os_oid_t os_new_std_string(const std::string &value)
+static os_oid_t os_new_std_string(const std::string &value)
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
@@ -377,6 +384,19 @@ extern os_oid_t os_new_std_string(const std::string &value)
 		os_value_entry_t v_entry;
 		g_os_object_map[v_oid] = v_entry;
 		g_os_object_map[v_oid].set_value(new os_string(value));
+		return v_oid;
+	}
+}
+
+extern os_oid_t os_new_string(const char *value, os_integer_t len)
+{
+	{
+		os_thread_locker locker(g_os_thread_mutex);
+		os_register_curr_thread();
+		os_oid_t v_oid = os_get_next_oid();
+		os_value_entry_t v_entry;
+		g_os_object_map[v_oid] = v_entry;
+		g_os_object_map[v_oid].set_value(new os_string(value, len));
 		return v_oid;
 	}
 }
@@ -548,6 +568,8 @@ static DWORD WINAPI Thread(LPVOID *data)
 int main()
 {
 	os_new_std_string("test string テスト文字列");
+	os_new_string("string(1)", -1);
+	os_new_string("STRING(2)", 3);
 	os_function_t v_func = cos_add2;
 	os_function_t v_func2 = C_Class1::cos_add2;
 
