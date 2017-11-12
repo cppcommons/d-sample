@@ -22,8 +22,7 @@ extern (C):
 alias os_variant_t *os_value;
 //C     typedef os_value (*os_function_t)(long argc, os_value argv[]);
 alias os_value  function(int argc, os_value *argv)os_function_t;
-//C     typedef long long os_integer_t;
-alias long os_integer_t;
+//typedef long long os_integer_t;
 //C     enum os_type_t
 //C     {
 //C     	OS_NIL,
@@ -49,12 +48,12 @@ enum os_type_t
 int  os_printf(char *format,...);
 //C     extern int os_dbg(const char *format, ...);
 int  os_dbg(char *format,...);
-//C     extern os_value os_new_integer(os_integer_t data);
-os_value  os_new_integer(os_integer_t data);
-//C     extern os_integer_t os_get_integer(os_value value);
-os_integer_t  os_get_integer(os_value value);
-//C     extern os_value os_new_string(const char *data, os_integer_t len);
-os_value  os_new_string(char *data, os_integer_t len);
+//C     extern os_value os_new_integer(long long data);
+os_value  os_new_integer(long data);
+//C     extern long long os_get_integer(os_value value);
+long  os_get_integer(os_value value);
+//C     extern os_value os_new_string(const char *data, long long len);
+os_value  os_new_string(char *data, long len);
 //C     extern const char *os_get_string(os_value value);
 char * os_get_string(os_value value);
 //C     extern void os_dump_heap();
@@ -65,19 +64,21 @@ void  os_link(os_value entry);
 void  os_unlink(os_value entry);
 //C     extern void os_cleanup();
 void  os_cleanup();
-//C     extern os_integer_t os_arg_count(os_function_t fn);
-os_integer_t  os_arg_count(os_function_t fn);
+//C     extern long long os_arg_count(os_function_t fn);
+long  os_arg_count(os_function_t fn);
 
 //C     #ifdef __cplusplus
 //C     }
 //C     #endif
 
-//#ifdef __cplusplus /* C++ only */
-//#include <string>
-//static inline os_value os_new_string(const std::string &data)
-//{
-//	return os_new_string(data.c_str(), data.size());
-//}
-//#endif /* __cplusplus (C++ only) */
+//C     #ifndef __HTOD__
+//C     #ifdef __cplusplus /* C++ only */
+//C     #include <string>
+//C     static inline os_value os_new_string(const std::string &data)
+//C     {
+//C     	return os_new_string(data.c_str(), data.size());
+//C     }
+//C     #endif /* __cplusplus (C++ only) */
+//C     #endif /* !__HTOD__ */
 
 //C     #endif /* OS_H */

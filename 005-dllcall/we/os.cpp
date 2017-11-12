@@ -19,22 +19,22 @@ using namespace std;
 #define THREAD_LOCAL __declspec(thread)
 #endif
 
-typedef os_integer_t os_oid_t;
+typedef long long os_oid_t;
 
 struct os_data
 {
 	virtual void release() = 0;
 	virtual os_type_t type() = 0;
 	virtual void to_ss(std::stringstream &stream) = 0;
-	virtual os_integer_t get_integer() = 0;
+	virtual long long get_integer() = 0;
 	virtual const char *get_string() = 0;
-	virtual os_integer_t get_length() = 0;
+	virtual long long get_length() = 0;
 };
 
 struct os_integer : public os_data
 {
-	os_integer_t m_value;
-	explicit os_integer(os_integer_t value)
+	long long m_value;
+	explicit os_integer(long long value)
 	{
 		m_value = value;
 	}
@@ -51,7 +51,7 @@ struct os_integer : public os_data
 	{
 		stream << m_value;
 	}
-	virtual os_integer_t get_integer()
+	virtual long long get_integer()
 	{
 		return m_value;
 	}
@@ -59,7 +59,7 @@ struct os_integer : public os_data
 	{
 		return "";
 	}
-	virtual os_integer_t get_length()
+	virtual long long get_length()
 	{
 		return 0;
 	}
@@ -72,7 +72,7 @@ struct os_string : public os_data
 	{
 		m_value = value;
 	}
-	explicit os_string(const char *value, os_integer_t len)
+	explicit os_string(const char *value, long long len)
 	{
 		if (len < 0)
 			m_value = std::string(value);
@@ -92,7 +92,7 @@ struct os_string : public os_data
 	{
 		stream << "\"" << m_value << "\"";
 	}
-	virtual os_integer_t get_integer()
+	virtual long long get_integer()
 	{
 		return 0;
 	}
@@ -100,7 +100,7 @@ struct os_string : public os_data
 	{
 		return m_value.c_str();
 	}
-	virtual os_integer_t get_length()
+	virtual long long get_length()
 	{
 		return m_value.size();
 	}
@@ -129,7 +129,7 @@ struct os_struct
 struct os_thread_id : public os_struct
 {
 	DWORD id;
-	os_integer_t no;
+	long long no;
 	const char *c_str()
 	{
 		std::stringstream v_stream;
@@ -148,8 +148,8 @@ struct os_thread_id : public os_struct
 
 static os_thread_id os_get_thread_id()
 {
-	static THREAD_LOCAL os_integer_t curr_thread_no = -1;
-	static os_integer_t v_thread_id_max = 0;
+	static THREAD_LOCAL long long curr_thread_no = -1;
+	static long long v_thread_id_max = 0;
 	static stlsoft::winstl_project::thread_mutex v_mutex;
 	{
 		os_thread_locker locker(v_mutex);
@@ -204,7 +204,7 @@ struct os_variant_t : public os_struct
 {
 	os_oid_t m_oid;
 	os_thread_id m_thread_id;
-	os_integer_t m_link_count;
+	long long m_link_count;
 	os_data *m_value;
 	explicit os_variant_t(os_oid_t oid)
 	{
@@ -268,17 +268,17 @@ static inline os_value os_new_value(os_data *data)
 	}
 }
 
-extern os_value os_new_integer(os_integer_t data)
+extern os_value os_new_integer(long long data)
 {
 	return os_new_value(new os_integer(data));
 }
 
-extern os_value os_new_string(const char *data, os_integer_t len)
+extern os_value os_new_string(const char *data, long long len)
 {
 	return os_new_value(new os_string(data, len));
 }
 
-extern os_integer_t os_get_integer(os_value value)
+extern long long os_get_integer(os_value value)
 {
 	if (!value)
 		return 0;
@@ -339,7 +339,7 @@ extern void os_cleanup()
 	}
 }
 
-extern os_integer_t os_arg_count(os_function_t fn)
+extern long long os_arg_count(os_function_t fn)
 {
 	os_value v_count = fn(-1, nullptr);
 	return os_get_integer(v_count);

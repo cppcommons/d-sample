@@ -37,7 +37,7 @@ void main(string[] args)
 	argv ~= os_new_integer(22);
 	os_value answer = my_add2(argv.length, &argv[0]);
 	os_dump_heap();
-	os_integer_t answer2 = os_get_integer(answer);
+	long answer2 = os_get_integer(answer);
 	writeln(answer2);
 	long arg0 = os_get_integer(argv[0]);
 	writeln(`arg0=`, arg0);
