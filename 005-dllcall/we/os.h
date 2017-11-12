@@ -22,7 +22,6 @@ enum os_type_t
 	OS_ARRAY,
 	OS_BYTES,
 	OS_INTEGER,
-	//OS_OBJECT,
 	OS_REAL,
 	OS_STRING
 };

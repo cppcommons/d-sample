@@ -30,7 +30,6 @@ alias os_value  function(int argc, os_value *argv)os_function_t;
 //C     	OS_ARRAY,
 //C     	OS_BYTES,
 //C     	OS_INTEGER,
-	//OS_OBJECT,
 //C     	OS_REAL,
 //C     	OS_STRING
 //C     };
