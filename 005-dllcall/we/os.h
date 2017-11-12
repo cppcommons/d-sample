@@ -16,6 +16,7 @@ enum os_type_t
 	OS_NIL,
 	OS_ARRAY,
 	OS_BYTES,
+	OS_HANDLE,
 	OS_INTEGER,
 	OS_REAL,
 	OS_STRING
@@ -26,6 +27,8 @@ extern int os_dbg(const char *format, ...);
 #endif /* !__HTOD__ */
 extern os_value os_new_array(long long len);
 extern os_value *os_get_array(os_value value);
+extern os_value os_new_handle(void *data);
+extern void *os_get_handle(os_value value);
 extern os_value os_new_integer(long long data);
 extern long long os_get_integer(os_value value);
 extern os_value os_new_string(const char *data, long long len);

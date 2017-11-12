@@ -21,6 +21,7 @@ alias os_value  function(int argc, os_value *argv)os_function_t;
 //C     	OS_NIL,
 //C     	OS_ARRAY,
 //C     	OS_BYTES,
+//C     	OS_HANDLE,
 //C     	OS_INTEGER,
 //C     	OS_REAL,
 //C     	OS_STRING
@@ -30,6 +31,7 @@ enum os_type_t
     OS_NIL,
     OS_ARRAY,
     OS_BYTES,
+    OS_HANDLE,
     OS_INTEGER,
     OS_REAL,
     OS_STRING,
@@ -42,6 +44,10 @@ enum os_type_t
 os_value  os_new_array(long len);
 //C     extern os_value *os_get_array(os_value value);
 os_value * os_get_array(os_value value);
+//C     extern os_value os_new_handle(void *data);
+os_value  os_new_handle(void *data);
+//C     extern void *os_get_handle(os_value value);
+void * os_get_handle(os_value value);
 //C     extern os_value os_new_integer(long long data);
 os_value  os_new_integer(long data);
 //C     extern long long os_get_integer(os_value value);

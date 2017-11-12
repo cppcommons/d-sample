@@ -30,6 +30,92 @@ struct os_data
 	virtual const char *get_string() = 0;
 	virtual long long get_length() = 0;
 	virtual os_value *get_array() = 0;
+	virtual void *get_handle() = 0;
+};
+
+struct os_array : public os_data
+{
+	std::vector<os_value> m_value;
+	explicit os_array(long long len)
+	{
+		m_value.resize(len + 1);
+	}
+	virtual void release()
+	{
+		size_t sz = (m_value.size() - 1);
+		os_dbg("os_array::release(): length=%zu", sz);
+		delete this;
+	}
+	virtual os_type_t type()
+	{
+		return OS_ARRAY;
+	}
+	virtual void to_ss(std::stringstream &stream)
+	{
+		stream << "{array of " << (m_value.size() - 1) << " elements}";
+	}
+	virtual long long get_integer()
+	{
+		return 0;
+	}
+	virtual const char *get_string()
+	{
+		return "";
+	}
+	virtual long long get_length()
+	{
+		return m_value.size();
+	}
+	virtual os_value *get_array()
+	{
+		return &m_value[0];
+	}
+	virtual void *get_handle()
+	{
+		return nullptr;
+	}
+};
+
+struct os_handle : public os_data
+{
+	void *m_value;
+	explicit os_handle(void *value)
+	{
+		m_value = value;
+	}
+	virtual void release()
+	{
+		os_dbg("os_handle::release(): %p", m_value);
+		delete this;
+	}
+	virtual os_type_t type()
+	{
+		return OS_HANDLE;
+	}
+	virtual void to_ss(std::stringstream &stream)
+	{
+		stream << m_value;
+	}
+	virtual long long get_integer()
+	{
+		return 0;
+	}
+	virtual const char *get_string()
+	{
+		return "";
+	}
+	virtual long long get_length()
+	{
+		return 0;
+	}
+	virtual os_value *get_array()
+	{
+		return nullptr;
+	}
+	virtual void *get_handle()
+	{
+		return m_value;
+	}
 };
 
 struct os_integer : public os_data
@@ -65,6 +151,10 @@ struct os_integer : public os_data
 		return 0;
 	}
 	virtual os_value *get_array()
+	{
+		return nullptr;
+	}
+	virtual void *get_handle()
 	{
 		return nullptr;
 	}
@@ -113,44 +203,9 @@ struct os_string : public os_data
 	{
 		return nullptr;
 	}
-};
-
-struct os_array : public os_data
-{
-	std::vector<os_value> m_value;
-	explicit os_array(long long len)
+	virtual void *get_handle()
 	{
-		m_value.resize(len + 1);
-	}
-	virtual void release()
-	{
-		size_t sz = (m_value.size() - 1);
-		os_dbg("os_array::release(): length=%zu", sz);
-		delete this;
-	}
-	virtual os_type_t type()
-	{
-		return OS_ARRAY;
-	}
-	virtual void to_ss(std::stringstream &stream)
-	{
-		stream << "{array of " << (m_value.size() - 1) << " elements}";
-	}
-	virtual long long get_integer()
-	{
-		return 0;
-	}
-	virtual const char *get_string()
-	{
-		return "";
-	}
-	virtual long long get_length()
-	{
-		return m_value.size();
-	}
-	virtual os_value *get_array()
-	{
-		return &m_value[0];
+		return nullptr;
 	}
 };
 
@@ -194,20 +249,34 @@ struct os_thread_id : public os_struct
 	}
 };
 
+#if 0x1
 static long long os_get_thread_no()
 {
-	static THREAD_LOCAL long long curr_thread_no = -1;
-	if (curr_thread_no > 0)
-		return curr_thread_no;
-	static long long v_thread_id_max = 0;
-	static stlsoft::winstl_project::thread_mutex v_mutex;
+	static THREAD_LOCAL long long curr_thread_no2 = -1;
+	static long long v_thread_id_max2 = 0;
+	static stlsoft::winstl_project::thread_mutex v_mutex2;
+	os_dbg("os_get_thread_no(1)");
+	os_dbg("os_get_thread_no(2)");
+	if (curr_thread_no2 > 0)
+		return curr_thread_no2;
+	os_dbg("os_get_thread_no(3)");
 	{
-		os_thread_locker locker(v_mutex);
-		v_thread_id_max++;
-		curr_thread_no = v_thread_id_max;
-		return curr_thread_no;
+		//os_thread_locker locker(v_mutex2);
+		//os_thread_locker locker(g_os_thread_mutex);
+		os_dbg("os_get_thread_no(4)");
+		v_mutex2.lock();
+		if (curr_thread_no2 == -1)
+		{
+			os_dbg("os_get_thread_no(5)");
+			v_thread_id_max2++;
+			curr_thread_no2 = v_thread_id_max2;
+		}
+		v_mutex2.unlock();
+		os_dbg("os_get_thread_no(6)");
+		return curr_thread_no2;
 	}
 }
+#endif
 
 static os_thread_id os_get_thread_id()
 {
@@ -224,9 +293,14 @@ static os_thread_id os_get_thread_id()
 		}
 	}
 #endif
+	os_dbg("os_get_thread_id(1)");
 	os_thread_id result;
-	result.dword = ::GetCurrentThreadId();
+	//result.no = curr_thread_no; //os_get_thread_no();
 	result.no = os_get_thread_no();
+	//os_get_thread_no();
+	os_dbg("os_get_thread_id(2)");
+	result.dword = ::GetCurrentThreadId();
+	os_dbg("os_get_thread_id(3)");
 	return result;
 }
 
@@ -333,24 +407,25 @@ extern bool os_unmark(os_value entry)
 
 static inline os_value os_new_value(os_data *data)
 {
+	os_dbg("os_new_value() start!");
 	{
 		os_thread_locker locker(g_os_thread_mutex);
+		os_dbg("os_new_value(1)");
 		os_oid_t v_oid = os_get_next_oid();
+		os_dbg("os_new_value(1.1)");
 		os_value entry = new os_variant_t(v_oid);
+		os_dbg("os_new_value(2)");
 		entry->set_value(data);
 		g_os_value_set.insert(entry);
+		os_dbg("os_new_value(3)");
 		return entry;
 	}
 }
 
 extern os_value os_new_array(long long len)
 {
+	os_dbg("os_new_array() start!");
 	return os_new_value(new os_array(len));
-#if 0x0
-	os_array *v_array = new os_array(len);
-	os_new_value(v_array); // os_value not returned.
-	return v_array->get_array();
-#endif
 }
 
 extern os_value *os_get_array(os_value value)
@@ -365,16 +440,28 @@ extern os_value os_new_integer(long long data)
 	return os_new_value(new os_integer(data));
 }
 
-extern os_value os_new_string(const char *data, long long len)
-{
-	return os_new_value(new os_string(data, len));
-}
-
 extern long long os_get_integer(os_value value)
 {
 	if (!value)
 		return 0;
 	return value->m_value->get_integer();
+}
+
+extern os_value os_new_handle(void *data)
+{
+	return os_new_value(new os_handle(data));
+}
+
+extern void *os_get_handle(os_value value)
+{
+	if (!value)
+		return 0;
+	return value->m_value->get_handle();
+}
+
+extern os_value os_new_string(const char *data, long long len)
+{
+	return os_new_value(new os_string(data, len));
 }
 
 extern const char *os_get_string(os_value value)

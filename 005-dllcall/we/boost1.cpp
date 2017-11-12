@@ -23,6 +23,8 @@ static DWORD WINAPI Thread(LPVOID *data)
 
 int main()
 {
+	os_dbg("DBG!");
+	os_value my_handle = os_new_handle((void *)0x123456);
 	os_value ary_ = os_new_array(3);
 	os_value *ary = os_get_array(ary_);
 	for (int i = 0; i < 4; i++)
