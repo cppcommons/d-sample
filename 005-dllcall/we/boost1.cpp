@@ -77,7 +77,7 @@ struct os_integer : public os_data
 	}
 	virtual const char *get_string()
 	{
-		return "<INTEGER>";
+		return "";
 	}
 	virtual os_integer_t get_length()
 	{
