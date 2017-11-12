@@ -253,7 +253,6 @@ static os_thread_id &os_register_curr_thread()
 	}
 }
 
-//static std::vector<DWORD> os_get_thread_dword_list()
 static std::set<DWORD> os_get_thread_dword_list()
 {
 	std::set<DWORD> result;
@@ -303,14 +302,6 @@ struct os_variant_t : public os_struct
 	os_thread_id m_thread_id;
 	os_integer_t m_link_count;
 	os_data *m_value;
-#if 0x0
-	void _init(os_thread_id &thread_id)
-	{
-		m_thread_id = thread_id;
-		m_link_count = 0;
-		m_value = nullptr;
-	}
-#endif
 	explicit os_variant_t(os_oid_t oid)
 	{
 		m_oid = oid;
@@ -361,8 +352,23 @@ extern void os_oid_unlink(os_value entry)
 	}
 }
 
+static inline os_value os_new_value(os_data *data)
+{
+	{
+		os_thread_locker locker(g_os_thread_mutex);
+		os_register_curr_thread();
+		os_oid_t v_oid = os_get_next_oid();
+		os_value entry = new os_variant_t(v_oid);
+		entry->set_value(data);
+		g_os_value_set.insert(entry);
+		return entry;
+	}
+}
+
 extern os_value os_new_integer(os_integer_t value)
 {
+	return os_new_value(new os_integer(value));
+	#if 0x0
 	{
 		os_thread_locker locker(g_os_thread_mutex);
 		os_register_curr_thread();
@@ -372,10 +378,13 @@ extern os_value os_new_integer(os_integer_t value)
 		g_os_value_set.insert(entry);
 		return entry;
 	}
+	#endif
 }
 
 static os_value os_new_std_string(const std::string &value)
 {
+	return os_new_value(new os_string(value));
+	#if 0x0
 	{
 		os_thread_locker locker(g_os_thread_mutex);
 		os_register_curr_thread();
@@ -385,10 +394,13 @@ static os_value os_new_std_string(const std::string &value)
 		g_os_value_set.insert(entry);
 		return entry;
 	}
+	#endif
 }
 
 extern os_value os_new_string(const char *value, os_integer_t len)
 {
+	return os_new_value(new os_string(value, len));
+	#if 0x0
 	{
 		os_thread_locker locker(g_os_thread_mutex);
 		os_register_curr_thread();
@@ -398,6 +410,7 @@ extern os_value os_new_string(const char *value, os_integer_t len)
 		g_os_value_set.insert(entry);
 		return entry;
 	}
+	#endif
 }
 
 extern os_integer_t os_get_integer(os_value entry)
