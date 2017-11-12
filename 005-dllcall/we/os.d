@@ -31,7 +31,7 @@ alias long os_integer_t;
 //C     	OS_ARRAY,
 //C     	OS_BYTES,
 //C     	OS_INTEGER,
-//C     	OS_OBJECT,
+	//OS_OBJECT,
 //C     	OS_REAL,
 //C     	OS_STRING
 //C     };
@@ -42,7 +42,6 @@ enum os_type_t
     OS_ARRAY,
     OS_BYTES,
     OS_INTEGER,
-    OS_OBJECT,
     OS_REAL,
     OS_STRING,
 }
