@@ -176,7 +176,7 @@ struct os_struct
 
 struct os_thread_id : public os_struct
 {
-	DWORD id;
+	DWORD dword;
 	long long no;
 	const char *c_str()
 	{
@@ -187,15 +187,31 @@ struct os_thread_id : public os_struct
 				 << std::setfill('0')
 				 << std::hex
 				 //<< std::uppercase
-				 << id
+				 << dword
 				 << "]";
 		m_debug_output_string = v_stream.str();
 		return m_debug_output_string.c_str();
 	}
 };
 
+static long long os_get_thread_no()
+{
+	static THREAD_LOCAL long long curr_thread_no = -1;
+	if (curr_thread_no > 0)
+		return curr_thread_no;
+	static long long v_thread_id_max = 0;
+	static stlsoft::winstl_project::thread_mutex v_mutex;
+	{
+		os_thread_locker locker(v_mutex);
+		v_thread_id_max++;
+		curr_thread_no = v_thread_id_max;
+		return curr_thread_no;
+	}
+}
+
 static os_thread_id os_get_thread_id()
 {
+#if 0x0
 	static THREAD_LOCAL long long curr_thread_no = -1;
 	static long long v_thread_id_max = 0;
 	static stlsoft::winstl_project::thread_mutex v_mutex;
@@ -207,9 +223,10 @@ static os_thread_id os_get_thread_id()
 			curr_thread_no = v_thread_id_max;
 		}
 	}
+#endif
 	os_thread_id result;
-	result.id = ::GetCurrentThreadId();
-	result.no = curr_thread_no;
+	result.dword = ::GetCurrentThreadId();
+	result.no = os_get_thread_no();
 	return result;
 }
 
@@ -386,6 +403,7 @@ static void os_cleanup(bool reset)
 	{
 		os_thread_locker locker(g_os_thread_mutex);
 		os_thread_id v_thread_id = os_get_thread_id();
+		//long long v_thread_no = os_get_thread_no();
 		std::set<DWORD> v_thread_list = os_get_thread_dword_list();
 		std::vector<os_variant_t *> v_removed;
 		os_value_set_t::iterator it;
@@ -397,20 +415,14 @@ static void os_cleanup(bool reset)
 			{
 				v_entry->m_link_count = 0;
 			}
-			if (v_thread_list.count(v_entry->m_thread_id.id) == 0)
-			{
-				v_removed.push_back(v_entry);
-			}
-			/*
-			else if (v_entry->m_link_count > 0)
-			{
-				continue;
-			}
-			*/
-			else if (v_entry->m_thread_id.no == v_thread_id.no)
+			if (v_entry->m_thread_id.no == v_thread_id.no)
 			{
 				if (v_entry->m_link_count <= 0)
 					v_removed.push_back(v_entry);
+			}
+			else if (v_thread_list.count(v_entry->m_thread_id.dword) == 0)
+			{
+				v_removed.push_back(v_entry);
 			}
 		}
 		for (size_t i = 0; i < v_removed.size(); i++)
