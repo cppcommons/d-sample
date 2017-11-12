@@ -190,7 +190,8 @@ int main(string[] args)
 	Target targetDebug;
 	targetDebug.title = "Debug";
 	targetDebug.output = emake_cmd.exe_base_name ~ "_d";
-	targetDebug.object_output = emake_cmd.project_base_name ~ ".bin/dmc-obj/Debug/";
+	//targetDebug.object_output = emake_cmd.project_base_name ~ ".bin/dmc-obj/Debug/";
+	targetDebug.object_output = emake_cmd.project_file_name ~ ".bin/dmc-obj/Debug/";
 	targetDebug.type = get_build_type_number(emake_cmd.project_file_ext); //"1";
 	targetDebug.compiler = "dmc";
 	targetDebug.compiler_options = ["-w-", "-Ae", "-g"];
@@ -209,7 +210,8 @@ int main(string[] args)
 	Target targetRelease;
 	targetRelease.title = "Release";
 	targetRelease.output = emake_cmd.exe_base_name;
-	targetRelease.object_output = emake_cmd.project_base_name ~ ".bin/dmc-obj/Release/";
+	//targetRelease.object_output = emake_cmd.project_base_name ~ ".bin/dmc-obj/Release/";
+	targetRelease.object_output = emake_cmd.project_file_name ~ ".bin/dmc-obj/Release/";
 	targetRelease.type = get_build_type_number(emake_cmd.project_file_ext); //"1";
 	targetRelease.compiler = "dmc";
 	targetRelease.compiler_options = ["-w-", "-Ae", "-o"];
