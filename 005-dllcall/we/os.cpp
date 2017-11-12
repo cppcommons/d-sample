@@ -240,7 +240,7 @@ struct os_variant_t : public os_struct
 typedef std::set<os_variant_t *> os_value_set_t;
 static os_value_set_t g_os_value_set;
 
-extern void os_oid_link(os_value entry)
+extern void os_link(os_value entry)
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
@@ -248,7 +248,7 @@ extern void os_oid_link(os_value entry)
 	}
 }
 
-extern void os_oid_unlink(os_value entry)
+extern void os_unlink(os_value entry)
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
