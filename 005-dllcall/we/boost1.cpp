@@ -446,7 +446,7 @@ static void os_dump_object_heap()
 	}
 }
 
-extern void os_gc()
+extern void os_cleanup()
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
@@ -576,7 +576,7 @@ int main()
 
 	os_dump_object_heap();
 	os_dbg("before gc");
-	os_gc();
+	os_cleanup();
 	os_dbg("after gc");
 	os_dump_object_heap();
 
@@ -592,14 +592,14 @@ int main()
 		}
 	}
 	os_dbg("before gc");
-	os_gc();
+	os_cleanup();
 	os_dbg("after gc");
 	os_dump_object_heap();
 	os_dbg("after dump");
 
 	os_oid_unlink(v_answer);
 	os_dbg("before gc");
-	os_gc();
+	os_cleanup();
 	os_dbg("after gc");
 	os_dump_object_heap();
 	os_dbg("after dump");
