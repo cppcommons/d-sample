@@ -8,21 +8,14 @@ module os;
 //C     #endif
 
 //C     #ifdef __HTOD__
-//C     struct os_variant_t
-//C     {
-//C     };
-struct os_variant_t
-{
-}
-//C     #else
-//C     struct os_variant_t;
-//C     #endif
-//C     typedef os_variant_t *os_value;
+//C     typedef void *os_value;
 extern (C):
-alias os_variant_t *os_value;
+alias void *os_value;
+//C     #else
+//C     typedef struct os_variant_t *os_value;
+//C     #endif
 //C     typedef os_value (*os_function_t)(long argc, os_value argv[]);
 alias os_value  function(int argc, os_value *argv)os_function_t;
-//typedef long long os_integer_t;
 //C     enum os_type_t
 //C     {
 //C     	OS_NIL,
@@ -43,10 +36,10 @@ enum os_type_t
     OS_REAL,
     OS_STRING,
 }
+//C     #ifndef __HTOD__
 //C     extern int os_printf(const char *format, ...);
-int  os_printf(char *format,...);
 //C     extern int os_dbg(const char *format, ...);
-int  os_dbg(char *format,...);
+//C     #endif /* !__HTOD__ */
 //C     extern os_value os_new_integer(long long data);
 os_value  os_new_integer(long data);
 //C     extern long long os_get_integer(os_value value);

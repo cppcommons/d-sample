@@ -6,15 +6,11 @@ extern "C" {
 #endif
 
 #ifdef __HTOD__
-struct os_variant_t
-{
-};
+typedef void *os_value;
 #else
-struct os_variant_t;
+typedef struct os_variant_t *os_value;
 #endif
-typedef os_variant_t *os_value;
 typedef os_value (*os_function_t)(long argc, os_value argv[]);
-//typedef long long os_integer_t;
 enum os_type_t
 {
 	OS_NIL,
@@ -25,8 +21,10 @@ enum os_type_t
 	OS_REAL,
 	OS_STRING
 };
+#ifndef __HTOD__
 extern int os_printf(const char *format, ...);
 extern int os_dbg(const char *format, ...);
+#endif /* !__HTOD__ */
 extern os_value os_new_integer(long long data);
 extern long long os_get_integer(os_value value);
 extern os_value os_new_string(const char *data, long long len);
