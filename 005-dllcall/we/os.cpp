@@ -381,7 +381,7 @@ extern void os_dump_heap()
 	}
 }
 
-extern void os_sweep()
+static void os_cleanup(bool reset)
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
@@ -393,17 +393,24 @@ extern void os_sweep()
 		{
 			os_variant_t *v_entry = *it;
 			os_oid_t v_oid = v_entry->m_oid;
+			if (reset && v_entry->m_thread_id.no == v_thread_id.no)
+			{
+				v_entry->m_link_count = 0;
+			}
 			if (v_thread_list.count(v_entry->m_thread_id.id) == 0)
 			{
 				v_removed.push_back(v_entry);
 			}
+			/*
 			else if (v_entry->m_link_count > 0)
 			{
 				continue;
 			}
+			*/
 			else if (v_entry->m_thread_id.no == v_thread_id.no)
 			{
-				v_removed.push_back(v_entry);
+				if (v_entry->m_link_count <= 0)
+					v_removed.push_back(v_entry);
 			}
 		}
 		for (size_t i = 0; i < v_removed.size(); i++)
@@ -412,6 +419,16 @@ extern void os_sweep()
 			g_os_value_set.erase(v_removed[i]);
 		}
 	}
+}
+
+extern void os_sweep()
+{
+	os_cleanup(false);
+}
+
+extern void os_reset()
+{
+	os_cleanup(true);
 }
 
 extern long long os_arg_count(os_function_t fn)

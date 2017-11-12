@@ -36,6 +36,7 @@ extern void os_dump_heap();
 extern bool os_link(os_value entry);
 extern bool os_unlink(os_value entry);
 extern void os_sweep();
+extern void os_reset();
 extern long long os_arg_count(os_function_t fn);
 
 #ifdef __cplusplus
