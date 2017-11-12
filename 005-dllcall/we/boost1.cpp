@@ -11,12 +11,6 @@
 #define THREAD_LOCAL __declspec(thread)
 #endif
 
-extern os_integer_t os_arg_count(os_function_t fn)
-{
-	os_value v_count = fn(-1, nullptr);
-	return os_get_integer(v_count);
-}
-
 static os_value cos_add2(long argc, os_value args[])
 {
 	if (argc < 0)

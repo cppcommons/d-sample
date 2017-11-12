@@ -430,3 +430,8 @@ extern void os_cleanup()
 	}
 }
 
+extern os_integer_t os_arg_count(os_function_t fn)
+{
+	os_value v_count = fn(-1, nullptr);
+	return os_get_integer(v_count);
+}

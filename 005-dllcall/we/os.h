@@ -30,6 +30,7 @@ extern void os_dump_object_heap();
 extern void os_oid_link(os_value entry);
 extern void os_oid_unlink(os_value entry);
 extern void os_cleanup();
+extern os_integer_t os_arg_count(os_function_t fn);
 
 #ifdef __cplusplus
 }
