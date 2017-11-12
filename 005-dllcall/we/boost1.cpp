@@ -1,3 +1,4 @@
+#include "os.h"
 #include <iomanip>
 #include <iostream>
 #include <map>
@@ -21,6 +22,7 @@ using namespace std;
 #define THREAD_LOCAL __declspec(thread)
 #endif
 
+#if 0x0
 static int os_dbg(const char *format, ...);
 
 struct os_variant_t;
@@ -445,6 +447,7 @@ extern void os_cleanup()
 }
 
 typedef os_value (*os_function_t)(long argc, os_value args[]);
+#endif
 
 static os_value cos_add2(long argc, os_value args[])
 {
@@ -485,13 +488,17 @@ static DWORD WINAPI Thread(LPVOID *data)
 {
 	//os_register_curr_thread();
 	os_new_integer(1234);
+	#if 0x0
 	os_thread_id tid1 = os_get_thread_id();
 	os_dbg("tid1=%s", tid1.c_str());
 	os_dbg("%s start", (const char *)data);
+	#endif
 	Sleep(1000);
+	#if 0x0
 	os_thread_id tid2 = os_get_thread_id();
 	os_dbg("tid2=%s", tid2.c_str());
 	os_dbg("%s end", (const char *)data);
+	#endif
 	ExitThread(0);
 	return 0;
 }
@@ -504,10 +511,13 @@ int main()
 	os_function_t v_func = cos_add2;
 	os_function_t v_func2 = C_Class1::cos_add2;
 
+	#if 0x0
 	os_thread_id tid1 = os_get_thread_id();
 	os_dbg("tid1=%s", tid1.c_str());
+	#endif
 	HANDLE hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Thread, (LPVOID) "カウント数表示：", 0, NULL);
 
+	#if 0x0
 	{
 		os_thread_map_t::iterator it;
 		for (it = g_os_thread_map.begin(); it != g_os_thread_map.end(); it++)
@@ -518,6 +528,7 @@ int main()
 				   v_thread_dword, v_thread_id.c_str(), os_is_thread_alive(v_thread_dword));
 		}
 	}
+	#endif
 
 	std::vector<os_value> v_args;
 	v_args.push_back(os_new_integer(111));
@@ -540,6 +551,7 @@ int main()
 	os_dump_object_heap();
 
 	WaitForSingleObject(hThread, INFINITE);
+	#if 0x0
 	{
 		os_thread_map_t::iterator it;
 		for (it = g_os_thread_map.begin(); it != g_os_thread_map.end(); it++)
@@ -550,6 +562,7 @@ int main()
 				   v_thread_dword, v_thread_id.c_str(), os_is_thread_alive(v_thread_dword));
 		}
 	}
+	#endif
 	os_dbg("before gc");
 	os_cleanup();
 	os_dbg("after gc");

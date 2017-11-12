@@ -22,21 +22,8 @@ using namespace std;
 #define THREAD_LOCAL __declspec(thread)
 #endif
 
-static int os_dbg(const char *format, ...);
-
 
 typedef os_integer_t os_oid_t;
-enum os_type_t
-{
-	OS_NIL,
-	OS_ADDRESS,
-	OS_ARRAY,
-	OS_BYTES,
-	OS_INTEGER,
-	OS_OBJECT,
-	OS_REAL,
-	OS_STRING
-};
 
 struct os_data
 {
@@ -177,7 +164,7 @@ static int os_printf(const char *format, ...)
 	}
 }
 
-static int os_dbg(const char *format, ...)
+extern int os_dbg(const char *format, ...)
 {
 	static stlsoft::winstl_project::thread_mutex v_mutex;
 	{

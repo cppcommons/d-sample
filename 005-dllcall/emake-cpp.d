@@ -270,7 +270,7 @@ int main(string[] args)
 		if (rc != 0)
 		{
 			//cb_command = ["cmd", "/c", "start", "codeblocks", emake_cmd.project_base_name ~ ".cbp"];
-			cb_command = ["codeblocks", emake_cmd.project_file_name ~ ".cbp"];
+			cb_command = ["cmd", "/c", "start", "codeblocks", emake_cmd.project_file_name ~ ".cbp"];
 			writeln(cb_command);
 			/* rc = */
 			emake_run_command_1(cb_command);
