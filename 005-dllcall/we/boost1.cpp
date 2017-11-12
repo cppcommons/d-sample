@@ -255,9 +255,10 @@ static os_thread_id &os_register_curr_thread()
 	}
 }
 
-static std::vector<DWORD> os_get_thread_dword_list()
+//static std::vector<DWORD> os_get_thread_dword_list()
+static std::set<DWORD> os_get_thread_dword_list()
 {
-	std::vector<DWORD> result;
+	std::set<DWORD> result;
 	DWORD v_proc_id = ::GetCurrentProcessId();
 	HANDLE h_snapshot = ::CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
 	if (h_snapshot == INVALID_HANDLE_VALUE)
@@ -268,22 +269,22 @@ static std::vector<DWORD> os_get_thread_dword_list()
 	v_entry.dwSize = sizeof(THREADENTRY32);
 	if (!::Thread32First(h_snapshot, &v_entry))
 	{
-		goto Exit;
+		goto label_exit;
 	}
 	do
 	{
 		if (v_entry.th32OwnerProcessID == v_proc_id)
-			result.push_back(v_entry.th32ThreadID);
+			result.insert(v_entry.th32ThreadID);
 	} while (::Thread32Next(h_snapshot, &v_entry));
-Exit:
+label_exit:
 	::CloseHandle(h_snapshot);
 	return result;
 }
 
 static bool os_is_thread_alive(DWORD thread_dword)
 {
-	std::vector<DWORD> v_list = os_get_thread_dword_list();
-	if (std::count(v_list.begin(), v_list.end(), thread_dword) == 0)
+	std::set<DWORD> v_list = os_get_thread_dword_list();
+	if (v_list.count(thread_dword) == 0)
 		return false;
 	return true;
 }
@@ -451,12 +452,7 @@ extern void os_cleanup()
 	{
 		os_thread_locker locker(g_os_thread_mutex);
 		os_thread_id v_thread_id = os_get_thread_id();
-		std::vector<DWORD> v_list = os_get_thread_dword_list();
-		std::map<DWORD, os_integer_t> v_map;
-		for (size_t i = 0; i < v_list.size(); i++)
-		{
-			v_map[v_list[i]] = 0;
-		}
+		std::set<DWORD> v_thread_list = os_get_thread_dword_list();
 		std::vector<os_value_entry_t *> v_removed;
 		os_value_set_t::iterator it;
 		for (it = g_os_value_set.begin(); it != g_os_value_set.end(); it++)
@@ -464,7 +460,7 @@ extern void os_cleanup()
 			os_value_entry_t *v_entry = *it;
 			os_oid_t v_oid = v_entry->m_oid;
 			//os_dbg("[SCAN] oid = %lld : data = %s", v_oid, v_entry.c_str());
-			if (v_map.count(v_entry->m_thread_id.id) == 0)
+			if (v_thread_list.count(v_entry->m_thread_id.id) == 0)
 			{
 				//os_dbg("[GC-1] oid = %lld : data = %s", v_oid, v_entry.c_str());
 				v_removed.push_back(v_entry);
