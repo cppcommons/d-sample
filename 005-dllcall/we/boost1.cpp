@@ -1,20 +1,9 @@
 #include "os.h"
-#include <iomanip>
-#include <iostream>
-#include <map>
-#include <set>
-#include <string>
-#include <vector>
-#include <sstream>
-using namespace std;
-
-#include <winstl/synch/thread_mutex.hpp>
-//#include <stlsoft/smartptr/shared_ptr.hpp>
 
 #include <windows.h>
 #define _MT
 #include <process.h>
-#include <tlhelp32.h> // CreateToolhelp32Snapshot()
+#include <vector>
 
 #ifdef __GNUC__
 #define THREAD_LOCAL __thread
