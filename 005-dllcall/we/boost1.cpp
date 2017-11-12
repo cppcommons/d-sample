@@ -48,6 +48,8 @@ struct os_value
 	virtual os_type_t type() = 0;
 	virtual void to_ss(std::stringstream &stream) = 0;
 	virtual os_integer_t get_integer() = 0;
+	virtual const char *get_string() = 0;
+	virtual os_integer_t get_length() = 0;
 };
 
 struct os_integer : public os_value
@@ -73,6 +75,48 @@ struct os_integer : public os_value
 	virtual os_integer_t get_integer()
 	{
 		return m_value;
+	}
+	virtual const char *get_string()
+	{
+		return "<INTEGER>";
+	}
+	virtual os_integer_t get_length()
+	{
+		return 0;
+	}
+};
+
+struct os_string : public os_value
+{
+	std::string m_value;
+	explicit os_string(const std::string &value)
+	{
+		m_value = value;
+	}
+	virtual void release()
+	{
+		os_dbg("os_string::release(): %s", m_value.c_str());
+		delete this;
+	}
+	virtual os_type_t type()
+	{
+		return OS_STRING;
+	}
+	virtual void to_ss(std::stringstream &stream)
+	{
+		stream << "\"" << m_value << "\"";
+	}
+	virtual os_integer_t get_integer()
+	{
+		return 0;
+	}
+	virtual const char *get_string()
+	{
+		return m_value.c_str();
+	}
+	virtual os_integer_t get_length()
+	{
+		return m_value.size();
 	}
 };
 
@@ -248,19 +292,6 @@ static os_oid_t os_get_next_oid()
 
 struct os_value_entry_t : public os_struct
 {
-	#if 0x0
-	enum value_type_t
-	{
-		NIL,
-		ADDRESS,
-		ARRAY,
-		BYTES,
-		INTEGER,
-		OBJECT,
-		REAL,
-		STRING
-	};
-	#endif
 	os_thread_id m_thread_id;
 	os_integer_t m_link_count;
 	os_value *m_value;
@@ -333,6 +364,19 @@ extern os_oid_t os_new_integer(os_integer_t value)
 		os_value_entry_t v_entry;
 		g_os_object_map[v_oid] = v_entry;
 		g_os_object_map[v_oid].set_value(new os_integer(value));
+		return v_oid;
+	}
+}
+
+extern os_oid_t os_new_std_string(const std::string &value)
+{
+	{
+		os_thread_locker locker(g_os_thread_mutex);
+		os_register_curr_thread();
+		os_oid_t v_oid = os_get_next_oid();
+		os_value_entry_t v_entry;
+		g_os_object_map[v_oid] = v_entry;
+		g_os_object_map[v_oid].set_value(new os_string(value));
 		return v_oid;
 	}
 }
@@ -503,6 +547,7 @@ static DWORD WINAPI Thread(LPVOID *data)
 
 int main()
 {
+	os_new_std_string("test string テスト文字列");
 	os_function_t v_func = cos_add2;
 	os_function_t v_func2 = C_Class1::cos_add2;
 
