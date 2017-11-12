@@ -42,29 +42,20 @@ void main(string[] args)
 
 	HINTERNET hInet;
 	HINTERNET hFile;
-	//char *lpszBuf;
 	char[1024] lpszBuf;
 	DWORD dwSize;
-
-	//lpszBuf = (char *)GlobalAlloc(GPTR, 1024);
 
 	/* ハンドル作成 */
 	hInet = InternetOpenA(appZ, INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
 
 	/* URLオープン */
-	hFile = InternetOpenUrlA(hInet, //"http://www.sm.rim.or.jp/~shishido/src/httpt.txt",
-			//"https://raw.githubusercontent.com/cyginst/cyginst-v1/master/cyginst.bat",
-			urlZ, NULL, 0, INTERNET_FLAG_RELOAD, 0);
+	hFile = InternetOpenUrlA(hInet, urlZ, NULL, 0, INTERNET_FLAG_RELOAD, 0);
 
 	char[] result;
-	while (InternetReadFile(hFile, cast(char*) lpszBuf.ptr, 1023, &dwSize) && dwSize > 0)
+	while (InternetReadFile(hFile, cast(char*) lpszBuf.ptr, lpszBuf.length, &dwSize) && dwSize > 0)
 	{
-		//printf("%s", lpszBuf);
-		//result.append(lpszBuf, dwSize);
 		result ~= lpszBuf[0 .. dwSize];
 	}
-	//printf("\n");
-	//printf("%s\n", result.c_str());
 	writeln(result);
 
 	/* 終了処理 */
