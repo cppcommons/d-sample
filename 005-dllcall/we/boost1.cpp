@@ -86,7 +86,7 @@ int main()
 	//os_unmark(v_answer);
 	os_dbg("before reset");
 	//os_sweep();
-	os_reset();
+	os_clear();
 	os_dbg("after reset");
 	os_dump_heap();
 	os_dbg("after dump");

@@ -426,7 +426,7 @@ extern void os_sweep()
 	os_cleanup(false);
 }
 
-extern void os_reset()
+extern void os_clear()
 {
 	os_cleanup(true);
 }

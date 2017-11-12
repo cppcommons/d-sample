@@ -84,7 +84,7 @@ void main(string[] args)
 	os_dump_heap();
 	char* ptr = os_get_string(mystr);
 	writefln("[%s]", toString(ptr));
-	os_reset();
+	os_clear();
 
 	exit(0);
 }

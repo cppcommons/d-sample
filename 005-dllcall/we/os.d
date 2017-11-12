@@ -58,8 +58,8 @@ bool  os_mark(os_value entry);
 bool  os_unmark(os_value entry);
 //C     extern void os_sweep();
 void  os_sweep();
-//C     extern void os_reset();
-void  os_reset();
+//C     extern void os_clear();
+void  os_clear();
 //C     extern long long os_arg_count(os_function_t fn);
 long  os_arg_count(os_function_t fn);
 
