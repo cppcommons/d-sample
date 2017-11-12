@@ -57,12 +57,6 @@ struct os_integer : public os_value
 	{
 		m_value = value;
 	}
-#if 0x0
-	virtual ~os_integer()
-	{
-		os_dbg("~os_integer(): %lld", m_value);
-	}
-#endif
 	virtual void release()
 	{
 		os_dbg("os_integer::release(): %lld", m_value);
@@ -278,14 +272,6 @@ struct os_object_entry_t : public os_struct
 	{
 		_init(os_get_thread_id());
 	}
-#if 0x0
-	explicit os_object_entry_t(os_integer_t value)
-	{
-		_init(os_get_thread_id());
-		m_value = new os_integer(value);
-		os_dbg("%s", c_str());
-	}
-#endif
 	void set_value(os_value *value)
 	{
 		if (m_value)
@@ -294,7 +280,6 @@ struct os_object_entry_t : public os_struct
 	}
 	virtual ~os_object_entry_t()
 	{
-		//set_value(nullptr);
 		if (m_value)
 			m_value->release();
 	}
@@ -343,11 +328,9 @@ extern os_oid_t os_new_integer(os_integer_t value)
 		os_thread_locker locker(g_os_thread_mutex);
 		os_register_curr_thread();
 		os_oid_t v_oid = os_get_next_oid();
-		#if 0x1
 		os_object_entry_t v_entry;
 		g_os_object_map[v_oid] = v_entry;
 		g_os_object_map[v_oid].set_value(new os_integer(value));
-		#endif
 		return v_oid;
 	}
 }
