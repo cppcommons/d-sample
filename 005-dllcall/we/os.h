@@ -30,7 +30,6 @@ extern int os_printf(const char *format, ...);
 extern int os_dbg(const char *format, ...);
 extern os_value os_new_integer(os_integer_t data);
 extern os_integer_t os_get_integer(os_value value);
-//extern bool os_set_integer(os_value value, os_integer_t data);
 extern os_value os_new_string(const char *data, os_integer_t len);
 extern void os_dump_object_heap();
 extern void os_oid_link(os_value entry);

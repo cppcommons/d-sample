@@ -54,7 +54,6 @@ int  os_dbg(char *format,...);
 os_value  os_new_integer(os_integer_t data);
 //C     extern os_integer_t os_get_integer(os_value value);
 os_integer_t  os_get_integer(os_value value);
-//extern bool os_set_integer(os_value value, os_integer_t data);
 //C     extern os_value os_new_string(const char *data, os_integer_t len);
 os_value  os_new_string(char *data, os_integer_t len);
 //C     extern void os_dump_object_heap();

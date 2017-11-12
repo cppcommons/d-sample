@@ -285,29 +285,6 @@ extern os_integer_t os_get_integer(os_value value)
 	return value->m_value->get_integer();
 }
 
-#if 0x0
-static bool os_set_value(os_value value, os_data *data)
-{
-	if (!value)
-		return false;
-	{
-		//os_thread_locker locker(g_os_thread_mutex);
-		os_thread_id tid = os_get_thread_id();
-		if (value->m_thread_id.no != tid.no)
-		{
-			return false;
-		}
-		value->set_value(data);
-		return true;
-	}
-}
-
-extern bool os_set_integer(os_value value, os_integer_t data)
-{
-	return os_set_value(value, new os_integer(data));
-}
-#endif
-
 extern void os_dump_object_heap()
 {
 	{
