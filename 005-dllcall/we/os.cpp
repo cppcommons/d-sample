@@ -1,4 +1,6 @@
 #include "os.h"
+#include <windows.h>
+#include <tlhelp32.h> // CreateToolhelp32Snapshot()
 #include <iomanip>
 #include <iostream>
 #include <map>
@@ -10,11 +12,6 @@ using namespace std;
 
 #include <winstl/synch/thread_mutex.hpp>
 //#include <stlsoft/smartptr/shared_ptr.hpp>
-
-#include <windows.h>
-//#define _MT
-//#include <process.h>
-#include <tlhelp32.h> // CreateToolhelp32Snapshot()
 
 #ifdef __GNUC__
 #define THREAD_LOCAL __thread
@@ -111,11 +108,6 @@ struct os_string : public os_data
 
 static stlsoft::winstl_project::thread_mutex g_os_thread_mutex;
 
-struct os_struct
-{
-	std::string m_debug_output_string;
-};
-
 struct os_thread_locker
 {
 	stlsoft::winstl_project::thread_mutex &m_mutex;
@@ -127,6 +119,11 @@ struct os_thread_locker
 	{
 		m_mutex.unlock();
 	}
+};
+
+struct os_struct
+{
+	std::string m_debug_output_string;
 };
 
 struct os_thread_id : public os_struct
@@ -149,11 +146,6 @@ struct os_thread_id : public os_struct
 	}
 };
 
-#if 0x0
-typedef std::map<DWORD, os_thread_id> os_thread_map_t;
-os_thread_map_t g_os_thread_map;
-#endif
-
 static os_thread_id os_get_thread_id()
 {
 	static THREAD_LOCAL os_integer_t curr_thread_no = -1;
@@ -172,23 +164,6 @@ static os_thread_id os_get_thread_id()
 	result.no = curr_thread_no;
 	return result;
 }
-
-#if 0x0
-static os_thread_id &os_register_curr_thread()
-{
-	{
-		os_thread_locker locker(g_os_thread_mutex);
-		os_thread_id v_id = os_get_thread_id();
-		if (g_os_thread_map.count(v_id.id) == 0)
-		{
-			g_os_thread_map[v_id.id] = v_id;
-		}
-		os_thread_id &v_old_id = g_os_thread_map[v_id.id];
-		v_old_id.no = v_id.no;
-		return v_old_id;
-	}
-}
-#endif
 
 static std::set<DWORD> os_get_thread_dword_list()
 {
@@ -214,16 +189,6 @@ label_exit:
 	::CloseHandle(h_snapshot);
 	return result;
 }
-
-#if 0x0
-static bool os_is_thread_alive(DWORD thread_dword)
-{
-	std::set<DWORD> v_list = os_get_thread_dword_list();
-	if (v_list.count(thread_dword) == 0)
-		return false;
-	return true;
-}
-#endif
 
 static os_oid_t os_get_next_oid()
 {
@@ -295,9 +260,6 @@ static inline os_value os_new_value(os_data *data)
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
-#if 0x0
-		os_register_curr_thread();
-#endif
 		os_oid_t v_oid = os_get_next_oid();
 		os_value entry = new os_variant_t(v_oid);
 		entry->set_value(data);
@@ -310,13 +272,6 @@ extern os_value os_new_integer(os_integer_t data)
 {
 	return os_new_value(new os_integer(data));
 }
-
-#if 0x0
-static os_value os_new_std_string(const std::string &data)
-{
-	return os_new_value(new os_string(data));
-}
-#endif
 
 extern os_value os_new_string(const char *data, os_integer_t len)
 {
