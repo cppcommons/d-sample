@@ -38,7 +38,8 @@ extern os_integer_t os_arg_count(os_function_t fn);
 
 #ifdef __cplusplus /* C++ only */
 #include <string>
-static inline os_value os_new_std_string(const std::string &data)
+//static inline os_value os_new_std_string(const std::string &data)
+static inline os_value os_new_string(const std::string &data)
 {
 	return os_new_string(data.c_str(), data.size());
 }
