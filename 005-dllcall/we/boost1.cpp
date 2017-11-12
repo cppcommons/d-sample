@@ -246,8 +246,9 @@ static os_oid_t os_get_next_oid()
 	}
 }
 
-struct os_object_entry_t : public os_struct
+struct os_value_entry_t : public os_struct
 {
+	#if 0x0
 	enum value_type_t
 	{
 		NIL,
@@ -259,6 +260,7 @@ struct os_object_entry_t : public os_struct
 		REAL,
 		STRING
 	};
+	#endif
 	os_thread_id m_thread_id;
 	os_integer_t m_link_count;
 	os_value *m_value;
@@ -268,7 +270,7 @@ struct os_object_entry_t : public os_struct
 		m_link_count = 0;
 		m_value = nullptr;
 	}
-	explicit os_object_entry_t()
+	explicit os_value_entry_t()
 	{
 		_init(os_get_thread_id());
 	}
@@ -278,7 +280,7 @@ struct os_object_entry_t : public os_struct
 			m_value->release();
 		m_value = value;
 	}
-	virtual ~os_object_entry_t()
+	virtual ~os_value_entry_t()
 	{
 		if (m_value)
 			m_value->release();
@@ -287,7 +289,7 @@ struct os_object_entry_t : public os_struct
 	{
 		std::string v_thread_id = m_thread_id.c_str();
 		std::stringstream v_stream;
-		v_stream << "os_object_entry_t { " << v_thread_id
+		v_stream << "os_value_entry_t { " << v_thread_id
 				 << " ";
 		m_value->to_ss(v_stream);
 		v_stream << " }";
@@ -296,7 +298,7 @@ struct os_object_entry_t : public os_struct
 	}
 };
 
-typedef std::map<os_oid_t, os_object_entry_t> os_object_map_t;
+typedef std::map<os_oid_t, os_value_entry_t> os_object_map_t;
 os_object_map_t g_os_object_map;
 
 extern os_oid_t os_oid_link(os_oid_t oid)
@@ -328,14 +330,14 @@ extern os_oid_t os_new_integer(os_integer_t value)
 		os_thread_locker locker(g_os_thread_mutex);
 		os_register_curr_thread();
 		os_oid_t v_oid = os_get_next_oid();
-		os_object_entry_t v_entry;
+		os_value_entry_t v_entry;
 		g_os_object_map[v_oid] = v_entry;
 		g_os_object_map[v_oid].set_value(new os_integer(value));
 		return v_oid;
 	}
 }
 
-static os_object_entry_t *os_find_entry(os_oid_t oid)
+static os_value_entry_t *os_find_entry(os_oid_t oid)
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
@@ -349,7 +351,7 @@ static os_object_entry_t *os_find_entry(os_oid_t oid)
 
 extern os_integer_t os_get_integer(os_oid_t oid)
 {
-	os_object_entry_t *v_entry = os_find_entry(oid);
+	os_value_entry_t *v_entry = os_find_entry(oid);
 	if (!v_entry)
 		return 0;
 	return (*v_entry).m_value->get_integer();
@@ -357,7 +359,7 @@ extern os_integer_t os_get_integer(os_oid_t oid)
 
 extern void os_set_integer(os_oid_t oid, os_integer_t value)
 {
-	os_object_entry_t *v_entry = os_find_entry(oid);
+	os_value_entry_t *v_entry = os_find_entry(oid);
 	if (!v_entry)
 		return;
 	v_entry->set_value(new os_integer(value));
@@ -371,7 +373,7 @@ static void os_dump_object_heap()
 		for (it = g_os_object_map.begin(); it != g_os_object_map.end(); it++)
 		{
 			os_oid_t v_oid = it->first;
-			os_object_entry_t &v_entry = it->second;
+			os_value_entry_t &v_entry = it->second;
 			os_dbg("[DUMP] oid = %lld : data = %s", v_oid, v_entry.c_str());
 		}
 	}
@@ -393,7 +395,7 @@ extern void os_gc()
 		for (it = g_os_object_map.begin(); it != g_os_object_map.end(); it++)
 		{
 			os_oid_t v_oid = it->first;
-			os_object_entry_t &v_entry = it->second;
+			os_value_entry_t &v_entry = it->second;
 			//os_dbg("[SCAN] oid = %lld : data = %s", v_oid, v_entry.c_str());
 			if (v_map.count(v_entry.m_thread_id.id) == 0)
 			{
