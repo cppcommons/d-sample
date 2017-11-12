@@ -336,7 +336,8 @@ struct os_value_entry_t : public os_struct
 	}
 };
 
-typedef std::map<os_oid_t, os_value_entry_t> os_object_map_t;
+//typedef std::map<os_oid_t, os_value_entry_t> os_object_map_t;
+typedef std::map<os_oid_t, os_value_entry_t *> os_object_map_t;
 os_object_map_t g_os_object_map;
 
 extern os_oid_t os_oid_link(os_oid_t oid)
@@ -346,7 +347,7 @@ extern os_oid_t os_oid_link(os_oid_t oid)
 		os_object_map_t::iterator it;
 		if (g_os_object_map.count(oid) == 0)
 			return 0;
-		g_os_object_map[oid].m_link_count++;
+		g_os_object_map[oid]->m_link_count++;
 		return oid;
 	}
 }
@@ -358,7 +359,7 @@ extern void os_oid_unlink(os_oid_t oid)
 		os_object_map_t::iterator it;
 		if (g_os_object_map.count(oid) == 0)
 			return;
-		g_os_object_map[oid].m_link_count--;
+		g_os_object_map[oid]->m_link_count--;
 	}
 }
 
@@ -368,9 +369,10 @@ extern os_oid_t os_new_integer(os_integer_t value)
 		os_thread_locker locker(g_os_thread_mutex);
 		os_register_curr_thread();
 		os_oid_t v_oid = os_get_next_oid();
-		os_value_entry_t v_entry;
-		g_os_object_map[v_oid] = v_entry;
-		g_os_object_map[v_oid].set_value(new os_integer(value));
+		//os_value_entry_t v_entry;
+		//g_os_object_map[v_oid] = v_entry;
+		g_os_object_map[v_oid] = new os_value_entry_t;
+		g_os_object_map[v_oid]->set_value(new os_integer(value));
 		return v_oid;
 	}
 }
@@ -381,9 +383,10 @@ static os_oid_t os_new_std_string(const std::string &value)
 		os_thread_locker locker(g_os_thread_mutex);
 		os_register_curr_thread();
 		os_oid_t v_oid = os_get_next_oid();
-		os_value_entry_t v_entry;
-		g_os_object_map[v_oid] = v_entry;
-		g_os_object_map[v_oid].set_value(new os_string(value));
+		//os_value_entry_t v_entry;
+		//g_os_object_map[v_oid] = v_entry;
+		g_os_object_map[v_oid] = new os_value_entry_t;
+		g_os_object_map[v_oid]->set_value(new os_string(value));
 		return v_oid;
 	}
 }
@@ -394,9 +397,10 @@ extern os_oid_t os_new_string(const char *value, os_integer_t len)
 		os_thread_locker locker(g_os_thread_mutex);
 		os_register_curr_thread();
 		os_oid_t v_oid = os_get_next_oid();
-		os_value_entry_t v_entry;
-		g_os_object_map[v_oid] = v_entry;
-		g_os_object_map[v_oid].set_value(new os_string(value, len));
+		//os_value_entry_t v_entry;
+		//g_os_object_map[v_oid] = v_entry;
+		g_os_object_map[v_oid] = new os_value_entry_t;
+		g_os_object_map[v_oid]->set_value(new os_string(value, len));
 		return v_oid;
 	}
 }
@@ -409,7 +413,8 @@ static os_value_entry_t *os_find_entry(os_oid_t oid)
 		{
 			return nullptr;
 		}
-		return &g_os_object_map[oid];
+		//return &g_os_object_map[oid];
+		return g_os_object_map[oid];
 	}
 }
 
@@ -437,8 +442,8 @@ static void os_dump_object_heap()
 		for (it = g_os_object_map.begin(); it != g_os_object_map.end(); it++)
 		{
 			os_oid_t v_oid = it->first;
-			os_value_entry_t &v_entry = it->second;
-			os_dbg("[DUMP] oid = %lld : data = %s", v_oid, v_entry.c_str());
+			os_value_entry_t *v_entry = it->second;
+			os_dbg("[DUMP] oid = %lld : data = %s", v_oid, v_entry->c_str());
 		}
 	}
 }
@@ -459,18 +464,18 @@ extern void os_gc()
 		for (it = g_os_object_map.begin(); it != g_os_object_map.end(); it++)
 		{
 			os_oid_t v_oid = it->first;
-			os_value_entry_t &v_entry = it->second;
+			os_value_entry_t *v_entry = it->second;
 			//os_dbg("[SCAN] oid = %lld : data = %s", v_oid, v_entry.c_str());
-			if (v_map.count(v_entry.m_thread_id.id) == 0)
+			if (v_map.count(v_entry->m_thread_id.id) == 0)
 			{
 				//os_dbg("[GC-1] oid = %lld : data = %s", v_oid, v_entry.c_str());
 				v_removed.push_back(v_oid);
 			}
-			else if (v_entry.m_link_count > 0)
+			else if (v_entry->m_link_count > 0)
 			{
 				continue;
 			}
-			else if (v_entry.m_thread_id.no == v_thread_id.no)
+			else if (v_entry->m_thread_id.no == v_thread_id.no)
 			{
 				//os_dbg("[GC-2] oid = %lld : data = %s", v_oid, v_entry.c_str());
 				v_removed.push_back(v_oid);
@@ -478,6 +483,7 @@ extern void os_gc()
 		}
 		for (size_t i = 0; i < v_removed.size(); i++)
 		{
+			delete g_os_object_map[v_removed[i]];
 			g_os_object_map.erase(v_removed[i]);
 		}
 	}
