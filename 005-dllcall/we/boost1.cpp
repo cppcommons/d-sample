@@ -72,17 +72,11 @@ int main()
 	os_dbg("cnt1=%lld", cnt1);
 	os_dbg("cnt2=%lld", cnt2);
 
-#if 0x0
-	os_thread_id tid1 = os_get_thread_id();
-	os_dbg("tid1=%s", tid1.c_str());
-#endif
 	HANDLE hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Thread, (LPVOID) "カウント数表示：", 0, NULL);
 
 	std::vector<os_value> v_args;
 	v_args.push_back(os_new_integer(111));
 	v_args.push_back(os_new_integer(222));
-	//v_args[0] = os_new_integer(111);
-	//v_args[1] = os_new_integer(222);
 	os_dump_object_heap();
 	//os_oid_t v_answer = cos_add2(v_args.size(), &v_args[0]);
 	os_value v_answer = v_func2(v_args.size(), &v_args[0]);

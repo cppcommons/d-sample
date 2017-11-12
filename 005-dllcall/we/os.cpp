@@ -332,10 +332,8 @@ extern void os_cleanup()
 		{
 			os_variant_t *v_entry = *it;
 			os_oid_t v_oid = v_entry->m_oid;
-			//os_dbg("[SCAN] oid = %lld : data = %s", v_oid, v_entry.c_str());
 			if (v_thread_list.count(v_entry->m_thread_id.id) == 0)
 			{
-				//os_dbg("[GC-1] oid = %lld : data = %s", v_oid, v_entry.c_str());
 				v_removed.push_back(v_entry);
 			}
 			else if (v_entry->m_link_count > 0)
@@ -344,7 +342,6 @@ extern void os_cleanup()
 			}
 			else if (v_entry->m_thread_id.no == v_thread_id.no)
 			{
-				//os_dbg("[GC-2] oid = %lld : data = %s", v_oid, v_entry.c_str());
 				v_removed.push_back(v_entry);
 			}
 		}
