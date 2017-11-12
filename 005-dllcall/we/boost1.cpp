@@ -23,8 +23,8 @@ using namespace std;
 
 static int os_dbg(const char *format, ...);
 
-struct os_handle_t;
-typedef os_handle_t *os_value;
+struct os_value_t;
+typedef os_value_t *os_value;
 
 typedef long long os_integer_t;
 
@@ -297,7 +297,7 @@ static os_oid_t os_get_next_oid()
 	}
 }
 
-struct os_handle_t : public os_struct
+struct os_value_t : public os_struct
 {
 	os_oid_t m_oid;
 	os_thread_id m_thread_id;
@@ -311,7 +311,7 @@ struct os_handle_t : public os_struct
 		m_value = nullptr;
 	}
 #endif
-	explicit os_handle_t(os_oid_t oid)
+	explicit os_value_t(os_oid_t oid)
 	{
 		m_oid = oid;
 		m_thread_id = os_get_thread_id();
@@ -324,7 +324,7 @@ struct os_handle_t : public os_struct
 			m_value->release();
 		m_value = value;
 	}
-	virtual ~os_handle_t()
+	virtual ~os_value_t()
 	{
 		if (m_value)
 			m_value->release();
@@ -333,7 +333,7 @@ struct os_handle_t : public os_struct
 	{
 		std::string v_thread_id = m_thread_id.c_str();
 		std::stringstream v_stream;
-		v_stream << "os_handle_t { " << v_thread_id
+		v_stream << "os_value_t { " << v_thread_id
 				 << " ";
 		m_value->to_ss(v_stream);
 		v_stream << " }";
@@ -342,7 +342,7 @@ struct os_handle_t : public os_struct
 	}
 };
 
-typedef std::set<os_handle_t *> os_value_set_t;
+typedef std::set<os_value_t *> os_value_set_t;
 static os_value_set_t g_os_value_set;
 
 extern void os_oid_link(os_value entry)
@@ -367,7 +367,7 @@ extern os_value os_new_integer(os_integer_t value)
 		os_thread_locker locker(g_os_thread_mutex);
 		os_register_curr_thread();
 		os_oid_t v_oid = os_get_next_oid();
-		os_value entry = new os_handle_t(v_oid);
+		os_value entry = new os_value_t(v_oid);
 		entry->set_value(new os_integer(value));
 		g_os_value_set.insert(entry);
 		return entry;
@@ -380,7 +380,7 @@ static os_value os_new_std_string(const std::string &value)
 		os_thread_locker locker(g_os_thread_mutex);
 		os_register_curr_thread();
 		os_oid_t v_oid = os_get_next_oid();
-		os_value entry = new os_handle_t(v_oid);
+		os_value entry = new os_value_t(v_oid);
 		entry->set_value(new os_string(value));
 		g_os_value_set.insert(entry);
 		return entry;
@@ -393,7 +393,7 @@ extern os_value os_new_string(const char *value, os_integer_t len)
 		os_thread_locker locker(g_os_thread_mutex);
 		os_register_curr_thread();
 		os_oid_t v_oid = os_get_next_oid();
-		os_value entry = new os_handle_t(v_oid);
+		os_value entry = new os_value_t(v_oid);
 		entry->set_value(new os_string(value, len));
 		g_os_value_set.insert(entry);
 		return entry;
@@ -434,11 +434,11 @@ extern void os_cleanup()
 		os_thread_locker locker(g_os_thread_mutex);
 		os_thread_id v_thread_id = os_get_thread_id();
 		std::set<DWORD> v_thread_list = os_get_thread_dword_list();
-		std::vector<os_handle_t *> v_removed;
+		std::vector<os_value_t *> v_removed;
 		os_value_set_t::iterator it;
 		for (it = g_os_value_set.begin(); it != g_os_value_set.end(); it++)
 		{
-			os_handle_t *v_entry = *it;
+			os_value_t *v_entry = *it;
 			os_oid_t v_oid = v_entry->m_oid;
 			//os_dbg("[SCAN] oid = %lld : data = %s", v_oid, v_entry.c_str());
 			if (v_thread_list.count(v_entry->m_thread_id.id) == 0)
