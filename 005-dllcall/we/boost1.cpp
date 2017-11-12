@@ -53,13 +53,13 @@ int main()
 	//os_oid_t v_answer = cos_add2(v_args.size(), &v_args[0]);
 	os_value v_answer = v_func2(v_args.size(), &v_args[0]);
 	long long v_answer32 = os_get_integer(v_answer);
-	os_link(v_answer);
+	os_mark(v_answer);
 	os_dbg("answer=%d", v_answer32);
 	os_dbg("v_args[0]=%lld", os_get_integer(v_args[0]));
 	os_dbg("v_args[1]=%lld", os_get_integer(v_args[1]));
 
 	os_value ary2_ = os_new_array(2);
-	os_link(ary2_);
+	os_mark(ary2_);
 	os_value *ary2 = os_get_array(ary2_);
 	ary2[0] = os_new_integer(11);
 	ary2[1] = os_new_integer(22);
@@ -83,7 +83,7 @@ int main()
 	os_dump_heap();
 	os_dbg("after dump");
 
-	//os_unlink(v_answer);
+	//os_unmark(v_answer);
 	os_dbg("before reset");
 	//os_sweep();
 	os_reset();

@@ -288,7 +288,7 @@ struct os_variant_t : public os_struct
 typedef std::set<os_variant_t *> os_value_set_t;
 static os_value_set_t g_os_value_set;
 
-extern bool os_link(os_value entry)
+extern bool os_mark(os_value entry)
 {
 	if (!entry)
 		return false;
@@ -301,7 +301,7 @@ extern bool os_link(os_value entry)
 	}
 }
 
-extern bool os_unlink(os_value entry)
+extern bool os_unmark(os_value entry)
 {
 	if (!entry)
 		return false;

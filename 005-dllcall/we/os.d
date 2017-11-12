@@ -38,7 +38,6 @@ enum os_type_t
 //C     extern int os_printf(const char *format, ...);
 //C     extern int os_dbg(const char *format, ...);
 //C     #endif /* !__HTOD__ */
-//extern os_value *os_new_array(long long len);
 //C     extern os_value os_new_array(long long len);
 os_value  os_new_array(long len);
 //C     extern os_value *os_get_array(os_value value);
@@ -53,10 +52,10 @@ os_value  os_new_string(char *data, long len);
 char * os_get_string(os_value value);
 //C     extern void os_dump_heap();
 void  os_dump_heap();
-//C     extern bool os_link(os_value entry);
-bool  os_link(os_value entry);
-//C     extern bool os_unlink(os_value entry);
-bool  os_unlink(os_value entry);
+//C     extern bool os_mark(os_value entry);
+bool  os_mark(os_value entry);
+//C     extern bool os_unmark(os_value entry);
+bool  os_unmark(os_value entry);
 //C     extern void os_sweep();
 void  os_sweep();
 //C     extern void os_reset();
