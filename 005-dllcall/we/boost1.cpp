@@ -365,66 +365,33 @@ static inline os_value os_new_value(os_data *data)
 	}
 }
 
-extern os_value os_new_integer(os_integer_t value)
+extern os_value os_new_integer(os_integer_t data)
 {
-	return os_new_value(new os_integer(value));
-	#if 0x0
-	{
-		os_thread_locker locker(g_os_thread_mutex);
-		os_register_curr_thread();
-		os_oid_t v_oid = os_get_next_oid();
-		os_value entry = new os_variant_t(v_oid);
-		entry->set_value(new os_integer(value));
-		g_os_value_set.insert(entry);
-		return entry;
-	}
-	#endif
+	return os_new_value(new os_integer(data));
 }
 
-static os_value os_new_std_string(const std::string &value)
+static os_value os_new_std_string(const std::string &data)
 {
-	return os_new_value(new os_string(value));
-	#if 0x0
-	{
-		os_thread_locker locker(g_os_thread_mutex);
-		os_register_curr_thread();
-		os_oid_t v_oid = os_get_next_oid();
-		os_value entry = new os_variant_t(v_oid);
-		entry->set_value(new os_string(value));
-		g_os_value_set.insert(entry);
-		return entry;
-	}
-	#endif
+	return os_new_value(new os_string(data));
 }
 
-extern os_value os_new_string(const char *value, os_integer_t len)
+extern os_value os_new_string(const char *data, os_integer_t len)
 {
-	return os_new_value(new os_string(value, len));
-	#if 0x0
-	{
-		os_thread_locker locker(g_os_thread_mutex);
-		os_register_curr_thread();
-		os_oid_t v_oid = os_get_next_oid();
-		os_value entry = new os_variant_t(v_oid);
-		entry->set_value(new os_string(value, len));
-		g_os_value_set.insert(entry);
-		return entry;
-	}
-	#endif
+	return os_new_value(new os_string(data, len));
 }
 
-extern os_integer_t os_get_integer(os_value entry)
+extern os_integer_t os_get_integer(os_value value)
 {
-	if (!entry)
+	if (!value)
 		return 0;
-	return entry->m_value->get_integer();
+	return value->m_value->get_integer();
 }
 
-extern void os_set_integer(os_value entry, os_integer_t value)
+extern void os_set_integer(os_value value, os_integer_t data)
 {
-	if (!entry)
+	if (!value)
 		return;
-	entry->set_value(new os_integer(value));
+	value->set_value(new os_integer(data));
 }
 
 static void os_dump_object_heap()
