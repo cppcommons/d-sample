@@ -203,7 +203,7 @@ struct os_thread_id : public os_struct
 typedef std::map<DWORD, os_thread_id> os_thread_map_t;
 os_thread_map_t g_os_thread_map;
 
-os_thread_id os_get_thread_id()
+static os_thread_id os_get_thread_id()
 {
 	static THREAD_LOCAL os_integer_t curr_thread_no = -1;
 	static os_integer_t v_thread_id_max = 0;
@@ -262,6 +262,7 @@ label_exit:
 	return result;
 }
 
+#if 0x0
 static bool os_is_thread_alive(DWORD thread_dword)
 {
 	std::set<DWORD> v_list = os_get_thread_dword_list();
@@ -269,6 +270,7 @@ static bool os_is_thread_alive(DWORD thread_dword)
 		return false;
 	return true;
 }
+#endif
 
 static os_oid_t os_get_next_oid()
 {
