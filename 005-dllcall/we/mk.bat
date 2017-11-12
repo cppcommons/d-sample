@@ -9,4 +9,4 @@ if %errorlevel% neq 0 ( exit /b )
 chcp 65001
 boost1.exe
 c:\dm\bin\htod -cpp os.h
-if %errorlevel% neq 0 ( exit /b )
+c:\dm\bin\htod -cpp lib1.h

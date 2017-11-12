@@ -5,7 +5,13 @@
 extern "C" {
 #endif
 
+#ifdef __HTOD__
+struct os_variant_t
+{
+};
+#else
 struct os_variant_t;
+#endif
 typedef os_variant_t *os_value;
 typedef os_value (*os_function_t)(long argc, os_value argv[]);
 typedef long long os_integer_t;

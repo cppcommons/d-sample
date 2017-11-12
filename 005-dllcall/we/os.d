@@ -7,7 +7,16 @@ module os;
 //C     extern "C" {
 //C     #endif
 
+//C     #ifdef __HTOD__
+//C     struct os_variant_t
+//C     {
+//C     };
+struct os_variant_t
+{
+}
+//C     #else
 //C     struct os_variant_t;
+//C     #endif
 //C     typedef os_variant_t *os_value;
 extern (C):
 alias os_variant_t *os_value;
