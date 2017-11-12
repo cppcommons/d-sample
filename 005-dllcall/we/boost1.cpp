@@ -360,8 +360,7 @@ extern void os_set_integer(os_oid_t oid, os_integer_t value)
 	os_object_entry_t *v_entry = os_find_entry(oid);
 	if (!v_entry)
 		return;
-	//(*v_entry).m_type = os_object_entry_t::value_type_t::INTEGER;
-	//(*v_entry).m_simple.m_integer = value;
+	v_entry->set_value(new os_integer(value));
 }
 
 static void os_dump_object_heap()
