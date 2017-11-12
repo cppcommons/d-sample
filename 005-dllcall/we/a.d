@@ -14,6 +14,9 @@ void main(string[] args)
 	os_dump_object_heap();
 	os_integer_t answer2 = os_get_integer(answer);
 	writeln(answer2);
+	string s = "abc漢字";
+	os_value mystr = os_new_string(cast(char*) s.ptr, s.length);
+	os_dump_object_heap();
 
 	writeln(args);
 
