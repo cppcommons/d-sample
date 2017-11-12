@@ -6,7 +6,7 @@
 #include <sstream>
 using namespace std;
 
-#include <stdint.h>
+//#include <stdint.h>
 
 #include <winstl/synch/thread_mutex.hpp>
 //#include <stlsoft/smartptr/shared_ptr.hpp>
@@ -25,7 +25,6 @@ using namespace std;
 
 static int os_dbg(const char *format, ...);
 
-//typedef ::int64_t os_integer_t;
 typedef long long os_integer_t;
 
 typedef os_integer_t os_oid_t;
@@ -520,38 +519,6 @@ struct C_Class1
 		return os_new_integer(a + b);
 	}
 };
-
-#if 0x0
-struct C_Variant
-{
-	enum VariantType
-	{
-		STRING,
-		INT64
-	};
-	VariantType m_type;
-	std::string m_s;
-	os_integer_t m_int64;
-	C_Variant(const std::string &x)
-	{
-		//this.m_s = x;
-		m_type = C_Variant::VariantType::STRING;
-		m_s = x;
-	}
-	C_Variant(os_integer_t x)
-	{
-		m_type = C_Variant::VariantType::INT64;
-		//this.m_int64 = x;
-		/*this.*/ m_int64 = x;
-	}
-	C_Variant &C_Variant::operator=(const std::string &x)
-	{
-		m_type = C_Variant::VariantType::STRING;
-		m_s = x;
-		return (*this);
-	}
-};
-#endif
 
 static DWORD WINAPI Thread(LPVOID *data)
 {
