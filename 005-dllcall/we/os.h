@@ -20,6 +20,7 @@ enum os_type_t
 	OS_REAL,
 	OS_STRING
 };
+extern int os_printf(const char *format, ...);
 extern int os_dbg(const char *format, ...);
 extern os_value os_new_integer(os_integer_t data);
 extern os_integer_t os_get_integer(os_value value);

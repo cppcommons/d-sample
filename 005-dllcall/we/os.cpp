@@ -151,7 +151,7 @@ static int os_write_consoleA(HANDLE hconsole, const char *format, va_list args)
 	return len;
 }
 
-static int os_printf(const char *format, ...)
+extern int os_printf(const char *format, ...)
 {
 	static stlsoft::winstl_project::thread_mutex v_mutex;
 	{
