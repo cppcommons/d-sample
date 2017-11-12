@@ -293,6 +293,20 @@ static os_thread_id os_get_thread_id()
 		}
 	}
 #endif
+	static THREAD_LOCAL bool v_initilized = false;
+	//static THREAD_LOCAL os_thread_id v_thread_id;
+	static THREAD_LOCAL long long v_thread_no;
+	static THREAD_LOCAL DWORD v_thread_dword;
+	if (!v_initilized)
+	{
+		v_thread_no = os_get_thread_no();
+		v_thread_dword = ::GetCurrentThreadId();
+	}
+	os_thread_id result;
+	result.no = v_thread_no;
+	result.dword = v_thread_dword;
+	return result;
+#if 0x0
 	os_dbg("os_get_thread_id(1)");
 	os_thread_id result;
 	//result.no = curr_thread_no; //os_get_thread_no();
@@ -302,6 +316,7 @@ static os_thread_id os_get_thread_id()
 	result.dword = ::GetCurrentThreadId();
 	os_dbg("os_get_thread_id(3)");
 	return result;
+#endif
 }
 
 static std::set<DWORD> os_get_thread_dword_list()
