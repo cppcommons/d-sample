@@ -1,6 +1,7 @@
 #include <iomanip>
 #include <iostream>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 #include <sstream>
@@ -299,18 +300,24 @@ static os_oid_t os_get_next_oid()
 
 struct os_value_entry_t : public os_struct
 {
+	os_oid_t m_oid;
 	os_thread_id m_thread_id;
 	os_integer_t m_link_count;
 	os_value *m_value;
+#if 0x0
 	void _init(os_thread_id &thread_id)
 	{
 		m_thread_id = thread_id;
 		m_link_count = 0;
 		m_value = nullptr;
 	}
-	explicit os_value_entry_t()
+#endif
+	explicit os_value_entry_t(os_oid_t oid)
 	{
-		_init(os_get_thread_id());
+		m_oid = oid;
+		m_thread_id = os_get_thread_id();
+		m_link_count = 0;
+		m_value = nullptr;
 	}
 	void set_value(os_value *value)
 	{
@@ -336,75 +343,67 @@ struct os_value_entry_t : public os_struct
 	}
 };
 
-//typedef std::map<os_oid_t, os_value_entry_t> os_object_map_t;
-typedef std::map<os_oid_t, os_value_entry_t *> os_object_map_t;
-os_object_map_t g_os_object_map;
+//typedef std::map<os_oid_t, os_value_entry_t *> os_object_map_t;
+//os_object_map_t g_os_object_map;
+typedef std::set<os_value_entry_t *> os_value_set_t;
+static os_value_set_t g_os_value_set;
 
-extern os_oid_t os_oid_link(os_oid_t oid)
+extern void os_oid_link(os_value_entry_t *entry)
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
-		os_object_map_t::iterator it;
-		if (g_os_object_map.count(oid) == 0)
-			return 0;
-		g_os_object_map[oid]->m_link_count++;
-		return oid;
+		entry->m_link_count++;
 	}
 }
 
-extern void os_oid_unlink(os_oid_t oid)
+extern void os_oid_unlink(os_value_entry_t *entry)
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
-		os_object_map_t::iterator it;
-		if (g_os_object_map.count(oid) == 0)
-			return;
-		g_os_object_map[oid]->m_link_count--;
+		entry->m_link_count--;
 	}
 }
 
-extern os_oid_t os_new_integer(os_integer_t value)
+extern os_value_entry_t *os_new_integer(os_integer_t value)
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
 		os_register_curr_thread();
 		os_oid_t v_oid = os_get_next_oid();
-		//os_value_entry_t v_entry;
-		//g_os_object_map[v_oid] = v_entry;
-		g_os_object_map[v_oid] = new os_value_entry_t;
-		g_os_object_map[v_oid]->set_value(new os_integer(value));
-		return v_oid;
+		os_value_entry_t *entry = new os_value_entry_t(v_oid);
+		entry->set_value(new os_integer(value));
+		g_os_value_set.insert(entry);
+		return entry;
 	}
 }
 
-static os_oid_t os_new_std_string(const std::string &value)
+static os_value_entry_t *os_new_std_string(const std::string &value)
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
 		os_register_curr_thread();
 		os_oid_t v_oid = os_get_next_oid();
-		//os_value_entry_t v_entry;
-		//g_os_object_map[v_oid] = v_entry;
-		g_os_object_map[v_oid] = new os_value_entry_t;
-		g_os_object_map[v_oid]->set_value(new os_string(value));
-		return v_oid;
+		os_value_entry_t *entry = new os_value_entry_t(v_oid);
+		entry->set_value(new os_string(value));
+		g_os_value_set.insert(entry);
+		return entry;
 	}
 }
 
-extern os_oid_t os_new_string(const char *value, os_integer_t len)
+extern os_value_entry_t *os_new_string(const char *value, os_integer_t len)
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
 		os_register_curr_thread();
 		os_oid_t v_oid = os_get_next_oid();
-		//os_value_entry_t v_entry;
-		//g_os_object_map[v_oid] = v_entry;
-		g_os_object_map[v_oid] = new os_value_entry_t;
-		g_os_object_map[v_oid]->set_value(new os_string(value, len));
-		return v_oid;
+		os_value_entry_t *entry = new os_value_entry_t(v_oid);
+		entry->set_value(new os_string(value, len));
+		g_os_value_set.insert(entry);
+		return entry;
 	}
 }
 
+#if 0x0
 static os_value_entry_t *os_find_entry(os_oid_t oid)
 {
 	{
@@ -417,32 +416,31 @@ static os_value_entry_t *os_find_entry(os_oid_t oid)
 		return g_os_object_map[oid];
 	}
 }
+#endif
 
-extern os_integer_t os_get_integer(os_oid_t oid)
+extern os_integer_t os_get_integer(os_value_entry_t *entry)
 {
-	os_value_entry_t *v_entry = os_find_entry(oid);
-	if (!v_entry)
+	if (!entry)
 		return 0;
-	return (*v_entry).m_value->get_integer();
+	return entry->m_value->get_integer();
 }
 
-extern void os_set_integer(os_oid_t oid, os_integer_t value)
+extern void os_set_integer(os_value_entry_t *entry, os_integer_t value)
 {
-	os_value_entry_t *v_entry = os_find_entry(oid);
-	if (!v_entry)
+	if (!entry)
 		return;
-	v_entry->set_value(new os_integer(value));
+	entry->set_value(new os_integer(value));
 }
 
 static void os_dump_object_heap()
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
-		os_object_map_t::iterator it;
-		for (it = g_os_object_map.begin(); it != g_os_object_map.end(); it++)
+		os_value_set_t::iterator it;
+		for (it = g_os_value_set.begin(); it != g_os_value_set.end(); it++)
 		{
-			os_oid_t v_oid = it->first;
-			os_value_entry_t *v_entry = it->second;
+			os_value_entry_t *v_entry = *it;
+			os_oid_t v_oid = v_entry->m_oid;
 			os_dbg("[DUMP] oid = %lld : data = %s", v_oid, v_entry->c_str());
 		}
 	}
@@ -459,17 +457,17 @@ extern void os_gc()
 		{
 			v_map[v_list[i]] = 0;
 		}
-		os_object_map_t::iterator it;
-		std::vector<os_oid_t> v_removed;
-		for (it = g_os_object_map.begin(); it != g_os_object_map.end(); it++)
+		std::vector<os_value_entry_t *> v_removed;
+		os_value_set_t::iterator it;
+		for (it = g_os_value_set.begin(); it != g_os_value_set.end(); it++)
 		{
-			os_oid_t v_oid = it->first;
-			os_value_entry_t *v_entry = it->second;
+			os_value_entry_t *v_entry = *it;
+			os_oid_t v_oid = v_entry->m_oid;
 			//os_dbg("[SCAN] oid = %lld : data = %s", v_oid, v_entry.c_str());
 			if (v_map.count(v_entry->m_thread_id.id) == 0)
 			{
 				//os_dbg("[GC-1] oid = %lld : data = %s", v_oid, v_entry.c_str());
-				v_removed.push_back(v_oid);
+				v_removed.push_back(v_entry);
 			}
 			else if (v_entry->m_link_count > 0)
 			{
@@ -478,20 +476,20 @@ extern void os_gc()
 			else if (v_entry->m_thread_id.no == v_thread_id.no)
 			{
 				//os_dbg("[GC-2] oid = %lld : data = %s", v_oid, v_entry.c_str());
-				v_removed.push_back(v_oid);
+				v_removed.push_back(v_entry);
 			}
 		}
 		for (size_t i = 0; i < v_removed.size(); i++)
 		{
-			delete g_os_object_map[v_removed[i]];
-			g_os_object_map.erase(v_removed[i]);
+			delete v_removed[i];
+			g_os_value_set.erase(v_removed[i]);
 		}
 	}
 }
 
-typedef os_oid_t (*os_function_t)(long argc, os_oid_t args[]);
+typedef os_value_entry_t *(*os_function_t)(long argc, os_value_entry_t *args[]);
 
-static os_oid_t cos_add2(long argc, os_oid_t args[])
+static os_value_entry_t *cos_add2(long argc, os_value_entry_t *args[])
 {
 	if (argc < 0)
 		return os_new_integer(2);
@@ -514,7 +512,7 @@ struct C_Class1
 	{
 		delete this;
 	}
-	static os_oid_t cos_add2(long argc, os_oid_t args[])
+	static os_value_entry_t *cos_add2(long argc, os_value_entry_t *args[])
 	{
 		if (argc < 0)
 			return os_new_integer(2);
@@ -564,12 +562,12 @@ int main()
 		}
 	}
 
-	std::vector<os_oid_t> v_args(3);
+	std::vector<os_value_entry_t *> v_args(3);
 	v_args[1] = os_new_integer(111);
 	v_args[2] = os_new_integer(222);
 	os_dump_object_heap();
 	//os_oid_t v_answer = cos_add2(2, &v_args[0]);
-	os_oid_t v_answer = v_func2(2, &v_args[0]);
+	os_value_entry_t *v_answer = v_func2(2, &v_args[0]);
 	os_integer_t v_answer32 = os_get_integer(v_answer);
 	os_oid_link(v_answer);
 	os_dbg("answer=%d", v_answer32);
