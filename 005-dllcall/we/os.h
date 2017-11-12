@@ -33,8 +33,8 @@ extern long long os_get_integer(os_value value);
 extern os_value os_new_string(const char *data, long long len);
 extern const char *os_get_string(os_value value);
 extern void os_dump_heap();
-extern void os_link(os_value entry);
-extern void os_unlink(os_value entry);
+extern bool os_link(os_value entry);
+extern bool os_unlink(os_value entry);
 extern void os_cleanup();
 extern long long os_arg_count(os_function_t fn);
 

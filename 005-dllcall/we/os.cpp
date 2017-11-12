@@ -288,19 +288,29 @@ struct os_variant_t : public os_struct
 typedef std::set<os_variant_t *> os_value_set_t;
 static os_value_set_t g_os_value_set;
 
-extern void os_link(os_value entry)
+extern bool os_link(os_value entry)
 {
+	if (!entry)
+		return false;
 	{
 		os_thread_locker locker(g_os_thread_mutex);
+		if (entry->m_value->type() == OS_ARRAY)
+			return false;
 		entry->m_link_count++;
+		return true;
 	}
 }
 
-extern void os_unlink(os_value entry)
+extern bool os_unlink(os_value entry)
 {
+	if (!entry)
+		return false;
 	{
 		os_thread_locker locker(g_os_thread_mutex);
+		if (entry->m_value->type() == OS_ARRAY)
+			return false;
 		entry->m_link_count--;
+		return true;
 	}
 }
 
