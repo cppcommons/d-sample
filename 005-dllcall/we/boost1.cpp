@@ -34,6 +34,10 @@ int main()
 	}
 	//os_new_std_string("test string テスト文字列");
 	os_value s = os_new_string("test string テスト文字列");
+	std::string buffer;
+	os_get_string(s, buffer);
+	os_dbg("buffer=[%s]", buffer.c_str());
+
 	os_dbg("s=[%s]", os_get_string(s));
 	os_new_string("string(1)", -1);
 	os_new_string("STRING(2)", 3);
@@ -42,9 +46,9 @@ int main()
 	os_function_t v_func2 = my_add2;
 
 	//long long cnt1 = os_arg_count(v_func);
-	long long cnt2 = os_arg_count(v_func2);
+	//long long cnt2 = os_arg_count(v_func2);
 	//os_dbg("cnt1=%lld", cnt1);
-	os_dbg("cnt2=%lld", cnt2);
+	//os_dbg("cnt2=%lld", cnt2);
 
 	HANDLE hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Thread, (LPVOID) "カウント数表示：", 0, NULL);
 

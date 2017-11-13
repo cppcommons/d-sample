@@ -162,26 +162,27 @@ extern bool os_unmark(os_value entry)
 	}
 }
 
+extern long long os_get_length(os_value value)
+{
+	if (!value)
+		return 0;
+	return value->m_value->get_length();
+}
+
 static inline os_value os_new_value(os_data *data)
 {
-	os_dbg("os_new_value() start!");
 	{
 		os_thread_locker locker(g_os_thread_mutex);
-		os_dbg("os_new_value(1)");
 		os_sid_t v_oid = os_get_next_oid();
-		os_dbg("os_new_value(1.1)");
 		os_value entry = new os_variant_t(v_oid);
-		os_dbg("os_new_value(2)");
 		entry->set_value(data);
 		g_os_value_set.insert(entry);
-		os_dbg("os_new_value(3)");
 		return entry;
 	}
 }
 
 extern os_value os_new_array(long long len)
 {
-	os_dbg("os_new_array() start!");
 	return os_new_value(new os_array(len));
 }
 
@@ -288,8 +289,10 @@ extern void os_clear()
 	os_cleanup(true);
 }
 
+#if 0x0
 extern long long os_arg_count(os_function_t fn)
 {
 	os_value v_count = fn(-1, nullptr);
 	return os_get_integer(v_count);
 }
+#endif

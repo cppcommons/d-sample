@@ -40,6 +40,8 @@ enum os_type_t
 //C     extern int os_printf(const char *format, ...);
 //C     extern int os_dbg(const char *format, ...);
 //C     #endif /* !__HTOD__ */
+//C     extern long long os_get_length(os_value value);
+long  os_get_length(os_value value);
 //C     extern os_value os_new_array(long long len);
 os_value  os_new_array(long len);
 //C     extern os_value *os_get_array(os_value value);
@@ -66,8 +68,7 @@ bool  os_unmark(os_value entry);
 void  os_sweep();
 //C     extern void os_clear();
 void  os_clear();
-//C     extern long long os_arg_count(os_function_t fn);
-long  os_arg_count(os_function_t fn);
+//extern long long os_arg_count(os_function_t fn);
 
 //C     #ifdef __cplusplus
 //C     }
@@ -76,9 +77,17 @@ long  os_arg_count(os_function_t fn);
 //C     #ifndef __HTOD__
 //C     #ifdef __cplusplus /* C++ only */
 //C     #include <string>
-//C     static inline os_value os_new_string(const std::string &data)
+//C     static inline os_value os_new_string(const std::string &str)
 //C     {
-//C     	return os_new_string(data.c_str(), data.size());
+//C     	return os_new_string(str.c_str(), str.size());
+//C     }
+//C     static inline void os_get_string(os_value value, std::string &str)
+//C     {
+//C     	const char *ptr = os_get_string(value);
+//C     	if (!ptr)
+//C     		str = "";
+//C     	else
+//C     		str = std::string(ptr, os_get_length(value));
 //C     }
 //C     #endif /* __cplusplus (C++ only) */
 //C     #endif /* !__HTOD__ */
