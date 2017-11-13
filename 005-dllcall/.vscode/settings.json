@@ -18,6 +18,7 @@
 		"type_traits": "cpp",
 		"iomanip": "cpp"
 	},
+	"window.title": "${activeEditorLong}",
 	"terminal.integrated.shell.windows": "C:\\Windows\\System32\\cmd.exe",
 	"terminal.integrated.fontSize": 20,
 	"editor.fontSize": 20,
