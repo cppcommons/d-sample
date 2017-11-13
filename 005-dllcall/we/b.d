@@ -1,4 +1,11 @@
+import core.sync.mutex;
 import std.stdio;
+
+static Mutex g_os_thread_mutex;
+static this()
+{
+	g_os_thread_mutex = new Mutex;
+}
 
 static int[os_value] g_os_value_map;
 
@@ -56,7 +63,12 @@ extern (C) os_value os_new_integer(long data)
 {
 	writeln(`os_new_integer(): data=`, data);
 	auto o = new os_integer(data);
-	g_os_value_map[o] = 0;
+	{
+		g_os_thread_mutex.lock();
+		scope (exit)
+			g_os_thread_mutex.unlock();
+		g_os_value_map[o] = 0;
+	}
 	return o;
 }
 
@@ -66,11 +78,16 @@ extern (C) long os_get_integer(os_value value)
 
 	if (value is null)
 		return 0;
-	int* found = value in g_os_value_map;
-	if (!found)
-		return 0;
-	writeln(`[DEBUG] `, value);
-	return value.get_integer();
+	{
+		g_os_thread_mutex.lock();
+		scope (exit)
+			g_os_thread_mutex.unlock();
+		int* found = value in g_os_value_map;
+		if (!found)
+			return 0;
+		writeln(`[DEBUG] `, value);
+		return value.get_integer();
+	}
 }
 
 extern (C) os_value os_new_string(char* data, long len);
