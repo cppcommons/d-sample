@@ -1,4 +1,8 @@
 #include "os.h"
+
+#ifdef __DMC__
+#define _WIN32_WINNT 0x403
+#endif /* __DMC__ */
 #include <windows.h>
 #include <tlhelp32.h> // CreateToolhelp32Snapshot()
 #include <iomanip>
@@ -19,270 +23,48 @@ using namespace std;
 #define THREAD_LOCAL __declspec(thread)
 #endif
 
-// class thread_mutex
-/// This class provides an implementation of the mutex model based on the Win32 CRITICAL_SECTION
 class thread_mutex
 {
-public:
-    typedef thread_mutex class_type;
+  public:
+	thread_mutex()
+	{
+		::InitializeCriticalSection(&m_cs);
+	}
+#ifndef __DMC__
+	thread_mutex(DWORD spinCount)
+	{
+		::InitializeCriticalSectionAndSpinCount(&m_cs, spinCount);
+	}
+#endif /* !__DMC__ */
+	~thread_mutex()
+	{
+		::DeleteCriticalSection(&m_cs);
+	}
 
-// Construction
-public:
-    /// Creates an instance of the mutex
-    thread_mutex()
-    {
-        ::InitializeCriticalSection(&m_cs);
-    }
-#if defined(__WINSTL_THREAD_MUTEX_SPIN_COUNT_SUPPORT)
-    /// Creates an instance of the mutex and sets its spin count
-    ///
-    /// \param spinCount The new spin count for the mutex
-    /// \note Only available with Windows NT 4 SP3 and later
-    thread_mutex(ws_dword_t spinCount)
-    {
-        ::InitializeCriticalSectionAndSpinCount(&m_cs, spinCount);
-    }
-#endif /* __WINSTL_THREAD_MUTEX_SPIN_COUNT_SUPPORT */
-    /// Destroys an instance of the mutex
-    ~thread_mutex()
-    {
-        ::DeleteCriticalSection(&m_cs);
-    }
-
-// Operations
-public:
-    /// Acquires a lock on the mutex, pending the thread until the lock is aquired
-    void lock()
-    {
-        ::EnterCriticalSection(&m_cs);
-    }
-#if defined(__WINSTL_THREAD_MUTEX_TRY_LOCK_SUPPORT)
-    /// Attempts to lock the mutex
-    ///
-    /// \return <b>true</b> if the mutex was aquired, or <b>false</b> if not
-    /// \note Only available with Windows NT 4 and later
-    bool try_lock()
-    {
-        return ::TryEnterCriticalSection(&m_cs) != FALSE;
-    }
-#endif /* __WINSTL_THREAD_MUTEX_TRY_LOCK_SUPPORT */
-    /// Releases an aquired lock on the mutex
-    void unlock()
-    {
-        ::LeaveCriticalSection(&m_cs);
-    }
-
-#if defined(__WINSTL_THREAD_MUTEX_SPIN_COUNT_SUPPORT)
-    /// Sets the spin count for the mutex
-    ///
-    /// \param spinCount The new spin count for the mutex
-    /// \return The previous spin count associated with the mutex
-    /// \note Only available with Windows NT 4 SP3 and later
-    ws_dword_t set_spin_count(ws_dword_t spinCount)
-    {
-        return ::SetCriticalSectionSpinCount(&m_cs, spinCount);
-    }
-#endif /* __WINSTL_THREAD_MUTEX_SPIN_COUNT_SUPPORT */
-
-// Members
-private:
-    CRITICAL_SECTION    m_cs;   // critical section
-
-// Not to be implemented
-private:
-    thread_mutex(class_type const &rhs);
-    thread_mutex &operator =(class_type const &rhs);
+  public:
+	void lock()
+	{
+		::EnterCriticalSection(&m_cs);
+	}
+	bool try_lock()
+	{
+		return ::TryEnterCriticalSection(&m_cs) != FALSE;
+	}
+	void unlock()
+	{
+		::LeaveCriticalSection(&m_cs);
+	}
+#ifndef __DMC__
+	DWORD set_spin_count(DWORD spinCount)
+	{
+		return ::SetCriticalSectionSpinCount(&m_cs, spinCount);
+	}
+#endif /* !__DMC__ */
+  private:
+	CRITICAL_SECTION m_cs;
 };
 
-typedef long long os_oid_t;
-
-struct os_data
-{
-	virtual void release() = 0;
-	virtual os_type_t type() = 0;
-	virtual void to_ss(std::stringstream &stream) = 0;
-	virtual long long get_integer() = 0;
-	virtual const char *get_string() = 0;
-	virtual long long get_length() = 0;
-	virtual os_value *get_array() = 0;
-	virtual void *get_handle() = 0;
-};
-
-struct os_array : public os_data
-{
-	std::vector<os_value> m_value;
-	explicit os_array(long long len)
-	{
-		m_value.resize(len + 1);
-	}
-	virtual void release()
-	{
-		size_t sz = (m_value.size() - 1);
-		os_dbg("os_array::release(): length=%zu", sz);
-		delete this;
-	}
-	virtual os_type_t type()
-	{
-		return OS_ARRAY;
-	}
-	virtual void to_ss(std::stringstream &stream)
-	{
-		stream << "{array of " << (m_value.size() - 1) << " elements}";
-	}
-	virtual long long get_integer()
-	{
-		return 0;
-	}
-	virtual const char *get_string()
-	{
-		return "";
-	}
-	virtual long long get_length()
-	{
-		return m_value.size();
-	}
-	virtual os_value *get_array()
-	{
-		return &m_value[0];
-	}
-	virtual void *get_handle()
-	{
-		return nullptr;
-	}
-};
-
-struct os_handle : public os_data
-{
-	void *m_value;
-	explicit os_handle(void *value)
-	{
-		m_value = value;
-	}
-	virtual void release()
-	{
-		os_dbg("os_handle::release(): %p", m_value);
-		delete this;
-	}
-	virtual os_type_t type()
-	{
-		return OS_HANDLE;
-	}
-	virtual void to_ss(std::stringstream &stream)
-	{
-		stream << m_value;
-	}
-	virtual long long get_integer()
-	{
-		return 0;
-	}
-	virtual const char *get_string()
-	{
-		return "";
-	}
-	virtual long long get_length()
-	{
-		return 0;
-	}
-	virtual os_value *get_array()
-	{
-		return nullptr;
-	}
-	virtual void *get_handle()
-	{
-		return m_value;
-	}
-};
-
-struct os_integer : public os_data
-{
-	long long m_value;
-	explicit os_integer(long long value)
-	{
-		m_value = value;
-	}
-	virtual void release()
-	{
-		os_dbg("os_integer::release(): %lld", m_value);
-		delete this;
-	}
-	virtual os_type_t type()
-	{
-		return OS_INTEGER;
-	}
-	virtual void to_ss(std::stringstream &stream)
-	{
-		stream << m_value;
-	}
-	virtual long long get_integer()
-	{
-		return m_value;
-	}
-	virtual const char *get_string()
-	{
-		return "";
-	}
-	virtual long long get_length()
-	{
-		return 0;
-	}
-	virtual os_value *get_array()
-	{
-		return nullptr;
-	}
-	virtual void *get_handle()
-	{
-		return nullptr;
-	}
-};
-
-struct os_string : public os_data
-{
-	std::string m_value;
-	explicit os_string(const std::string &value)
-	{
-		m_value = value;
-	}
-	explicit os_string(const char *value, long long len)
-	{
-		if (len < 0)
-			m_value = std::string(value);
-		else
-			m_value = std::string(value, len);
-	}
-	virtual void release()
-	{
-		os_dbg("os_string::release(): %s", m_value.c_str());
-		delete this;
-	}
-	virtual os_type_t type()
-	{
-		return OS_STRING;
-	}
-	virtual void to_ss(std::stringstream &stream)
-	{
-		stream << "\"" << m_value << "\"";
-	}
-	virtual long long get_integer()
-	{
-		return 0;
-	}
-	virtual const char *get_string()
-	{
-		return m_value.c_str();
-	}
-	virtual long long get_length()
-	{
-		return m_value.size();
-	}
-	virtual os_value *get_array()
-	{
-		return nullptr;
-	}
-	virtual void *get_handle()
-	{
-		return nullptr;
-	}
-};
+#include "os-def.h"
 
 //static stlsoft::winstl_project::thread_mutex g_os_thread_mutex;
 static thread_mutex g_os_thread_mutex;
