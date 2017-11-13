@@ -66,6 +66,9 @@ extern (C) long os_get_integer(os_value value)
 
 	if (value is null)
 		return 0;
+	int* found = value in g_os_value_map;
+	if (!found)
+		return 0;
 	writeln(`[DEBUG] `, value);
 	return value.get_integer();
 }
