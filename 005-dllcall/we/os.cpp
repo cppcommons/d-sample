@@ -96,7 +96,6 @@ struct os_variant_t : public os_struct
 {
 	os_sid_t m_oid;
 	os_thread_info *m_thread_info;
-	//long long m_link_count;
 	bool m_marked;
 	os_data *m_value;
 	explicit os_variant_t(os_sid_t oid)
@@ -125,7 +124,7 @@ struct os_variant_t : public os_struct
 		//std::string v_thread_id = m_thread_id.c_str();
 		std::string v_thread_id = m_thread_info->c_str();
 		std::stringstream v_stream;
-		v_stream << "os_variant_t { " << v_thread_id
+		v_stream << "{ " << v_thread_id
 				 << " MARK="
 				 << m_marked
 				 << " ";
