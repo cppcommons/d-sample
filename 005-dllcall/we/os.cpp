@@ -39,15 +39,15 @@ static inline os_sid_t os_next_sid(
 	return result;
 }
 
+static os_sid_t os_thread_info_sid_max = 0;
 struct os_thread_info
 {
-	static os_sid_t s_sid_max;
 	DWORD m_dword;
 	os_sid_t m_sid;
-	explicit os_thread_info(DWORD dword)
+	explicit os_thread_info(DWORD thread_dword)
 	{
-		m_dword = dword;
-		m_sid = os_next_sid(g_os_thread_mutex, s_sid_max);
+		m_dword = thread_dword;
+		m_sid = os_next_sid(g_os_thread_mutex, os_thread_info_sid_max);
 	}
 	std::string m_display;
 	const char *c_str()
@@ -68,7 +68,18 @@ struct os_thread_info
 		return m_display.c_str();
 	}
 };
-os_sid_t os_thread_info::s_sid_max = 0;
+
+std::map<DWORD, os_thread_info *> g_thread_info_map;
+
+static os_thread_info *os_prepare_thread(DWORD thread_dword)
+{
+	if (g_thread_info_map.count(thread_dword) == 0)
+	{
+		os_thread_info *v_info = new os_thread_info(thread_dword);
+		g_thread_info_map[thread_dword] = v_info;
+	}
+	return g_thread_info_map[thread_dword];
+}
 
 struct os_struct
 {
@@ -203,12 +214,15 @@ struct os_variant_t : public os_struct
 {
 	os_sid_t m_oid;
 	os_thread_id m_thread_id;
+	os_thread_info *m_thread_info;
 	long long m_link_count;
 	os_data *m_value;
 	explicit os_variant_t(os_sid_t oid)
 	{
 		m_oid = oid;
 		m_thread_id = os_get_thread_id();
+		DWORD v_thread_dword = ::GetCurrentThreadId();
+		m_thread_info = os_prepare_thread(v_thread_dword);
 		m_link_count = 0;
 		m_value = nullptr;
 	}
@@ -225,7 +239,8 @@ struct os_variant_t : public os_struct
 	}
 	const char *c_str()
 	{
-		std::string v_thread_id = m_thread_id.c_str();
+		//std::string v_thread_id = m_thread_id.c_str();
+		std::string v_thread_id = m_thread_info->c_str();
 		std::stringstream v_stream;
 		v_stream << "os_variant_t { " << v_thread_id
 				 << " ";
