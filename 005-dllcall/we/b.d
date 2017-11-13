@@ -6,6 +6,17 @@ class os_value
 		m_value = value;
 	}
 
+	/+
+	int opCmp(os_value o)
+	{
+		if (m_value > o.m_value)
+			return 1;
+		if (m_value < o.m_value)
+			return -1;
+		return 0;
+	}
++/
+
 	override string toString() const pure @safe
 	{
 		//import std.algorithm;
@@ -122,8 +133,8 @@ void main(string[] args)
 	DWORD v_thread_dword = GetCurrentThreadId();
 	writeln(v_thread_dword);
 
-	A a1 = new A;
 	/+
+	A a1 = new A;
 	os_value[] testing;
 	BinaryHeap!(os_value[]) h3 = BinaryHeap!(os_value[])(testing);
 	h3.insert(new os_value(1234));
@@ -142,7 +153,7 @@ os_value  my_add2(int argc, os_value *argv);
 	long answer2 = os_get_integer(answer);
 	writeln(answer2);
 	int[os_value] dummy;
-	int * bbb = answer in dummy;
+	int* bbb = answer in dummy;
 	exit(0);
 }
 
