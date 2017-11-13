@@ -269,3 +269,53 @@ struct os_string : public os_data
 		return nullptr;
 	}
 };
+
+static int os_write_consoleA(HANDLE hconsole, const char *format, va_list args)
+{
+	const int BUFF_LEN = 10240;
+	static char v_buffer[BUFF_LEN + 1];
+	v_buffer[BUFF_LEN] = 0;
+	//int len = wvsprintfA((LPSTR)v_buffer, format, args); // Win32 API
+	int len = vsnprintf(v_buffer, BUFF_LEN, format, args); // Win32 API
+
+	for (int i = 0; i < len; i++)
+	{
+		if (v_buffer[i] == 0)
+		{
+			v_buffer[i] = '@';
+		}
+	}
+	DWORD dwWriteByte;
+	WriteConsoleA(hconsole, v_buffer, len, &dwWriteByte, NULL);
+	OutputDebugStringA((LPCSTR)v_buffer);
+	return len;
+}
+
+static thread_mutex v_print_mutex;
+extern int os_printf(const char *format, ...)
+{
+	{
+		os_thread_locker locker(v_print_mutex);
+		va_list args;
+		va_start(args, format);
+		int len = os_write_consoleA(GetStdHandle(STD_OUTPUT_HANDLE), format, args);
+		va_end(args);
+		return len;
+	}
+}
+
+extern int os_dbg(const char *format, ...)
+{
+	//static stlsoft::winstl_project::thread_mutex v_mutex;
+	{
+		os_thread_locker locker(v_print_mutex);
+		char v_buffer[1024 + 1];
+		v_buffer[1024] = 0;
+		wsprintfA((LPSTR)v_buffer, "[DEBUG] %s\n", format);
+		va_list args;
+		va_start(args, format);
+		int len = os_write_consoleA(GetStdHandle(STD_OUTPUT_HANDLE), v_buffer, args);
+		va_end(args);
+		return len;
+	}
+}
