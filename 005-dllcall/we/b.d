@@ -1,4 +1,14 @@
-class os_value
+import std.stdio;
+
+static int[os_value] g_os_value_map;
+
+abstract class os_value
+{
+	long get_integer();
+	override string toString() const pure @safe;
+}
+
+class os_integer : os_value
 {
 	long m_value;
 	this(long value)
@@ -6,28 +16,18 @@ class os_value
 		m_value = value;
 	}
 
-	/+
-	int opCmp(os_value o)
+	override long get_integer()
 	{
-		if (m_value > o.m_value)
-			return 1;
-		if (m_value < o.m_value)
-			return -1;
-		return 0;
+		return m_value;
 	}
-+/
 
 	override string toString() const pure @safe
 	{
-		//import std.algorithm;
 		import std.array;
 		import std.format;
 
-		// Typical implementation to minimize overhead
-		// of constructing string
 		auto app = appender!string();
-		app.put("[");
-		//app.put(m_value);
+		app ~= "[";
 		app ~= format!`%d`(m_value);
 		app.put("]");
 		return app.data;
@@ -54,7 +54,9 @@ extern (C) os_value os_new_handle(void* data);
 extern (C) void* os_get_handle(os_value value);
 extern (C) os_value os_new_integer(long data)
 {
-	auto o = new os_value(data);
+	writeln(`os_new_integer(): data=`, data);
+	auto o = new os_integer(data);
+	g_os_value_map[o] = 0;
 	return o;
 }
 
@@ -62,8 +64,10 @@ extern (C) long os_get_integer(os_value value)
 {
 	import std.stdio;
 
-	writeln(value.m_value);
-	return value.m_value;
+	if (value is null)
+		return 0;
+	writeln(`[DEBUG] `, value);
+	return value.get_integer();
 }
 
 extern (C) os_value os_new_string(char* data, long len);
@@ -151,7 +155,7 @@ os_value  my_add2(int argc, os_value *argv);
 	os_value answer = my_add2(2, argv.ptr);
 	writeln(answer);
 	long answer2 = os_get_integer(answer);
-	writeln(answer2);
+	writeln(`answer2=`, answer2);
 	int[os_value] dummy;
 	int* bbb = answer in dummy;
 	exit(0);
