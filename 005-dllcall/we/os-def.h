@@ -99,12 +99,11 @@ struct os_array : public os_data
 	std::vector<os_value> m_value;
 	explicit os_array(long long len)
 	{
-		m_value.resize(len + 1);
+		m_value.resize(len);
 	}
 	virtual void release()
 	{
-		size_t sz = (m_value.size() - 1);
-		os_dbg("os_array::release(): length=%zu", sz);
+		os_dbg("os_array::release(): length=%zu", m_value.size());
 		delete this;
 	}
 	virtual os_type_t type()
@@ -113,7 +112,7 @@ struct os_array : public os_data
 	}
 	virtual void to_ss(std::stringstream &stream)
 	{
-		stream << "{array of " << (m_value.size() - 1) << " elements}";
+		stream << "{array of " << m_value.size() << " elements}";
 	}
 	virtual long long get_integer()
 	{

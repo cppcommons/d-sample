@@ -26,11 +26,18 @@ int main()
 	os_dbg("DBG!");
 	os_value my_handle = os_new_handle((void *)0x123456);
 	os_value ary_ = os_new_array(3);
+	os_mark(ary_);
 	os_value *ary = os_get_array(ary_);
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 3; i++)
 	{
 		os_value v = ary[i];
-		os_dbg("v=0x%016x", v);
+		os_dbg("v=0x%p", v);
+		ary[i] = os_new_integer(i + 1);
+	}
+	for (int i = 0; i < 3; i++)
+	{
+		os_value v = ary[i];
+		os_dbg("v=0x%p", v);
 	}
 	//os_new_std_string("test string テスト文字列");
 	os_value s = os_new_string("test string テスト文字列");

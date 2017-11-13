@@ -126,6 +126,8 @@ struct os_variant_t : public os_struct
 		std::string v_thread_id = m_thread_info->c_str();
 		std::stringstream v_stream;
 		v_stream << "os_variant_t { " << v_thread_id
+				 << " MARK="
+				 << m_marked
 				 << " ";
 		m_value->to_ss(v_stream);
 		v_stream << " }";
@@ -143,9 +145,8 @@ extern bool os_mark(os_value entry)
 		return false;
 	{
 		os_thread_locker locker(g_os_thread_mutex);
-		if (entry->m_value->type() == OS_ARRAY)
-			return false;
-		//entry->m_link_count++;
+		//if (entry->m_value->type() == OS_ARRAY)
+		//	return false;
 		entry->m_marked = true;
 		return true;
 	}
