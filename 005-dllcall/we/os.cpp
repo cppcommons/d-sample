@@ -95,9 +95,9 @@ static os_sid_t os_get_next_oid()
 struct os_variant_t : public os_struct
 {
 	os_sid_t m_oid;
-	//os_thread_id m_thread_id;
 	os_thread_info *m_thread_info;
-	long long m_link_count;
+	//long long m_link_count;
+	bool m_marked;
 	os_data *m_value;
 	explicit os_variant_t(os_sid_t oid)
 	{
@@ -105,7 +105,8 @@ struct os_variant_t : public os_struct
 		//m_thread_id = os_get_thread_id();
 		DWORD v_thread_dword = ::GetCurrentThreadId();
 		m_thread_info = os_get_thread_info(v_thread_dword);
-		m_link_count = 0;
+		//m_link_count = 0;
+		m_marked = false;
 		m_value = nullptr;
 	}
 	void set_value(os_data *value)
@@ -144,20 +145,8 @@ extern bool os_mark(os_value entry)
 		os_thread_locker locker(g_os_thread_mutex);
 		if (entry->m_value->type() == OS_ARRAY)
 			return false;
-		entry->m_link_count++;
-		return true;
-	}
-}
-
-extern bool os_unmark(os_value entry)
-{
-	if (!entry)
-		return false;
-	{
-		os_thread_locker locker(g_os_thread_mutex);
-		if (entry->m_value->type() == OS_ARRAY)
-			return false;
-		entry->m_link_count--;
+		//entry->m_link_count++;
+		entry->m_marked = true;
 		return true;
 	}
 }
@@ -259,11 +248,11 @@ static void os_cleanup(bool reset)
 			os_sid_t v_oid = v_entry->m_oid;
 			if (reset && v_entry->m_thread_info->m_sid == v_thread_info->m_sid)
 			{
-				v_entry->m_link_count = 0;
+				v_entry->m_marked = false;
 			}
 			if (v_entry->m_thread_info->m_sid == v_thread_info->m_sid)
 			{
-				if (v_entry->m_link_count <= 0)
+				if (!v_entry->m_marked)
 					v_removed.push_back(v_entry);
 			}
 			else if (v_thread_list.count(v_entry->m_thread_info->m_dword) == 0)

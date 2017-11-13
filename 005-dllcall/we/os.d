@@ -62,13 +62,10 @@ char * os_get_string(os_value value);
 void  os_dump_heap();
 //C     extern bool os_mark(os_value entry);
 bool  os_mark(os_value entry);
-//C     extern bool os_unmark(os_value entry);
-bool  os_unmark(os_value entry);
 //C     extern void os_sweep();
 void  os_sweep();
 //C     extern void os_clear();
 void  os_clear();
-//extern long long os_arg_count(os_function_t fn);
 
 //C     #ifdef __cplusplus
 //C     }

@@ -36,10 +36,8 @@ extern os_value os_new_string(const char *data, long long len);
 extern const char *os_get_string(os_value value);
 extern void os_dump_heap();
 extern bool os_mark(os_value entry);
-extern bool os_unmark(os_value entry);
 extern void os_sweep();
 extern void os_clear();
-//extern long long os_arg_count(os_function_t fn);
 
 #ifdef __cplusplus
 }
