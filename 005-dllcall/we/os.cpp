@@ -10,7 +10,7 @@
 #include <sstream>
 using namespace std;
 
-#include <winstl/synch/thread_mutex.hpp>
+//#include <winstl/synch/thread_mutex.hpp>
 //#include <stlsoft/smartptr/shared_ptr.hpp>
 
 #ifdef __GNUC__
@@ -18,6 +18,81 @@ using namespace std;
 #else
 #define THREAD_LOCAL __declspec(thread)
 #endif
+
+// class thread_mutex
+/// This class provides an implementation of the mutex model based on the Win32 CRITICAL_SECTION
+class thread_mutex
+{
+public:
+    typedef thread_mutex class_type;
+
+// Construction
+public:
+    /// Creates an instance of the mutex
+    thread_mutex()
+    {
+        ::InitializeCriticalSection(&m_cs);
+    }
+#if defined(__WINSTL_THREAD_MUTEX_SPIN_COUNT_SUPPORT)
+    /// Creates an instance of the mutex and sets its spin count
+    ///
+    /// \param spinCount The new spin count for the mutex
+    /// \note Only available with Windows NT 4 SP3 and later
+    thread_mutex(ws_dword_t spinCount)
+    {
+        ::InitializeCriticalSectionAndSpinCount(&m_cs, spinCount);
+    }
+#endif /* __WINSTL_THREAD_MUTEX_SPIN_COUNT_SUPPORT */
+    /// Destroys an instance of the mutex
+    ~thread_mutex()
+    {
+        ::DeleteCriticalSection(&m_cs);
+    }
+
+// Operations
+public:
+    /// Acquires a lock on the mutex, pending the thread until the lock is aquired
+    void lock()
+    {
+        ::EnterCriticalSection(&m_cs);
+    }
+#if defined(__WINSTL_THREAD_MUTEX_TRY_LOCK_SUPPORT)
+    /// Attempts to lock the mutex
+    ///
+    /// \return <b>true</b> if the mutex was aquired, or <b>false</b> if not
+    /// \note Only available with Windows NT 4 and later
+    bool try_lock()
+    {
+        return ::TryEnterCriticalSection(&m_cs) != FALSE;
+    }
+#endif /* __WINSTL_THREAD_MUTEX_TRY_LOCK_SUPPORT */
+    /// Releases an aquired lock on the mutex
+    void unlock()
+    {
+        ::LeaveCriticalSection(&m_cs);
+    }
+
+#if defined(__WINSTL_THREAD_MUTEX_SPIN_COUNT_SUPPORT)
+    /// Sets the spin count for the mutex
+    ///
+    /// \param spinCount The new spin count for the mutex
+    /// \return The previous spin count associated with the mutex
+    /// \note Only available with Windows NT 4 SP3 and later
+    ws_dword_t set_spin_count(ws_dword_t spinCount)
+    {
+        return ::SetCriticalSectionSpinCount(&m_cs, spinCount);
+    }
+#endif /* __WINSTL_THREAD_MUTEX_SPIN_COUNT_SUPPORT */
+
+// Members
+private:
+    CRITICAL_SECTION    m_cs;   // critical section
+
+// Not to be implemented
+private:
+    thread_mutex(class_type const &rhs);
+    thread_mutex &operator =(class_type const &rhs);
+};
 
 typedef long long os_oid_t;
 
@@ -209,12 +284,15 @@ struct os_string : public os_data
 	}
 };
 
-static stlsoft::winstl_project::thread_mutex g_os_thread_mutex;
+//static stlsoft::winstl_project::thread_mutex g_os_thread_mutex;
+static thread_mutex g_os_thread_mutex;
 
 struct os_thread_locker
 {
-	stlsoft::winstl_project::thread_mutex &m_mutex;
-	explicit os_thread_locker(stlsoft::winstl_project::thread_mutex &mutex) : m_mutex(mutex)
+	//stlsoft::winstl_project::thread_mutex &m_mutex;
+	thread_mutex &m_mutex;
+	//explicit os_thread_locker(stlsoft::winstl_project::thread_mutex &mutex) : m_mutex(mutex)
+	explicit os_thread_locker(thread_mutex &mutex) : m_mutex(mutex)
 	{
 		m_mutex.lock();
 	}
@@ -249,12 +327,12 @@ struct os_thread_id : public os_struct
 	}
 };
 
-#if 0x1
 static long long os_get_thread_no()
 {
 	static THREAD_LOCAL long long curr_thread_no2 = -1;
 	static long long v_thread_id_max2 = 0;
-	static stlsoft::winstl_project::thread_mutex v_mutex2;
+	//static stlsoft::winstl_project::thread_mutex v_mutex2;
+	static thread_mutex v_mutex2;
 	os_dbg("os_get_thread_no(1)");
 	os_dbg("os_get_thread_no(2)");
 	if (curr_thread_no2 > 0)
@@ -276,7 +354,6 @@ static long long os_get_thread_no()
 		return curr_thread_no2;
 	}
 }
-#endif
 
 static os_thread_id os_get_thread_id()
 {
@@ -572,11 +649,11 @@ static int os_write_consoleA(HANDLE hconsole, const char *format, va_list args)
 	return len;
 }
 
+static thread_mutex v_print_mutex;
 extern int os_printf(const char *format, ...)
 {
-	static stlsoft::winstl_project::thread_mutex v_mutex;
 	{
-		os_thread_locker locker(v_mutex);
+		os_thread_locker locker(v_print_mutex);
 		va_list args;
 		va_start(args, format);
 		int len = os_write_consoleA(GetStdHandle(STD_OUTPUT_HANDLE), format, args);
@@ -587,9 +664,9 @@ extern int os_printf(const char *format, ...)
 
 extern int os_dbg(const char *format, ...)
 {
-	static stlsoft::winstl_project::thread_mutex v_mutex;
+	//static stlsoft::winstl_project::thread_mutex v_mutex;
 	{
-		os_thread_locker locker(v_mutex);
+		os_thread_locker locker(v_print_mutex);
 		char v_buffer[1024 + 1];
 		v_buffer[1024] = 0;
 		wsprintfA((LPSTR)v_buffer, "[DEBUG] %s\n", format);
