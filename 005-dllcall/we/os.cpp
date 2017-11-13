@@ -86,31 +86,6 @@ struct os_struct
 	std::string m_debug_output_string;
 };
 
-static std::set<DWORD> os_get_thread_dword_list()
-{
-	std::set<DWORD> result;
-	DWORD v_proc_id = ::GetCurrentProcessId();
-	HANDLE h_snapshot = ::CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
-	if (h_snapshot == INVALID_HANDLE_VALUE)
-	{
-		return result;
-	}
-	THREADENTRY32 v_entry;
-	v_entry.dwSize = sizeof(THREADENTRY32);
-	if (!::Thread32First(h_snapshot, &v_entry))
-	{
-		goto label_exit;
-	}
-	do
-	{
-		if (v_entry.th32OwnerProcessID == v_proc_id)
-			result.insert(v_entry.th32ThreadID);
-	} while (::Thread32Next(h_snapshot, &v_entry));
-label_exit:
-	::CloseHandle(h_snapshot);
-	return result;
-}
-
 static os_sid_t os_get_next_oid()
 {
 	static os_sid_t g_value_sid_max = 100000;
