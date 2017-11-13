@@ -1,5 +1,68 @@
-import os;
-import lib1;
+class os_value
+{
+	long m_value;
+	this(long value)
+	{
+		m_value = value;
+	}
+
+	override string toString() const pure @safe
+	{
+		//import std.algorithm;
+		import std.array;
+		import std.format;
+
+		// Typical implementation to minimize overhead
+		// of constructing string
+		auto app = appender!string();
+		app.put("[");
+		//app.put(m_value);
+		app ~= format!`%d`(m_value);
+		app.put("]");
+		return app.data;
+	}
+}
+//alias void* os_value;
+//alias os_value_t* os_value;
+alias os_value function(int argc, os_value* argv) os_function_t;
+enum os_type_t
+{
+	OS_NIL,
+	OS_ARRAY,
+	OS_BYTES,
+	OS_HANDLE,
+	OS_INTEGER,
+	OS_REAL,
+	OS_STRING,
+}
+
+extern (C) long os_get_length(os_value value);
+extern (C) os_value os_new_array(long len);
+extern (C) os_value* os_get_array(os_value value);
+extern (C) os_value os_new_handle(void* data);
+extern (C) void* os_get_handle(os_value value);
+extern (C) os_value os_new_integer(long data)
+{
+	auto o = new os_value(data);
+	return o;
+}
+
+extern (C) long os_get_integer(os_value value)
+{
+	import std.stdio;
+
+	writeln(value.m_value);
+	return value.m_value;
+}
+
+extern (C) os_value os_new_string(char* data, long len);
+extern (C) char* os_get_string(os_value value);
+extern (C) void os_dump_heap();
+extern (C) bool os_mark(os_value entry);
+extern (C) void os_sweep();
+extern (C) void os_clear();
+
+extern (C) os_value my_add2(int argc, os_value* argv);
 
 private void exit(int code)
 {
@@ -24,7 +87,7 @@ wchar[] toString(wchar* s)
 	return s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
 }
 
-class A 
+class A
 {
 	int m_a;
 }
@@ -55,21 +118,23 @@ void main(string[] args)
 	writeln(h2.front);
 
 	import core.sys.windows.windows;
+
 	DWORD v_thread_dword = GetCurrentThreadId();
 	writeln(v_thread_dword);
 
 	A a1 = new A;
-	A *b = &a1;
+	A* b = &a1;
 	/+
 extern (C):
 os_value  my_add2(int argc, os_value *argv);
 	+/
-	/+
 	os_value[2] argv;
 	argv[0] = os_new_integer(11);
 	argv[1] = os_new_integer(22);
 	os_value answer = my_add2(2, argv.ptr);
-	+/
+	writeln(answer);
+	long answer2 = os_get_integer(answer);
+	writeln(answer2);
 	exit(0);
 }
 
@@ -95,7 +160,8 @@ static uint[] os_get_thread_dword_list()
 	{
 		if (v_entry.th32OwnerProcessID == v_proc_id)
 			result ~= v_entry.th32ThreadID;
-	} while (Thread32Next(h_snapshot, &v_entry));
+	}
+	while (Thread32Next(h_snapshot, &v_entry));
 label_exit:
 	CloseHandle(h_snapshot);
 	return result;
