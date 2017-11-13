@@ -86,97 +86,6 @@ struct os_struct
 	std::string m_debug_output_string;
 };
 
-#if 0x0
-struct os_thread_id : public os_struct
-{
-	DWORD dword;
-	long long no;
-	const char *c_str()
-	{
-		std::stringstream v_stream;
-		v_stream << "[" << no
-				 << ":0x"
-				 << std::setw(8)
-				 << std::setfill('0')
-				 << std::hex
-				 //<< std::uppercase
-				 << dword
-				 << "]";
-		m_debug_output_string = v_stream.str();
-		return m_debug_output_string.c_str();
-	}
-};
-
-static long long os_get_thread_no()
-{
-	static THREAD_LOCAL long long curr_thread_no2 = -1;
-	static long long v_thread_id_max2 = 0;
-	//static stlsoft::winstl_project::thread_mutex v_mutex2;
-	static thread_mutex v_mutex2;
-	os_dbg("os_get_thread_no(1)");
-	os_dbg("os_get_thread_no(2)");
-	if (curr_thread_no2 > 0)
-		return curr_thread_no2;
-	os_dbg("os_get_thread_no(3)");
-	{
-		//os_thread_locker locker(v_mutex2);
-		//os_thread_locker locker(g_os_thread_mutex);
-		os_dbg("os_get_thread_no(4)");
-		v_mutex2.lock();
-		if (curr_thread_no2 == -1)
-		{
-			os_dbg("os_get_thread_no(5)");
-			v_thread_id_max2++;
-			curr_thread_no2 = v_thread_id_max2;
-		}
-		v_mutex2.unlock();
-		os_dbg("os_get_thread_no(6)");
-		return curr_thread_no2;
-	}
-}
-
-static os_thread_id os_get_thread_id()
-{
-#if 0x0
-	static THREAD_LOCAL long long curr_thread_no = -1;
-	static long long v_thread_id_max = 0;
-	static stlsoft::winstl_project::thread_mutex v_mutex;
-	{
-		os_thread_locker locker(v_mutex);
-		if (curr_thread_no == -1)
-		{
-			v_thread_id_max++;
-			curr_thread_no = v_thread_id_max;
-		}
-	}
-#endif
-	static THREAD_LOCAL bool v_initilized = false;
-	//static THREAD_LOCAL os_thread_id v_thread_id;
-	static THREAD_LOCAL long long v_thread_no;
-	static THREAD_LOCAL DWORD v_thread_dword;
-	if (!v_initilized)
-	{
-		v_thread_no = os_get_thread_no();
-		v_thread_dword = ::GetCurrentThreadId();
-	}
-	os_thread_id result;
-	result.no = v_thread_no;
-	result.dword = v_thread_dword;
-	return result;
-#if 0x0
-	os_dbg("os_get_thread_id(1)");
-	os_thread_id result;
-	//result.no = curr_thread_no; //os_get_thread_no();
-	result.no = os_get_thread_no();
-	//os_get_thread_no();
-	os_dbg("os_get_thread_id(2)");
-	result.dword = ::GetCurrentThreadId();
-	os_dbg("os_get_thread_id(3)");
-	return result;
-#endif
-}
-#endif
-
 static std::set<DWORD> os_get_thread_dword_list()
 {
 	std::set<DWORD> result;
@@ -204,12 +113,8 @@ label_exit:
 
 static os_sid_t os_get_next_oid()
 {
-	{
-		os_thread_locker locker(g_os_thread_mutex);
-		static os_sid_t g_last_oid = 100000;
-		g_last_oid++;
-		return g_last_oid;
-	}
+	static os_sid_t g_value_sid_max = 100000;
+	return os_next_sid(g_os_thread_mutex, g_value_sid_max);
 }
 
 struct os_variant_t : public os_struct
