@@ -119,9 +119,11 @@ struct os_array : public os_data
 		return OS_ARRAY;
 	}
 	virtual void to_ss(std::stringstream &stream)
+	#if 0x1
 	{
-		stream << "{array of " << m_value.size() << " elements}";
+		stream << "{array of " << m_value.size() << " elements }";
 	}
+	#endif
 	virtual long long get_integer()
 	{
 		return 0;

@@ -127,14 +127,79 @@ struct os_variant_t : public os_struct
 				 << m_marked
 				 << " ALIVE="
 				 << m_value->alive()
-				 << " "
-				  ;
+				 << " ";
 		m_value->to_ss(v_stream);
 		v_stream << " }";
 		m_debug_output_string = v_stream.str();
 		return m_debug_output_string.c_str();
 	}
 };
+
+/*
+static void nil_to_ss(std::stringstream &stream)
+{
+	stream << "<NIL>";
+}
+
+void array_to_ss(os_array &array, std::stringstream *stream)
+{
+	size_t sz = array.m_value.size();
+	os_value *ptr = &array.m_value[0];
+	while (sz)
+	{
+		if ((*ptr) == nullptr)
+		{
+			*stream << "<NIL>";
+		}
+		ptr++;
+		sz--;
+	}
+#if 0x0
+	for (int i = 0; i < sz; i++)
+	{
+		os_value elem = array.m_value[i];
+		if (elem == nullptr)
+		{
+			//std::string nil = "<NIL>";
+			//stream << nil;
+			//stream << "<NIL>";
+			//nil_to_ss(stream);
+			continue;
+		}
+#if 0x0
+		else
+			m_value[i]->m_value->to_ss(stream);
+#endif
+	}
+#endif
+}
+
+void os_array::to_ss(std::stringstream &stream)
+{
+	stream << "{array of " << m_value.size() << " elements ";
+	array_to_ss(*this, stream);
+#if 0x0
+	std::string stream2;
+	size_t sz = m_value.size();
+	for (int i = 0; i < sz; i++)
+	{
+		if (m_value[i] == nullptr)
+		{
+			//std::string nil = "<NIL>";
+			//stream << nil;
+			stream2 += "<NIL>";
+			//nil_to_ss(stream);
+			continue;
+		}
+#if 0x0
+		else
+			m_value[i]->m_value->to_ss(stream);
+#endif
+	}
+#endif
+	stream << " }";
+}
+*/
 
 typedef std::set<os_variant_t *> os_value_set_t;
 static os_value_set_t g_os_value_set;
