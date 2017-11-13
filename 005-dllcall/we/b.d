@@ -123,7 +123,13 @@ void main(string[] args)
 	writeln(v_thread_dword);
 
 	A a1 = new A;
-	A* b = &a1;
+	/+
+	os_value[] testing;
+	BinaryHeap!(os_value[]) h3 = BinaryHeap!(os_value[])(testing);
+	h3.insert(new os_value(1234));
+	h3.insert(new os_value(5678));
+	writeln(h3.dup);
+	+/
 	/+
 extern (C):
 os_value  my_add2(int argc, os_value *argv);
@@ -135,6 +141,8 @@ os_value  my_add2(int argc, os_value *argv);
 	writeln(answer);
 	long answer2 = os_get_integer(answer);
 	writeln(answer2);
+	int[os_value] dummy;
+	int * bbb = answer in dummy;
 	exit(0);
 }
 
