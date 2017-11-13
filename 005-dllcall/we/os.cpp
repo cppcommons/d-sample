@@ -23,66 +23,52 @@ using namespace std;
 #define THREAD_LOCAL __declspec(thread)
 #endif
 
-class thread_mutex
-{
-  public:
-	thread_mutex()
-	{
-		::InitializeCriticalSection(&m_cs);
-	}
-#ifndef __DMC__
-	thread_mutex(DWORD spinCount)
-	{
-		::InitializeCriticalSectionAndSpinCount(&m_cs, spinCount);
-	}
-#endif /* !__DMC__ */
-	~thread_mutex()
-	{
-		::DeleteCriticalSection(&m_cs);
-	}
-
-  public:
-	void lock()
-	{
-		::EnterCriticalSection(&m_cs);
-	}
-	bool try_lock()
-	{
-		return ::TryEnterCriticalSection(&m_cs) != FALSE;
-	}
-	void unlock()
-	{
-		::LeaveCriticalSection(&m_cs);
-	}
-#ifndef __DMC__
-	DWORD set_spin_count(DWORD spinCount)
-	{
-		return ::SetCriticalSectionSpinCount(&m_cs, spinCount);
-	}
-#endif /* !__DMC__ */
-  private:
-	CRITICAL_SECTION m_cs;
-};
-
 #include "os-def.h"
 
 //static stlsoft::winstl_project::thread_mutex g_os_thread_mutex;
 static thread_mutex g_os_thread_mutex;
 
-struct os_thread_locker
+static inline os_sid_t os_next_sid(
+	thread_mutex &mutex, os_sid_t &max_counter)
 {
-	//stlsoft::winstl_project::thread_mutex &m_mutex;
-	thread_mutex &m_mutex;
-	//explicit os_thread_locker(stlsoft::winstl_project::thread_mutex &mutex) : m_mutex(mutex)
-	explicit os_thread_locker(thread_mutex &mutex) : m_mutex(mutex)
+	os_sid_t result;
+	mutex.lock();
+	max_counter++;
+	result = max_counter;
+	mutex.unlock();
+	return result;
+}
+
+struct os_thread_info
+{
+	static os_sid_t s_sid_max;
+	DWORD m_dword;
+	os_sid_t m_sid;
+	explicit os_thread_info(DWORD dword)
 	{
-		m_mutex.lock();
+		m_dword = dword;
+		m_sid = os_next_sid(g_os_thread_mutex, s_sid_max);
 	}
-	virtual ~os_thread_locker()
+	std::string m_display;
+	const char *c_str()
 	{
-		m_mutex.unlock();
+		if (m_display.empty())
+		{
+			std::stringstream v_stream;
+			v_stream << "[" << m_sid
+					 << ":0x"
+					 << std::setw(8)
+					 << std::setfill('0')
+					 << std::hex
+					 //<< std::uppercase
+					 << m_dword
+					 << "]";
+			m_display = v_stream.str();
+		}
+		return m_display.c_str();
 	}
 };
+os_sid_t os_thread_info::s_sid_max = 0;
 
 struct os_struct
 {
@@ -203,11 +189,11 @@ label_exit:
 	return result;
 }
 
-static os_oid_t os_get_next_oid()
+static os_sid_t os_get_next_oid()
 {
 	{
 		os_thread_locker locker(g_os_thread_mutex);
-		static os_oid_t g_last_oid = 100000;
+		static os_sid_t g_last_oid = 100000;
 		g_last_oid++;
 		return g_last_oid;
 	}
@@ -215,11 +201,11 @@ static os_oid_t os_get_next_oid()
 
 struct os_variant_t : public os_struct
 {
-	os_oid_t m_oid;
+	os_sid_t m_oid;
 	os_thread_id m_thread_id;
 	long long m_link_count;
 	os_data *m_value;
-	explicit os_variant_t(os_oid_t oid)
+	explicit os_variant_t(os_sid_t oid)
 	{
 		m_oid = oid;
 		m_thread_id = os_get_thread_id();
@@ -285,7 +271,7 @@ static inline os_value os_new_value(os_data *data)
 	{
 		os_thread_locker locker(g_os_thread_mutex);
 		os_dbg("os_new_value(1)");
-		os_oid_t v_oid = os_get_next_oid();
+		os_sid_t v_oid = os_get_next_oid();
 		os_dbg("os_new_value(1.1)");
 		os_value entry = new os_variant_t(v_oid);
 		os_dbg("os_new_value(2)");
@@ -353,7 +339,7 @@ extern void os_dump_heap()
 		for (it = g_os_value_set.begin(); it != g_os_value_set.end(); it++)
 		{
 			os_value v_entry = *it;
-			os_oid_t v_oid = v_entry->m_oid;
+			os_sid_t v_oid = v_entry->m_oid;
 			os_dbg("[DUMP] oid = %lld : data = %s", v_oid, v_entry->c_str());
 		}
 	}
@@ -371,7 +357,7 @@ static void os_cleanup(bool reset)
 		for (it = g_os_value_set.begin(); it != g_os_value_set.end(); it++)
 		{
 			os_variant_t *v_entry = *it;
-			os_oid_t v_oid = v_entry->m_oid;
+			os_sid_t v_oid = v_entry->m_oid;
 			if (reset && v_entry->m_thread_id.no == v_thread_id.no)
 			{
 				v_entry->m_link_count = 0;

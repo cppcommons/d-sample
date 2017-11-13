@@ -1,4 +1,61 @@
-typedef long long os_oid_t;
+class thread_mutex
+{
+  public:
+	thread_mutex()
+	{
+		::InitializeCriticalSection(&m_cs);
+	}
+#ifndef __DMC__
+	thread_mutex(DWORD spinCount)
+	{
+		::InitializeCriticalSectionAndSpinCount(&m_cs, spinCount);
+	}
+#endif /* !__DMC__ */
+	~thread_mutex()
+	{
+		::DeleteCriticalSection(&m_cs);
+	}
+
+  public:
+	void lock()
+	{
+		::EnterCriticalSection(&m_cs);
+	}
+	bool try_lock()
+	{
+		return ::TryEnterCriticalSection(&m_cs) != FALSE;
+	}
+	void unlock()
+	{
+		::LeaveCriticalSection(&m_cs);
+	}
+#ifndef __DMC__
+	DWORD set_spin_count(DWORD spinCount)
+	{
+		return ::SetCriticalSectionSpinCount(&m_cs, spinCount);
+	}
+#endif /* !__DMC__ */
+  private:
+	CRITICAL_SECTION m_cs;
+};
+
+struct os_thread_locker
+{
+	//stlsoft::winstl_project::thread_mutex &m_mutex;
+	thread_mutex &m_mutex;
+	//explicit os_thread_locker(stlsoft::winstl_project::thread_mutex &mutex) : m_mutex(mutex)
+	explicit os_thread_locker(thread_mutex &mutex) : m_mutex(mutex)
+	{
+		m_mutex.lock();
+	}
+	virtual ~os_thread_locker()
+	{
+		m_mutex.unlock();
+	}
+};
+
+//typedef long long os_oid_t;
+typedef long long os_sid_t;
 
 struct os_data
 {
