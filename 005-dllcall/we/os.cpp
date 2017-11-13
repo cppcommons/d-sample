@@ -101,10 +101,8 @@ struct os_variant_t : public os_struct
 	explicit os_variant_t(os_sid_t oid)
 	{
 		m_oid = oid;
-		//m_thread_id = os_get_thread_id();
 		DWORD v_thread_dword = ::GetCurrentThreadId();
 		m_thread_info = os_get_thread_info(v_thread_dword);
-		//m_link_count = 0;
 		m_marked = false;
 		m_value = nullptr;
 	}
@@ -127,7 +125,10 @@ struct os_variant_t : public os_struct
 		v_stream << "{ " << v_thread_id
 				 << " MARK="
 				 << m_marked
-				 << " ";
+				 << " ALIVE="
+				 << m_value->alive()
+				 << " "
+				  ;
 		m_value->to_ss(v_stream);
 		v_stream << " }";
 		m_debug_output_string = v_stream.str();

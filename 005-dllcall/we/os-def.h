@@ -84,6 +84,7 @@ typedef long long os_sid_t;
 
 struct os_data
 {
+	virtual bool alive() = 0;
 	virtual void release() = 0;
 	virtual os_type_t type() = 0;
 	virtual void to_ss(std::stringstream &stream) = 0;
@@ -96,15 +97,22 @@ struct os_data
 
 struct os_array : public os_data
 {
+	bool m_alive;
+	virtual bool alive()
+	{
+		return m_alive;
+	}
 	std::vector<os_value> m_value;
 	explicit os_array(long long len)
 	{
+		m_alive = true;
 		m_value.resize(len);
 	}
 	virtual void release()
 	{
+		m_alive = false;
 		os_dbg("os_array::release(): length=%zu", m_value.size());
-		delete this;
+		//delete this;
 	}
 	virtual os_type_t type()
 	{
@@ -138,15 +146,22 @@ struct os_array : public os_data
 
 struct os_handle : public os_data
 {
+	bool m_alive;
+	virtual bool alive()
+	{
+		return m_alive;
+	}
 	void *m_value;
 	explicit os_handle(void *value)
 	{
+		m_alive = true;
 		m_value = value;
 	}
 	virtual void release()
 	{
+		m_alive = false;
 		os_dbg("os_handle::release(): %p", m_value);
-		delete this;
+		//delete this;
 	}
 	virtual os_type_t type()
 	{
@@ -180,15 +195,22 @@ struct os_handle : public os_data
 
 struct os_integer : public os_data
 {
+	bool m_alive;
+	virtual bool alive()
+	{
+		return m_alive;
+	}
 	long long m_value;
 	explicit os_integer(long long value)
 	{
+		m_alive = true;
 		m_value = value;
 	}
 	virtual void release()
 	{
+		m_alive = false;
 		os_dbg("os_integer::release(): %lld", m_value);
-		delete this;
+		//delete this;
 	}
 	virtual os_type_t type()
 	{
@@ -222,13 +244,20 @@ struct os_integer : public os_data
 
 struct os_string : public os_data
 {
+	bool m_alive;
+	virtual bool alive()
+	{
+		return m_alive;
+	}
 	std::string m_value;
 	explicit os_string(const std::string &value)
 	{
+		m_alive = true;
 		m_value = value;
 	}
 	explicit os_string(const char *value, long long len)
 	{
+		m_alive = true;
 		if (len < 0)
 			m_value = std::string(value);
 		else
@@ -236,8 +265,9 @@ struct os_string : public os_data
 	}
 	virtual void release()
 	{
+		m_alive = false;
 		os_dbg("os_string::release(): %s", m_value.c_str());
-		delete this;
+		//delete this;
 	}
 	virtual os_type_t type()
 	{
