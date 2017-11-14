@@ -326,7 +326,7 @@ class os_array : os_object, os_array_iface, os_number_iface
 	}
 }
 
-class os_integer : os_object
+class os_integer : os_object, os_number_iface
 {
 	long m_value;
 	this(long value)
@@ -376,11 +376,10 @@ extern (C) os_value* os_get_array(os_value value)
 		os_object found = g_global_map.lookup(value);
 		if (!found)
 			return null;
-		//os_array a = cast(os_array) found;
-		os_array_iface a = cast(os_array_iface) found;
-		if (!a)
+		os_array_iface iface = cast(os_array_iface) found;
+		if (!iface)
 			return null;
-		return a.get_array();
+		return iface.get_array();
 	}
 }
 
@@ -413,8 +412,10 @@ extern (C) long os_get_integer(os_value value)
 		os_object found = g_global_map.lookup(value);
 		if (!found)
 			return 0;
-		writeln(`[DEBUG] `, found);
-		return found.get_integer();
+		os_number_iface iface = cast(os_number_iface) found;
+		if (!iface)
+			return 0;
+		return iface.get_integer();
 	}
 }
 
