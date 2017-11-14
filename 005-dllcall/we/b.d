@@ -3,6 +3,7 @@ import os1;
 extern (C)
 {
 	alias ulong os_value;
+	alias ulong os_heap;
 	alias os_value function(int argc, os_value* argv) os_function;
 	enum os_type
 	{
@@ -16,19 +17,19 @@ extern (C)
 	}
 
 	long os_get_length(os_value value);
-	os_value os_new_array(long len);
+	os_value os_new_array(os_heap heap, long len);
 	os_value* os_get_array(os_value value);
-	os_value os_new_handle(void* data);
+	os_value os_new_handle(os_heap heap, void* data);
 	void* os_get_handle(os_value value);
-	os_value os_new_integer(long data);
+	os_value os_new_integer(os_heap heap, long data);
 	long os_get_integer(os_value value);
-	os_value os_new_string(char* data, long len);
+	os_value os_new_string(os_heap heap, char* data, long len);
 	char* os_get_string(os_value value);
-	void os_dump_heap();
+	void os_dump_heap(os_heap heap);
 	bool os_mark(os_value entry);
 	bool os_unmark(os_value entry);
-	void os_sweep();
-	void os_clear();
+	void os_sweep(os_heap heap);
+	void os_clear(os_heap heap);
 }
 
 import core.sync.mutex;
@@ -37,20 +38,6 @@ import std.array;
 import std.format;
 import std.stdio;
 
-/+
-alias ulong os_value;
-alias os_value function(int argc, os_value* argv) os_function;
-enum os_type
-{
-	OS_NIL,
-	OS_ARRAY,
-	OS_BYTES,
-	OS_HANDLE,
-	OS_INTEGER,
-	OS_REAL,
-	OS_STRING,
-}
-+/
 static __gshared Mutex g_os_thread_mutex;
 static this()
 {
@@ -160,11 +147,11 @@ class os_integer : os_object
 }
 
 extern (C) long os_get_length(os_value value);
-extern (C) os_value os_new_array(long len);
+extern (C) os_value os_new_array(os_heap heap, long len);
 extern (C) os_value* os_get_array(os_value value);
-extern (C) os_value os_new_handle(void* data);
+extern (C) os_value os_new_handle(os_heap heap, void* data);
 extern (C) void* os_get_handle(os_value value);
-extern (C) os_value os_new_integer(long data)
+extern (C) os_value os_new_integer(os_heap heap, long data)
 {
 	writeln(`os_new_integer(): data=`, data);
 	auto o = new os_integer(data);
@@ -195,9 +182,9 @@ extern (C) long os_get_integer(os_value value)
 	}
 }
 
-extern (C) os_value os_new_string(char* data, long len);
+extern (C) os_value os_new_string(os_heap heap, char* data, long len);
 extern (C) char* os_get_string(os_value value);
-extern (C) void os_dump_heap()
+extern (C) void os_dump_heap(os_heap heap)
 {
 	{
 		g_os_thread_mutex.lock();
@@ -212,8 +199,8 @@ extern (C) void os_dump_heap()
 
 extern (C) bool os_mark(os_value entry);
 extern (C) bool os_unmark(os_value entry);
-extern (C) void os_sweep();
-extern (C) void os_clear();
+extern (C) void os_sweep(os_heap heap);
+extern (C) void os_clear(os_heap heap);
 
 extern (C) os_value my_add2(int argc, os_value* argv);
 
@@ -288,11 +275,11 @@ extern (C):
 os_value  my_add2(int argc, os_value *argv);
 	+/
 	os_value[2] argv;
-	argv[0] = os_new_integer(11);
-	argv[1] = os_new_integer(22);
-	os_dump_heap();
+	argv[0] = os_new_integer(0, 11);
+	argv[1] = os_new_integer(0, 22);
+	os_dump_heap(0);
 	os_value answer = my_add2(2, argv.ptr);
-	os_dump_heap();
+	os_dump_heap(0);
 	writeln(answer);
 	long answer2 = os_get_integer(answer);
 	writeln(`answer2=`, answer2);

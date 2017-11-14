@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 typedef unsigned long long os_value;
+typedef unsigned long long os_heap;
 typedef os_value (*os_function)(long argc, os_value argv[]);
 enum os_type
 {
@@ -18,19 +19,19 @@ enum os_type
 	OS_STRING
 };
 extern long long os_get_length(os_value value);
-extern os_value os_new_array(long long len);
+extern os_value os_new_array(os_heap heap, long long len);
 extern os_value *os_get_array(os_value value);
-extern os_value os_new_handle(void *data);
+extern os_value os_new_handle(os_heap heap, void *data);
 extern void *os_get_handle(os_value value);
-extern os_value os_new_integer(long long data);
+extern os_value os_new_integer(os_heap heap, long long data);
 extern long long os_get_integer(os_value value);
-extern os_value os_new_string(const char *data, long long len);
+extern os_value os_new_string(os_heap heap, const char *data, long long len);
 extern const char *os_get_string(os_value value);
-extern void os_dump_heap();
+extern void os_dump_heap(os_heap heap);
 extern bool os_mark(os_value entry);
 extern bool os_unmark(os_value entry);
-extern void os_sweep();
-extern void os_clear();
+extern void os_sweep(os_heap heap);
+extern void os_clear(os_heap heap);
 
 #ifdef __cplusplus
 }
