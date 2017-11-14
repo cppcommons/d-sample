@@ -47,7 +47,7 @@ static this()
 
 static long os_get_next_thread_no()
 {
-	static long g_os_thread_no_max = 0;
+	static __gshared long g_os_thread_no_max = 0;
 	{
 		g_os_thread_mutex.lock();
 		scope (exit)
@@ -59,7 +59,7 @@ static long os_get_next_thread_no()
 
 static long os_get_next_value_id()
 {
-	static long g_os_value_id_max = 100000;
+	static __gshared long g_os_value_id_max = 100000;
 	{
 		g_os_thread_mutex.lock();
 		scope (exit)
@@ -76,7 +76,7 @@ static uint os_get_thread_id()
 	return GetCurrentThreadId();
 }
 
-static long[uint] g_os_thread_no_map;
+static __gshared long[uint] g_os_thread_no_map;
 
 static long os_get_thread_no(uint thread_id)
 {
@@ -93,7 +93,7 @@ static long os_get_thread_no(uint thread_id)
 	}
 }
 
-static os_object[os_value] g_os_value_map;
+static __gshared os_object[os_value] g_os_value_map;
 
 abstract class os_object
 {
