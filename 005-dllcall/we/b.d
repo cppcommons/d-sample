@@ -37,6 +37,7 @@ extern (C)
 import core.sync.mutex;
 import std.algorithm.sorting;
 import std.array;
+import std.bigint;
 import std.format;
 import std.stdio;
 
@@ -111,13 +112,14 @@ version (Windows)
 
 	pragma(inline) static long os_get_next_value_id()
 	{
-		static __gshared long g_os_value_id_max = 100000;
+		//static __gshared long g_os_value_id_max = 100000;
+		static __gshared BigInt g_os_value_id_max = 100000;
 		{
 			g_os_global_mutex.lock_nothrow();
 			scope (exit)
 				g_os_global_mutex.unlock_nothrow();
 			g_os_value_id_max++;
-			return g_os_value_id_max;
+			return g_os_value_id_max.toLong();
 		}
 	}
 

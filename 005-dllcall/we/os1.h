@@ -34,28 +34,16 @@ extern bool os_unmark(os_value value);
 extern void os_sweep(os_heap heap);
 extern void os_clear(os_heap heap);
 
+struct os_int128
+{
+	unsigned long long high;
+	unsigned long long low;
+};
+
+os_int128 test_func();
+
 #ifdef __cplusplus
 }
-#endif
-
-#if 0x0
-#ifndef __HTOD__
-#ifdef __cplusplus /* C++ only */
-#include <string>
-static inline os_value os_new_string(const std::string &str)
-{
-	return os_new_string(str.c_str(), str.size());
-}
-static inline void os_get_string(os_value value, std::string &str)
-{
-	const char *ptr = os_get_string(value);
-	if (!ptr)
-		str = "";
-	else
-		str = std::string(ptr, os_get_length(value));
-}
-#endif /* __cplusplus (C++ only) */
-#endif /* !__HTOD__ */
 #endif
 
 #endif /* OS1_H */

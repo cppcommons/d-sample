@@ -32,5 +32,12 @@ bool  os_unmark(os_value value);
 void  os_sweep(os_heap heap);
 void  os_clear(os_heap heap);
 
+struct os_int128
+{
+    ulong high;
+    ulong low;
+}
+
+os_int128  test_func();
 
 
