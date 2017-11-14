@@ -23,6 +23,11 @@ os_value * os_get_array(os_value value);
 os_value  os_new_handle(os_heap heap, void *data);
 void * os_get_handle(os_value value);
 os_value  os_new_integer(os_heap heap, long data);
+
+alias char *os_value2;
+os_value2  os_new_integer2(os_heap heap, long data);
+long  os_get_integer2(os_value2 value);
+
 long  os_get_integer(os_value value);
 os_value  os_new_string(os_heap heap, char *data, long len);
 char * os_get_string(os_value value);
@@ -31,13 +36,5 @@ bool  os_mark(os_value value);
 bool  os_unmark(os_value value);
 void  os_sweep(os_heap heap);
 void  os_clear(os_heap heap);
-
-struct os_int128
-{
-    ulong high;
-    ulong low;
-}
-
-os_int128  test_func();
 
 

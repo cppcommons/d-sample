@@ -24,6 +24,11 @@ extern (C)
 	os_value os_new_handle(os_heap heap, void* data);
 	void* os_get_handle(os_value value);
 	os_value os_new_integer(os_heap heap, long data);
+
+	alias char* os_value2;
+	os_value2 os_new_integer2(os_heap heap, long data);
+	long os_get_integer2(os_value2 value);
+
 	long os_get_integer(os_value value);
 	os_value os_new_string(os_heap heap, char* data, long len);
 	char* os_get_string(os_value value);
@@ -40,6 +45,7 @@ import std.array;
 import std.bigint;
 import std.format;
 import std.stdio;
+import std.string;
 
 static __gshared Mutex g_os_global_mutex;
 shared static this()
@@ -146,6 +152,8 @@ abstract class os_object
 {
 	//long m_id;
 	BigInt m_id;
+	//immutable(char)* m_id_string;
+	char* m_id_string;
 	uint m_thread_id;
 	long m_thread_no;
 	bool m_marked;
@@ -156,6 +164,8 @@ abstract class os_object
 	this()
 	{
 		m_id = os_get_next_value_id();
+		string s = format(`#%d`, m_id);
+		m_id_string = cast(char*) toStringz(s);
 		m_thread_id = os_get_thread_id();
 		m_thread_no = os_get_thread_index();
 		m_marked = false;
@@ -298,6 +308,45 @@ extern (C) os_value os_new_integer(os_heap heap, long data)
 		g_os_value_map[o.m_id] = o;
 	}
 	return o.m_id.toLong();
+}
+
+extern (C) os_value2 os_new_integer2(os_heap heap, long data)
+{
+	writeln(`os_new_integer2(): data=`, data);
+	auto o = new os_integer(data);
+	{
+		g_os_global_mutex.lock_nothrow();
+		scope (exit)
+			g_os_global_mutex.unlock_nothrow();
+		g_os_value_map[o.m_id] = o;
+	}
+	return o.m_id_string;
+}
+
+static char[] os_to_string(char* s)
+{
+	import core.stdc.string : strlen;
+
+	return s ? s[0 .. strlen(s)] : cast(char[]) null;
+}
+
+extern (C) long os_get_integer2(os_value2 value)
+{
+	if (value is null)
+		return 0;
+	{
+		g_os_global_mutex.lock_nothrow();
+		scope (exit)
+			g_os_global_mutex.unlock_nothrow();
+		if (*value == '#')
+			value++;
+		BigInt id = os_to_string(value);
+		os_object* found = id in g_os_value_map;
+		if (!found)
+			return 0;
+		writeln(`[DEBUG] `, *found);
+		return (*found).get_integer();
+	}
 }
 
 extern (C) long os_get_integer(os_value value)
@@ -498,6 +547,10 @@ void main(string[] args)
 extern (C):
 os_value  my_add2(int argc, os_value *argv);
 	+/
+	os_value2 xxx = os_new_integer2(0, 123);
+	writeln(toString(xxx));
+	long xxx2 = os_get_integer2(xxx);
+	writeln("xxx2=", xxx2);
 	os_value dummy_ = os_new_array(0, 2);
 	os_value* dummy_v = os_get_array(dummy_);
 	dummy_v[0] = 1234;
