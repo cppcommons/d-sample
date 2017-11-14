@@ -210,6 +210,16 @@ shared static this()
 	g_global_map = new os_map;
 }
 
+interface os_array_iface
+{
+	os_value* get_array();
+}
+
+interface os_number_iface
+{
+	long get_integer();
+}
+
 abstract class os_object
 {
 	BigInt m_id;
@@ -218,7 +228,7 @@ abstract class os_object
 	long m_thread_no;
 	bool m_marked;
 	bool m_referred;
-	os_value* get_array();
+	//os_value* get_array();
 	long get_integer();
 	override string toString() const; //pure @safe;
 	this()
@@ -257,7 +267,7 @@ static string os_value_to_string(os_value value) //pure @safe
 }
 +/
 
-class os_array : os_object
+class os_array : os_object, os_array_iface, os_number_iface
 {
 	os_value[] m_array;
 	//uint m_len;
@@ -279,7 +289,8 @@ class os_array : os_object
 		//pureFree(m_array3.ptr);
 	}
 
-	override os_value* get_array()
+	/*override*/
+	os_value* get_array()
 	{
 		return m_array.ptr;
 		//writeln("os_array::get_array(): ", m_array3.ptr);
@@ -323,10 +334,12 @@ class os_integer : os_object
 		m_value = value;
 	}
 
+	/+
 	override os_value* get_array()
 	{
 		return null;
 	}
+	+/
 
 	override long get_integer()
 	{
@@ -363,7 +376,8 @@ extern (C) os_value* os_get_array(os_value value)
 		os_object found = g_global_map.lookup(value);
 		if (!found)
 			return null;
-		os_array a = cast(os_array) found;
+		//os_array a = cast(os_array) found;
+		os_array_iface a = cast(os_array_iface) found;
 		if (!a)
 			return null;
 		return a.get_array();
