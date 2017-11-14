@@ -1,9 +1,11 @@
 import core.sync.mutex;
 import std.algorithm.sorting;
+import std.array;
+import std.format;
 import std.stdio;
 
 alias ulong os_value;
-alias os_value  function(int argc, os_value *argv)os_function;
+alias os_value function(int argc, os_value* argv) os_function;
 enum os_type
 {
 	OS_NIL,
@@ -21,10 +23,21 @@ static this()
 	g_os_thread_mutex = new Mutex;
 }
 
-static long g_os_value_id_max = 100000;
+static long os_get_next_thread_no()
+{
+	static long g_os_thread_no_max = 0;
+	{
+		g_os_thread_mutex.lock();
+		scope (exit)
+			g_os_thread_mutex.unlock();
+		g_os_thread_no_max++;
+		return g_os_thread_no_max;
+	}
+}
 
 static long os_get_next_value_id()
 {
+	static long g_os_value_id_max = 100000;
 	{
 		g_os_thread_mutex.lock();
 		scope (exit)
@@ -41,6 +54,23 @@ static uint os_get_thread_id()
 	return GetCurrentThreadId();
 }
 
+static long[uint] g_os_thread_no_map;
+
+static long os_get_thread_no(uint thread_id)
+{
+	{
+		g_os_thread_mutex.lock();
+		scope (exit)
+			g_os_thread_mutex.unlock();
+		long* found = thread_id in g_os_thread_no_map;
+		if (found)
+			return (*found);
+		long thread_no = os_get_next_thread_no();
+		g_os_thread_no_map[thread_id] = thread_no;
+		return thread_no;
+	}
+}
+
 static os_object[os_value] g_os_value_map;
 
 abstract class os_object
@@ -48,12 +78,24 @@ abstract class os_object
 	bool m_marked = false;
 	long m_id;
 	uint m_thread_id;
+	long m_thread_no;
 	long get_integer();
 	override string toString() const pure @safe;
 	this()
 	{
 		m_id = os_get_next_value_id();
 		m_thread_id = os_get_thread_id();
+		m_thread_no = os_get_thread_no(m_thread_id);
+	}
+
+	string thread_display() const pure @safe
+	{
+		auto app = appender!string();
+		app ~= "[";
+		app ~= format!`tid=%u`(m_thread_id);
+		app ~= format!`(no=%d)`(m_thread_no);
+		app ~= "]";
+		return app.data;
 	}
 }
 
@@ -72,14 +114,12 @@ class os_integer : os_object
 
 	override string toString() const pure @safe
 	{
-		import std.array;
-		import std.format;
-
 		auto app = appender!string();
 		app ~= "[";
 		app ~= format!`id=%d:`(m_id);
-		app ~= format!`%d`(m_value);
-		app ~= format!`:tid=%u`(m_thread_id);
+		//app ~= format!`:tid=%u`(m_thread_id);
+		app ~= thread_display();
+		app ~= format!` %d`(m_value);
 		app.put("]");
 		return app.data;
 	}
