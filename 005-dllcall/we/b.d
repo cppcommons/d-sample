@@ -138,6 +138,39 @@ abstract class os_object
 	}
 }
 
+static string os_value_to_string(os_value value) pure @safe
+{
+	return "<>";
+}
+
+class os_array : os_object
+{
+	os_value[] m_array;
+	this(long len)
+	{
+		m_array.length = cast(uint) len;
+	}
+
+	override long get_integer()
+	{
+		return 0;
+	}
+
+	override string toString() const pure @safe
+	{
+		auto app = appender!string();
+		app ~= "[";
+		for (uint i = 0; i < m_array.length; i++)
+		{
+			if (i > 0)
+				app ~= ", ";
+			app ~= os_value_to_string(m_array[i]);
+		}
+		app ~= "]";
+		return app.data;
+	}
+}
+
 class os_integer : os_object
 {
 	long m_value;
@@ -157,7 +190,7 @@ class os_integer : os_object
 		app ~= "{";
 		app ~= oid_string();
 		app ~= format!` %d`(m_value);
-		app.put("}");
+		app ~= "}";
 		return app.data;
 	}
 }
@@ -165,8 +198,17 @@ class os_integer : os_object
 extern (C) long os_get_length(os_value value);
 extern (C) os_value os_new_array(os_heap heap, long len)
 {
-	return 0;
+	writeln(`os_new_array(): len=`, len);
+	auto o = new os_array(len);
+	{
+		g_os_global_mutex.lock();
+		scope (exit)
+			g_os_global_mutex.unlock();
+		g_os_value_map[o.m_id] = o;
+	}
+	return o.m_id;
 }
+
 extern (C) os_value* os_get_array(os_value value);
 extern (C) os_value os_new_handle(os_heap heap, void* data);
 extern (C) void* os_get_handle(os_value value);
@@ -313,6 +355,7 @@ void main(string[] args)
 extern (C):
 os_value  my_add2(int argc, os_value *argv);
 	+/
+	os_new_array(0, 3);
 	os_value[2] argv;
 	argv[0] = os_new_integer(0, 11);
 	argv[1] = os_new_integer(0, 22);
