@@ -58,8 +58,8 @@ struct os_thread_local
 	}
 }
 
-static  /*(thread_local)*/ os_thread_local g_os_thread_local;
-static  /*(thread_local)*/ this()
+static  /*thread_local*/ os_thread_local g_os_thread_local;
+static  /*thread_local*/ this()
 {
 	g_os_thread_local = os_thread_local(0);
 }
@@ -108,10 +108,11 @@ static __gshared os_object[os_value] g_os_value_map;
 
 abstract class os_object
 {
-	bool m_marked = false;
 	long m_id;
 	uint m_thread_id;
 	long m_thread_no;
+	bool m_marked;
+	bool m_referred;
 	long get_integer();
 	override string toString() const pure @safe;
 	this()
@@ -119,6 +120,8 @@ abstract class os_object
 		m_id = os_get_next_value_id();
 		m_thread_id = os_get_thread_id();
 		m_thread_no = os_get_thread_no();
+		m_marked = false;
+		m_referred = false;
 	}
 
 	string thread_display() const pure @safe
