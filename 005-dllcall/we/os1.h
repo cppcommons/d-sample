@@ -7,7 +7,7 @@ extern "C" {
 
 typedef unsigned long long os_value;
 typedef unsigned long long os_heap;
-typedef os_value (*os_function)(long argc, os_value argv[]);
+typedef os_value (*os_function)(os_heap heap, long argc, os_value argv[]);
 enum os_type
 {
 	OS_NIL,

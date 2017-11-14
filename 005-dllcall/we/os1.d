@@ -5,7 +5,7 @@ module os1;
 extern (C):
 alias ulong os_value;
 alias ulong os_heap;
-alias os_value  function(int argc, os_value *argv)os_function;
+alias os_value  function(os_heap heap, int argc, os_value *argv)os_function;
 enum os_type
 {
     OS_NIL,

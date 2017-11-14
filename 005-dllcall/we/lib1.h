@@ -7,7 +7,8 @@ extern "C" {
 
 #include "os1.h"
 
-os_value my_add2(long argc, os_value argv[]);
+os_value my_add2(os_heap heap, long argc, os_value argv[]);
+int d_mul2(int a, int b);
 
 #ifdef __cplusplus
 }

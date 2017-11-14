@@ -1,10 +1,11 @@
 import os1;
+import lib1;
 
 extern (C)
 {
 	alias ulong os_value;
 	alias ulong os_heap;
-	alias os_value function(int argc, os_value* argv) os_function;
+	alias os_value function(os_heap heap, int argc, os_value* argv) os_function;
 	enum os_type
 	{
 		OS_NIL,
@@ -202,7 +203,7 @@ extern (C) bool os_unmark(os_value entry);
 extern (C) void os_sweep(os_heap heap);
 extern (C) void os_clear(os_heap heap);
 
-extern (C) os_value my_add2(int argc, os_value* argv);
+//extern (C) os_value my_add2(os_heap heap, int argc, os_value* argv);
 
 private void exit(int code)
 {
@@ -230,6 +231,22 @@ wchar[] toString(wchar* s)
 class A
 {
 	int m_a;
+}
+
+extern (C) int d_mul2(int a, int b)
+{
+	writefln(`d_mul(%d, %d)`, a, b);
+	return a * b;
+}
+
+extern (C) os_value my_mul2(os_heap heap, int argc, os_value* argv)
+{
+	writeln(`my_mul2(0)`);
+	if (argc != 2)
+		return 0;
+	long a0 = os_get_integer(argv[0]);
+	long a1 = os_get_integer(argv[1]);
+	return os_new_integer(heap, a0 * a1);
 }
 
 void main(string[] args)
@@ -278,7 +295,7 @@ os_value  my_add2(int argc, os_value *argv);
 	argv[0] = os_new_integer(0, 11);
 	argv[1] = os_new_integer(0, 22);
 	os_dump_heap(0);
-	os_value answer = my_add2(2, argv.ptr);
+	os_value answer = my_add2(0, 2, argv.ptr);
 	os_dump_heap(0);
 	writeln(answer);
 	long answer2 = os_get_integer(answer);
