@@ -60,7 +60,7 @@ class os_thread_local
 
 	~this()
 	{
-		if (m_thread_no >= 0)
+		//if (m_thread_no >= 0)
 		{
 			writefln(`os_thread_local::~this() #%d.`, m_thread_no);
 		}
@@ -79,8 +79,13 @@ static  /*thread_local*/  ~this()
 		g_os_global_mutex.lock_nothrow();
 		scope (exit)
 			g_os_global_mutex.unlock_nothrow();
+		/+
 		if (g_os_thread_local is null)
+		{
+			writeln("CALLED AGAIN!");
 			return;
+		}
+		+/
 		if (g_os_thread_local.m_thread_no >= 0)
 		{
 			writefln(`THREAD #%d END.`, g_os_thread_local.m_thread_no);
@@ -535,7 +540,7 @@ os_value  my_add2(int argc, os_value *argv);
 		int result1, result2;
 		auto tg = new ThreadGroup;
 		tg.create = {
-			os_new_integer(0, 1111);
+			//os_new_integer(0, 1111);
 			for (int i = 0; i < 1000; i++)
 			{
 				sync_fun();
