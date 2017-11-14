@@ -2,8 +2,9 @@
 module os1;
 
 
+//typedef unsigned long long os_value;
 extern (C):
-alias ulong os_value;
+alias char *os_value;
 alias ulong os_heap;
 alias os_value  function(os_heap heap, int argc, os_value *argv)os_function;
 enum os_type
@@ -23,11 +24,11 @@ os_value * os_get_array(os_value value);
 os_value  os_new_handle(os_heap heap, void *data);
 void * os_get_handle(os_value value);
 os_value  os_new_integer(os_heap heap, long data);
-
-alias char *os_value2;
-os_value2  os_new_integer2(os_heap heap, long data);
-long  os_get_integer2(os_value2 value);
-
+/*
+typedef const char *os_value2;
+extern os_value2 os_new_integer2(os_heap heap, long long data);
+extern long long os_get_integer2(os_value2 value);
+*/
 long  os_get_integer(os_value value);
 os_value  os_new_string(os_heap heap, char *data, long len);
 char * os_get_string(os_value value);

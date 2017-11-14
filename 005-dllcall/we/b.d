@@ -3,7 +3,7 @@ import lib1;
 
 extern (C)
 {
-	alias ulong os_value;
+	alias char* os_value;
 	alias ulong os_heap;
 	alias os_value function(os_heap heap, int argc, os_value* argv) os_function;
 	enum os_type
@@ -24,11 +24,6 @@ extern (C)
 	os_value os_new_handle(os_heap heap, void* data);
 	void* os_get_handle(os_value value);
 	os_value os_new_integer(os_heap heap, long data);
-
-	alias char* os_value2;
-	os_value2 os_new_integer2(os_heap heap, long data);
-	long os_get_integer2(os_value2 value);
-
 	long os_get_integer(os_value value);
 	os_value os_new_string(os_heap heap, char* data, long len);
 	char* os_get_string(os_value value);
@@ -189,16 +184,20 @@ abstract class os_object
 
 static string os_value_to_string(os_value value) //pure @safe
 {
-	if (value == 0)
+	if (value is null)
 		return "null";
 	//return "<>";
 	{
 		g_os_global_mutex.lock_nothrow();
 		scope (exit)
 			g_os_global_mutex.unlock_nothrow();
-		os_object* found = cast(BigInt) value in g_os_value_map;
+		if (*value == '#')
+			value++;
+		BigInt id = os_to_string(value);
+		os_object* found = id in g_os_value_map;
+		//os_object* found = cast(BigInt) value in g_os_value_map;
 		if (!found)
-			return format!`<#%d>`(value);
+			return "?";
 		return found.toString();
 	}
 }
@@ -230,7 +229,7 @@ class os_array : os_object
 		{
 			if (i > 0)
 				app ~= ", ";
-			app ~= os_value_to_string(m_array[i]);
+			app ~= os_value_to_string(cast(char*) m_array[i]);
 		}
 		app ~= "]";
 		return app.data;
@@ -277,18 +276,21 @@ extern (C) os_value os_new_array(os_heap heap, long len)
 			g_os_global_mutex.unlock_nothrow();
 		g_os_value_map[o.m_id] = o;
 	}
-	return o.m_id.toLong();
+	return o.m_id_string;
 }
 
 extern (C) os_value* os_get_array(os_value value)
 {
-	if (value == 0)
+	if (value is null)
 		return null;
 	{
 		g_os_global_mutex.lock_nothrow();
 		scope (exit)
 			g_os_global_mutex.unlock_nothrow();
-		os_object* found = cast(BigInt) value in g_os_value_map;
+		if (*value == '#')
+			value++;
+		BigInt id = os_to_string(value);
+		os_object* found = id in g_os_value_map;
 		if (!found)
 			return null;
 		return (*found).get_array();
@@ -307,19 +309,6 @@ extern (C) os_value os_new_integer(os_heap heap, long data)
 			g_os_global_mutex.unlock_nothrow();
 		g_os_value_map[o.m_id] = o;
 	}
-	return o.m_id.toLong();
-}
-
-extern (C) os_value2 os_new_integer2(os_heap heap, long data)
-{
-	writeln(`os_new_integer2(): data=`, data);
-	auto o = new os_integer(data);
-	{
-		g_os_global_mutex.lock_nothrow();
-		scope (exit)
-			g_os_global_mutex.unlock_nothrow();
-		g_os_value_map[o.m_id] = o;
-	}
 	return o.m_id_string;
 }
 
@@ -330,7 +319,7 @@ static char[] os_to_string(char* s)
 	return s ? s[0 .. strlen(s)] : cast(char[]) null;
 }
 
-extern (C) long os_get_integer2(os_value2 value)
+extern (C) long os_get_integer(os_value value)
 {
 	if (value is null)
 		return 0;
@@ -342,22 +331,6 @@ extern (C) long os_get_integer2(os_value2 value)
 			value++;
 		BigInt id = os_to_string(value);
 		os_object* found = id in g_os_value_map;
-		if (!found)
-			return 0;
-		writeln(`[DEBUG] `, *found);
-		return (*found).get_integer();
-	}
-}
-
-extern (C) long os_get_integer(os_value value)
-{
-	if (value == 0)
-		return 0;
-	{
-		g_os_global_mutex.lock_nothrow();
-		scope (exit)
-			g_os_global_mutex.unlock_nothrow();
-		os_object* found = cast(BigInt) value in g_os_value_map;
 		if (!found)
 			return 0;
 		writeln(`[DEBUG] `, *found);
@@ -386,13 +359,16 @@ extern (C) void os_dump_heap(os_heap heap)
 
 extern (C) bool os_mark(os_value value)
 {
-	if (value == 0)
+	if (value is null)
 		return false;
 	{
 		g_os_global_mutex.lock_nothrow();
 		scope (exit)
 			g_os_global_mutex.unlock_nothrow();
-		os_object* found = cast(BigInt) value in g_os_value_map;
+		if (*value == '#')
+			value++;
+		BigInt id = os_to_string(value);
+		os_object* found = id in g_os_value_map;
 		if (!found)
 			return false;
 		return (*found).m_marked = true;
@@ -401,13 +377,16 @@ extern (C) bool os_mark(os_value value)
 
 extern (C) bool os_unmark(os_value value)
 {
-	if (value == 0)
+	if (value is null)
 		return false;
 	{
 		g_os_global_mutex.lock_nothrow();
 		scope (exit)
 			g_os_global_mutex.unlock_nothrow();
-		os_object* found = cast(BigInt) value in g_os_value_map;
+		if (*value == '#')
+			value++;
+		BigInt id = os_to_string(value);
+		os_object* found = id in g_os_value_map;
 		if (!found)
 			return false;
 		return (*found).m_marked = false;
@@ -439,7 +418,13 @@ extern (C) void os_sweep(os_heap heap)
 				for (uint i = 0; i < a.m_array.length; i++)
 				{
 					os_value elem = a.m_array[i];
-					os_object* o = cast(BigInt) elem in g_os_value_map;
+					if (elem is null)
+						continue;
+					if (*elem == '#')
+						elem++;
+					BigInt id = os_to_string(elem);
+					os_object* o = id in g_os_value_map;
+					//os_object* o = cast(BigInt) elem in g_os_value_map;
 					if (o)
 					{
 						(*o).m_referred = true;
@@ -499,7 +484,7 @@ extern (C) os_value my_mul2(os_heap heap, int argc, os_value* argv)
 {
 	writeln(`my_mul2(0)`);
 	if (argc != 2)
-		return 0;
+		return null;
 	long a0 = os_get_integer(argv[0]);
 	long a1 = os_get_integer(argv[1]);
 	return os_new_integer(heap, a0 * a1);
@@ -547,13 +532,12 @@ void main(string[] args)
 extern (C):
 os_value  my_add2(int argc, os_value *argv);
 	+/
-	os_value2 xxx = os_new_integer2(0, 123);
+	os_value xxx = os_new_integer(0, 123);
 	writeln(toString(xxx));
-	long xxx2 = os_get_integer2(xxx);
+	long xxx2 = os_get_integer(xxx);
 	writeln("xxx2=", xxx2);
 	os_value dummy_ = os_new_array(0, 2);
 	os_value* dummy_v = os_get_array(dummy_);
-	dummy_v[0] = 1234;
 	os_value v_array_ = os_new_array(0, 2);
 	os_mark(v_array_);
 	os_value* argv = os_get_array(v_array_);
