@@ -388,22 +388,10 @@ extern (C) os_handle os_new_address(os_heap heap, void* data);
 extern (C) void* os_get_address(os_handle value);
 extern (C) os_handle os_new_integer(os_heap heap, long data)
 {
-	writeln(`os_new_integer(): data=`, data);
 	auto o = new os_integer(data);
-	{
-		g_global_map.insert(o);
-	}
+	g_global_map.insert(o);
 	return o.m_id_string;
 }
-
-/+
-static char[] os_to_string(char* s)
-{
-	import core.stdc.string : strlen;
-
-	return s ? s[0 .. strlen(s)] : cast(char[]) null;
-}
-+/
 
 extern (C) long os_get_integer(os_handle value)
 {
@@ -428,18 +416,11 @@ extern (C) void os_dump_heap(os_heap heap)
 		g_os_global_mutex.lock_nothrow();
 		scope (exit)
 			g_os_global_mutex.unlock_nothrow();
-		os_object[] values = g_global_map.values();
+		os_object[] objects = g_global_map.values();
 		writefln("[DUMP HEAP #%u]", heap);
-		foreach (value; values)
+		foreach (o; objects)
 		{
-			//writeln("  ", value);
-			//writeln("==");
-			//writeln(value.m_id);
-			//writeln(value.toString());
-			//if (!value)
-			//	continue;
-			//writeln("--", value);
-			writeln("  ", value);
+			writeln("  ", o.toString());
 		}
 	}
 }
