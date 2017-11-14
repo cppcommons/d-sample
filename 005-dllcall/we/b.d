@@ -11,7 +11,7 @@ extern (C)
 		OS_NIL,
 		OS_ARRAY,
 		OS_BYTES,
-		OS1_HANDLE,
+		OS_HANDLE,
 		OS_INTEGER,
 		OS_REAL,
 		OS_STRING,
