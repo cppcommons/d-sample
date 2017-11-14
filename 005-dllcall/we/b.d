@@ -7,13 +7,31 @@ static this()
 	g_os_thread_mutex = new Mutex;
 }
 
+static long g_os_value_id_max = 100000;
+
+static long os_get_next_value_id()
+{
+	{
+		g_os_thread_mutex.lock();
+		scope (exit)
+			g_os_thread_mutex.unlock();
+		g_os_value_id_max++;
+		return g_os_value_id_max;
+	}
+}
+
 static int[os_value] g_os_value_map;
 
 abstract class os_value
 {
 	bool m_marked = false;
+	long m_id;
 	long get_integer();
 	override string toString() const pure @safe;
+	this()
+	{
+		m_id = os_get_next_value_id();
+	}
 }
 
 class os_integer : os_value
@@ -36,6 +54,7 @@ class os_integer : os_value
 
 		auto app = appender!string();
 		app ~= "[";
+		app ~= format!`id=%d:`(m_id);
 		app ~= format!`%d`(m_value);
 		app.put("]");
 		return app.data;
@@ -97,6 +116,7 @@ extern (C) void os_dump_heap()
 	os_value[] keys = g_os_value_map.keys();
 	writeln(keys);
 }
+
 extern (C) bool os_mark(os_value entry);
 extern (C) void os_sweep();
 extern (C) void os_clear();
