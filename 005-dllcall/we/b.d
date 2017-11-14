@@ -25,7 +25,8 @@ extern (C)
 	void* os_get_handle(os_value value);
 	os_value os_new_integer(os_heap heap, long data);
 	long os_get_integer(os_value value);
-	os_value os_new_string(os_heap heap, char* data, long len);
+	os_value os_new_string(os_heap heap, char* data);
+	os_value os_new_string2(os_heap heap, char* data, long len);
 	char* os_get_string(os_value value);
 	void os_dump_heap(os_heap heap);
 	bool os_mark(os_value value);
@@ -117,6 +118,7 @@ version (Windows)
 	{
 		g_os_value_id_max = "2000000000000000000000000000000000000000000000000000000000000";
 	}
+
 	pragma(inline) static BigInt os_get_next_value_id()
 	{
 		//static __gshared BigInt g_os_value_id_max = 100000;

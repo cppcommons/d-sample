@@ -26,13 +26,9 @@ extern os_value *os_get_array(os_value value);
 extern os_value os_new_handle(os_heap heap, void *data);
 extern void *os_get_handle(os_value value);
 extern os_value os_new_integer(os_heap heap, long long data);
-/*
-typedef const char *os_value2;
-extern os_value2 os_new_integer2(os_heap heap, long long data);
-extern long long os_get_integer2(os_value2 value);
-*/
 extern long long os_get_integer(os_value value);
-extern os_value os_new_string(os_heap heap, const char *data, long long len);
+extern os_value os_new_string(os_heap heap, const char *data);
+extern os_value os_new_string2(os_heap heap, const char *data, long long len);
 extern const char *os_get_string(os_value value);
 extern void os_dump_heap(os_heap heap);
 extern bool os_mark(os_value value);
