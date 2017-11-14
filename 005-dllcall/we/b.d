@@ -191,7 +191,7 @@ class os_map
 		}
 	}
 
-	os_object[] values()
+	os_object[] objects()
 	{
 		{
 			m_mutex.lock_nothrow();
@@ -367,7 +367,7 @@ extern (C) void os_dump_heap(os_heap heap)
 		g_os_global_mutex.lock_nothrow();
 		scope (exit)
 			g_os_global_mutex.unlock_nothrow();
-		os_object[] objects = g_global_map.values();
+		os_object[] objects = g_global_map.objects();
 		writefln("[DUMP HEAP #%u]", heap);
 		foreach (o; objects)
 		{
@@ -406,13 +406,13 @@ extern (C) void os_sweep(os_heap heap)
 		g_os_global_mutex.lock_nothrow();
 		scope (exit)
 			g_os_global_mutex.unlock_nothrow();
-		os_object[] values = g_global_map.values();
+		os_object[] objects = g_global_map.objects();
 		writefln("[SWEEP #%u]", heap);
-		foreach (value; values)
+		foreach (value; objects)
 		{
 			value.m_referred = false;
 		}
-		foreach (value; values)
+		foreach (value; objects)
 		{
 			if (!value.m_marked)
 				continue;
@@ -431,7 +431,7 @@ extern (C) void os_sweep(os_heap heap)
 				}
 			}
 		}
-		foreach (value; values)
+		foreach (value; objects)
 		{
 			if (!value.m_referred)
 			{
