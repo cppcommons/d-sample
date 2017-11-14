@@ -21,17 +21,26 @@ static long os_get_next_value_id()
 	}
 }
 
+static uint os_get_thread_id()
+{
+	import core.sys.windows.windows;
+
+	return GetCurrentThreadId();
+}
+
 static int[os_value] g_os_value_map;
 
 abstract class os_value
 {
 	bool m_marked = false;
 	long m_id;
+	uint m_thread_id;
 	long get_integer();
 	override string toString() const pure @safe;
 	this()
 	{
 		m_id = os_get_next_value_id();
+		m_thread_id = os_get_thread_id();
 	}
 }
 
@@ -55,6 +64,7 @@ class os_integer : os_value
 
 		auto app = appender!string();
 		app ~= "[";
+		app ~= format!`tid=%u:`(m_thread_id);
 		app ~= format!`id=%d:`(m_id);
 		app ~= format!`%d`(m_value);
 		app.put("]");
