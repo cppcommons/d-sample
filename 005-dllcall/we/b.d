@@ -294,7 +294,6 @@ class os_array : os_object
 
 	override string toString() const  //pure @safe
 	{
-		writeln("(A)");
 		auto app = appender!string();
 		app ~= format!`array(%s)`(oid_string());
 		app ~= "[";
@@ -307,8 +306,9 @@ class os_array : os_object
 			os_object o = g_global_map.lookup(cast(os_value) m_array[i]);
 			if (!o)
 				app ~= "null";
-			else //app ~= o.toString();
-				app ~= "<>";
+			else
+				app ~= o.toString();
+			//app ~= "<>";
 		}
 		app ~= "]";
 		return app.data;
@@ -417,12 +417,13 @@ extern (C) void os_dump_heap(os_heap heap)
 		foreach (value; values)
 		{
 			//writeln("  ", value);
-			writeln("==");
-			writeln(value.m_id);
-			writeln(value.toString());
-			if (!value)
-				continue;
-			writeln("--", value);
+			//writeln("==");
+			//writeln(value.m_id);
+			//writeln(value.toString());
+			//if (!value)
+			//	continue;
+			//writeln("--", value);
+			writeln("  ", value);
 		}
 	}
 }
@@ -577,18 +578,16 @@ void main(string[] args)
 	os_value* dummy_v = os_get_array(dummy_);
 	os_value v_array_ = os_new_array(0, 2);
 	writeln(`toString(v_array_)=`, toString(v_array_));
-	//os_mark(v_array_);
-	os_value* argv2 = os_get_array(v_array_);
-	writeln(`argv2=`, argv2);
-	argv2[0] = null;
+	os_mark(v_array_);
+	os_value* argv = os_get_array(v_array_);
 	writeln("(2)");
-	os_value[2] argv;
+	//os_value[2] argv;
 	argv[0] = os_new_integer(0, 11);
 	argv[1] = os_new_integer(0, 22);
 	writeln("(2.25)");
 	os_dump_heap(0);
 	writeln("(2.26)");
-	os_value answer = my_add2(0, 2, argv.ptr);
+	os_value answer = my_add2(0, 2, argv);
 	writeln("(2.27)");
 	os_mark(answer);
 	writeln("(2.50)");
