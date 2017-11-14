@@ -113,10 +113,11 @@ abstract class os_object
 	string thread_display() const pure @safe
 	{
 		auto app = appender!string();
-		app ~= "[";
-		app ~= format!`tid=%u`(m_thread_id);
-		app ~= format!`(no=%d)`(m_thread_no);
-		app ~= "]";
+		app ~= "(";
+		app ~= format!`tid=%d`(m_thread_no);
+		app ~= ":";
+		app ~= format!`0x%x`(m_thread_id);
+		app ~= ")";
 		return app.data;
 	}
 }
@@ -137,12 +138,12 @@ class os_integer : os_object
 	override string toString() const pure @safe
 	{
 		auto app = appender!string();
-		app ~= "[";
-		app ~= format!`id=%d:`(m_id);
+		app ~= "{";
+		app ~= format!`#%d `(m_id);
 		//app ~= format!`:tid=%u`(m_thread_id);
 		app ~= thread_display();
 		app ~= format!` %d`(m_value);
-		app.put("]");
+		app.put("}");
 		return app.data;
 	}
 }
