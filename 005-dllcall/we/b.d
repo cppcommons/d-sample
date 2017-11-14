@@ -195,6 +195,10 @@ extern (C) void os_dump_heap(os_heap heap)
 		alias myComp = (x, y) => x < y;
 		keys.sort!(myComp);
 		writeln(keys);
+		os_object[] values = g_os_value_map.values();
+		alias myComp2 = (x, y) => x.m_id < y.m_id;
+		values.sort!(myComp2);
+		writeln(values);
 	}
 }
 
