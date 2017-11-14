@@ -26,6 +26,7 @@ os_value  os_new_string(char *data, long len);
 char * os_get_string(os_value value);
 void  os_dump_heap();
 bool  os_mark(os_value entry);
+bool  os_unmark(os_value entry);
 void  os_sweep();
 void  os_clear();
 

@@ -137,6 +137,7 @@ extern (C) void os_dump_heap()
 }
 
 extern (C) bool os_mark(os_value entry);
+extern (C) bool os_unmark(os_value entry);
 extern (C) void os_sweep();
 extern (C) void os_clear();
 
