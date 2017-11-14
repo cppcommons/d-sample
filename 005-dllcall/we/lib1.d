@@ -7,8 +7,8 @@ module lib1;
 //C     extern "C" {
 //C     #endif
 
-//C     #include "os.h"
-import os;
+//C     #include "os1.h"
+import os1;
 
 //C     os_value my_add2(long argc, os_value argv[]);
 extern (C):

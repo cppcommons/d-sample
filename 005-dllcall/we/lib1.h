@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#include "os.h"
+#include "os1.h"
 
 os_value my_add2(long argc, os_value argv[]);
 

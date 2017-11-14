@@ -2,6 +2,19 @@ import core.sync.mutex;
 import std.algorithm.sorting;
 import std.stdio;
 
+alias ulong os_value;
+alias os_value  function(int argc, os_value *argv)os_function;
+enum os_type
+{
+	OS_NIL,
+	OS_ARRAY,
+	OS_BYTES,
+	OS_HANDLE,
+	OS_INTEGER,
+	OS_REAL,
+	OS_STRING,
+}
+
 static __gshared Mutex g_os_thread_mutex;
 static this()
 {
@@ -28,9 +41,9 @@ static uint os_get_thread_id()
 	return GetCurrentThreadId();
 }
 
-static int[os_value] g_os_value_map;
+static os_object[os_value] g_os_value_map;
 
-abstract class os_value
+abstract class os_object
 {
 	bool m_marked = false;
 	long m_id;
@@ -44,7 +57,7 @@ abstract class os_value
 	}
 }
 
-class os_integer : os_value
+class os_integer : os_object
 {
 	long m_value;
 	this(long value)
@@ -64,24 +77,12 @@ class os_integer : os_value
 
 		auto app = appender!string();
 		app ~= "[";
-		app ~= format!`tid=%u:`(m_thread_id);
 		app ~= format!`id=%d:`(m_id);
 		app ~= format!`%d`(m_value);
+		app ~= format!`:tid=%u`(m_thread_id);
 		app.put("]");
 		return app.data;
 	}
-}
-
-alias os_value function(int argc, os_value* argv) os_function_t;
-enum os_type_t
-{
-	OS_NIL,
-	OS_ARRAY,
-	OS_BYTES,
-	OS_HANDLE,
-	OS_INTEGER,
-	OS_REAL,
-	OS_STRING,
 }
 
 extern (C) long os_get_length(os_value value);
@@ -97,26 +98,26 @@ extern (C) os_value os_new_integer(long data)
 		g_os_thread_mutex.lock();
 		scope (exit)
 			g_os_thread_mutex.unlock();
-		g_os_value_map[o] = 0;
+		g_os_value_map[o.m_id] = o;
 	}
-	return o;
+	return o.m_id;
 }
 
 extern (C) long os_get_integer(os_value value)
 {
 	import std.stdio;
 
-	if (value is null)
+	if (value == 0)
 		return 0;
 	{
 		g_os_thread_mutex.lock();
 		scope (exit)
 			g_os_thread_mutex.unlock();
-		int* found = value in g_os_value_map;
+		os_object* found = value in g_os_value_map;
 		if (!found)
 			return 0;
-		writeln(`[DEBUG] `, value);
-		return value.get_integer();
+		writeln(`[DEBUG] `, *found);
+		return (*found).get_integer();
 	}
 }
 
@@ -129,7 +130,7 @@ extern (C) void os_dump_heap()
 		scope (exit)
 			g_os_thread_mutex.unlock();
 		os_value[] keys = g_os_value_map.keys();
-		alias myComp = (x, y) => x.m_id < y.m_id;
+		alias myComp = (x, y) => x < y;
 		keys.sort!(myComp);
 		writeln(keys);
 	}
