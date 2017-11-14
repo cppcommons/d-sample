@@ -71,9 +71,9 @@ version (Windows)
 	{
 		static __gshared long g_os_thread_no_max = 0;
 		{
-			g_os_global_mutex.lock();
+			g_os_global_mutex.lock_nothrow();
 			scope (exit)
-				g_os_global_mutex.unlock();
+				g_os_global_mutex.unlock_nothrow();
 			g_os_thread_no_max++;
 			return g_os_thread_no_max;
 		}
@@ -83,9 +83,9 @@ version (Windows)
 	{
 		static __gshared long g_os_value_id_max = 100000;
 		{
-			g_os_global_mutex.lock();
+			g_os_global_mutex.lock_nothrow();
 			scope (exit)
-				g_os_global_mutex.unlock();
+				g_os_global_mutex.unlock_nothrow();
 			g_os_value_id_max++;
 			return g_os_value_id_max;
 		}
@@ -147,9 +147,9 @@ static string os_value_to_string(os_value value) //pure @safe
 		return "null";
 	//return "<>";
 	{
-		g_os_global_mutex.lock();
+		g_os_global_mutex.lock_nothrow();
 		scope (exit)
-			g_os_global_mutex.unlock();
+			g_os_global_mutex.unlock_nothrow();
 		os_object* found = value in g_os_value_map;
 		if (!found)
 			return format!`<#%d>`(value);
@@ -226,9 +226,9 @@ extern (C) os_value os_new_array(os_heap heap, long len)
 	writeln(`os_new_array(): len=`, len);
 	auto o = new os_array(len);
 	{
-		g_os_global_mutex.lock();
+		g_os_global_mutex.lock_nothrow();
 		scope (exit)
-			g_os_global_mutex.unlock();
+			g_os_global_mutex.unlock_nothrow();
 		g_os_value_map[o.m_id] = o;
 	}
 	return o.m_id;
@@ -239,9 +239,9 @@ extern (C) os_value* os_get_array(os_value value)
 	if (value == 0)
 		return null;
 	{
-		g_os_global_mutex.lock();
+		g_os_global_mutex.lock_nothrow();
 		scope (exit)
-			g_os_global_mutex.unlock();
+			g_os_global_mutex.unlock_nothrow();
 		os_object* found = value in g_os_value_map;
 		if (!found)
 			return null;
@@ -256,9 +256,9 @@ extern (C) os_value os_new_integer(os_heap heap, long data)
 	writeln(`os_new_integer(): data=`, data);
 	auto o = new os_integer(data);
 	{
-		g_os_global_mutex.lock();
+		g_os_global_mutex.lock_nothrow();
 		scope (exit)
-			g_os_global_mutex.unlock();
+			g_os_global_mutex.unlock_nothrow();
 		g_os_value_map[o.m_id] = o;
 	}
 	return o.m_id;
@@ -269,9 +269,9 @@ extern (C) long os_get_integer(os_value value)
 	if (value == 0)
 		return 0;
 	{
-		g_os_global_mutex.lock();
+		g_os_global_mutex.lock_nothrow();
 		scope (exit)
-			g_os_global_mutex.unlock();
+			g_os_global_mutex.unlock_nothrow();
 		os_object* found = value in g_os_value_map;
 		if (!found)
 			return 0;
@@ -285,9 +285,9 @@ extern (C) char* os_get_string(os_value value);
 extern (C) void os_dump_heap(os_heap heap)
 {
 	{
-		g_os_global_mutex.lock();
+		g_os_global_mutex.lock_nothrow();
 		scope (exit)
-			g_os_global_mutex.unlock();
+			g_os_global_mutex.unlock_nothrow();
 		os_object[] values = g_os_value_map.values();
 		alias myComp2 = (x, y) => x.m_id < y.m_id;
 		values.sort!(myComp2);
@@ -304,9 +304,9 @@ extern (C) bool os_mark(os_value value)
 	if (value == 0)
 		return false;
 	{
-		g_os_global_mutex.lock();
+		g_os_global_mutex.lock_nothrow();
 		scope (exit)
-			g_os_global_mutex.unlock();
+			g_os_global_mutex.unlock_nothrow();
 		os_object* found = value in g_os_value_map;
 		if (!found)
 			return false;
@@ -319,9 +319,9 @@ extern (C) bool os_unmark(os_value value)
 	if (value == 0)
 		return false;
 	{
-		g_os_global_mutex.lock();
+		g_os_global_mutex.lock_nothrow();
 		scope (exit)
-			g_os_global_mutex.unlock();
+			g_os_global_mutex.unlock_nothrow();
 		os_object* found = value in g_os_value_map;
 		if (!found)
 			return false;
@@ -332,9 +332,9 @@ extern (C) bool os_unmark(os_value value)
 extern (C) void os_sweep(os_heap heap)
 {
 	{
-		g_os_global_mutex.lock();
+		g_os_global_mutex.lock_nothrow();
 		scope (exit)
-			g_os_global_mutex.unlock();
+			g_os_global_mutex.unlock_nothrow();
 		os_object[] values = g_os_value_map.values();
 		alias myComp2 = (x, y) => x.m_id < y.m_id;
 		values.sort!(myComp2);
@@ -481,7 +481,63 @@ os_value  my_add2(int argc, os_value *argv);
 	int* bbb = answer in dummy;
 	os_sweep(0);
 	os_dump_heap(0);
-	exit(0);
+
+	{
+		import std.stdio;
+		import core.sync.mutex : Mutex;
+		import core.thread;
+
+		//static __gshared int total;
+		//static shared int total;
+		int total;
+		void sync_fun()
+		{
+			synchronized
+			{
+				total += 1;
+			}
+		}
+
+		int total2;
+		shared Mutex mtx = new shared Mutex();
+		void sync_fun2()
+		{
+			mtx.lock_nothrow();
+			total2 += 1;
+			mtx.unlock_nothrow();
+		}
+
+		int result1, result2;
+		auto tg = new ThreadGroup;
+		tg.create = {
+			os_new_integer(0, 1111);
+			for (int i = 0; i < 1000; i++)
+			{
+				sync_fun();
+				sync_fun2();
+			}
+		};
+		tg.create = {
+			os_new_integer(0, 2222);
+			for (int i = 0; i < 1000; i++)
+			{
+				sync_fun();
+				sync_fun2();
+			}
+		};
+		tg.create = {
+			os_new_integer(0, 3333);
+			for (int i = 0; i < 1000; i++)
+			{
+				sync_fun();
+				sync_fun2();
+			}
+		};
+		tg.joinAll();
+		writeln("total=", total);
+		writeln("total2=", total2);
+		os_dump_heap(0);
+	}
 }
 
 static uint[] os_get_thread_dword_list()
