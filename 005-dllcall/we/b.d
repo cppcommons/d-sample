@@ -150,7 +150,7 @@ static string os_value_to_string(os_value value) //pure @safe
 			g_os_global_mutex.unlock();
 		os_object* found = value in g_os_value_map;
 		if (!found)
-			return format!`#%d`(value);
+			return format!`<#%d>`(value);
 		return found.toString();
 	}
 }
@@ -390,6 +390,9 @@ void main(string[] args)
 extern (C):
 os_value  my_add2(int argc, os_value *argv);
 	+/
+	os_value dummy_ = os_new_array(0, 2);
+	os_value* dummy_v = os_get_array(dummy_);
+	dummy_v[0] = 1234;
 	os_value v_array_ = os_new_array(0, 2);
 	os_value* argv = os_get_array(v_array_);
 	//os_value[2] argv;
