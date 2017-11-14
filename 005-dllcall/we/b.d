@@ -45,6 +45,25 @@ shared static this()
 	g_os_global_mutex = new Mutex;
 }
 
+struct os_thread_local
+{
+	uint m_thread_id;
+	long m_thread_no;
+	this(int dummy)
+	{
+		import core.sys.windows.windows;
+
+		m_thread_id = GetCurrentThreadId();
+		m_thread_no = -1;
+	}
+}
+
+static  /*(thread_local)*/ os_thread_local g_os_thread_local;
+static  /*(thread_local)*/ this()
+{
+	g_os_thread_local = os_thread_local(0);
+}
+
 static long os_get_next_thread_no()
 {
 	static __gshared long g_os_thread_no_max = 0;
@@ -71,9 +90,7 @@ static long os_get_next_value_id()
 
 static uint os_get_thread_id()
 {
-	import core.sys.windows.windows;
-
-	return GetCurrentThreadId();
+	return g_os_thread_local.m_thread_id;
 }
 
 static __gshared long[uint] g_os_thread_no_map;
@@ -107,6 +124,7 @@ abstract class os_object
 	{
 		m_id = os_get_next_value_id();
 		m_thread_id = os_get_thread_id();
+		//m_thread_id = g_os_thread_local.m_thread_id;
 		m_thread_no = os_get_thread_no(m_thread_id);
 	}
 
