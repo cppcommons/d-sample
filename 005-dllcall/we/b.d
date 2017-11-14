@@ -130,7 +130,7 @@ abstract class os_object
 	{
 		auto app = appender!string();
 		if (m_marked)
-			app ~= `*`;
+			app ~= `<*>`;
 		app ~= format!`#%d`(m_id);
 		//app ~= "(";
 		app ~= format!`@%d`(m_thread_no);
@@ -178,7 +178,7 @@ class os_array : os_object
 	override string toString() const  //pure @safe
 	{
 		auto app = appender!string();
-		app ~= format!`array:%s`(oid_string());
+		app ~= format!`array(%s)`(oid_string());
 		app ~= "[";
 		for (uint i = 0; i < m_array.length; i++)
 		{
