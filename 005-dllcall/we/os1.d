@@ -9,6 +9,7 @@ alias os_handle  function(os_heap heap, int argc, os_handle *argv)os_function;
 enum os_type
 {
     OS_NIL,
+    OS_ADDRESS,
     OS_ARRAY,
     OS_BYTES,
     OS_HANDLE,
@@ -20,8 +21,8 @@ long  os_get_thread_index();
 long  os_get_length(os_handle value);
 os_handle  os_new_array(os_heap heap, long len);
 os_handle * os_get_array(os_handle value);
-os_handle  os_new_handle(os_heap heap, void *data);
-void * os_get_handle(os_handle value);
+os_handle  os_new_address(os_heap heap, void *data);
+void * os_get_address(os_handle value);
 os_handle  os_new_integer(os_heap heap, long data);
 long  os_get_integer(os_handle value);
 os_handle  os_new_string(os_heap heap, char *data);
