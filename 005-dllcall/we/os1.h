@@ -29,8 +29,8 @@ extern long long os_get_integer(os_value value);
 extern os_value os_new_string(os_heap heap, const char *data, long long len);
 extern const char *os_get_string(os_value value);
 extern void os_dump_heap(os_heap heap);
-extern bool os_mark(os_value entry);
-extern bool os_unmark(os_value entry);
+extern bool os_mark(os_value value);
+extern bool os_unmark(os_value value);
 extern void os_sweep(os_heap heap);
 extern void os_clear(os_heap heap);
 

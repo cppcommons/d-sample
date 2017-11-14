@@ -27,8 +27,8 @@ long  os_get_integer(os_value value);
 os_value  os_new_string(os_heap heap, char *data, long len);
 char * os_get_string(os_value value);
 void  os_dump_heap(os_heap heap);
-bool  os_mark(os_value entry);
-bool  os_unmark(os_value entry);
+bool  os_mark(os_value value);
+bool  os_unmark(os_value value);
 void  os_sweep(os_heap heap);
 void  os_clear(os_heap heap);
 

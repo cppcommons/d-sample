@@ -28,8 +28,8 @@ extern (C)
 	os_value os_new_string(os_heap heap, char* data, long len);
 	char* os_get_string(os_value value);
 	void os_dump_heap(os_heap heap);
-	bool os_mark(os_value entry);
-	bool os_unmark(os_value entry);
+	bool os_mark(os_value value);
+	bool os_unmark(os_value value);
 	void os_sweep(os_heap heap);
 	void os_clear(os_heap heap);
 }
@@ -126,9 +126,11 @@ abstract class os_object
 		m_referred = false;
 	}
 
-	string oid_string() const //pure @safe
+	string oid_string() const  //pure @safe
 	{
 		auto app = appender!string();
+		if (m_marked)
+			app ~= `*`;
 		app ~= format!`#%d`(m_id);
 		//app ~= "(";
 		app ~= format!`@%d`(m_thread_no);
@@ -173,7 +175,7 @@ class os_array : os_object
 		return 0;
 	}
 
-	override string toString() const //pure @safe
+	override string toString() const  //pure @safe
 	{
 		auto app = appender!string();
 		app ~= format!`array:%s`(oid_string());
@@ -207,7 +209,7 @@ class os_integer : os_object
 		return m_value;
 	}
 
-	override string toString() const //pure @safe
+	override string toString() const  //pure @safe
 	{
 		auto app = appender!string();
 		app ~= "{";
@@ -286,19 +288,52 @@ extern (C) void os_dump_heap(os_heap heap)
 		g_os_global_mutex.lock();
 		scope (exit)
 			g_os_global_mutex.unlock();
-		os_value[] keys = g_os_value_map.keys();
-		alias myComp = (x, y) => x < y;
-		keys.sort!(myComp);
-		writeln(keys);
+		//os_value[] keys = g_os_value_map.keys();
+		//alias myComp = (x, y) => x < y;
+		//keys.sort!(myComp);
+		//writeln(keys);
 		os_object[] values = g_os_value_map.values();
 		alias myComp2 = (x, y) => x.m_id < y.m_id;
 		values.sort!(myComp2);
-		writeln(values);
+		//writeln(values);
+		writefln("[DUMP HEAP #%u]", heap);
+		foreach (value; values)
+		{
+			writeln("  ", value);
+		}
 	}
 }
 
-extern (C) bool os_mark(os_value entry);
-extern (C) bool os_unmark(os_value entry);
+extern (C) bool os_mark(os_value value)
+{
+	if (value == 0)
+		return false;
+	{
+		g_os_global_mutex.lock();
+		scope (exit)
+			g_os_global_mutex.unlock();
+		os_object* found = value in g_os_value_map;
+		if (!found)
+			return false;
+		return (*found).m_marked = true;
+	}
+}
+
+extern (C) bool os_unmark(os_value value)
+{
+	if (value == 0)
+		return false;
+	{
+		g_os_global_mutex.lock();
+		scope (exit)
+			g_os_global_mutex.unlock();
+		os_object* found = value in g_os_value_map;
+		if (!found)
+			return false;
+		return (*found).m_marked = false;
+	}
+}
+
 extern (C) void os_sweep(os_heap heap);
 extern (C) void os_clear(os_heap heap);
 
@@ -391,6 +426,7 @@ extern (C):
 os_value  my_add2(int argc, os_value *argv);
 	+/
 	os_value dummy_ = os_new_array(0, 2);
+	os_mark(dummy_);
 	os_value* dummy_v = os_get_array(dummy_);
 	dummy_v[0] = 1234;
 	os_value v_array_ = os_new_array(0, 2);
@@ -400,6 +436,7 @@ os_value  my_add2(int argc, os_value *argv);
 	argv[1] = os_new_integer(0, 22);
 	os_dump_heap(0);
 	os_value answer = my_add2(0, 2, argv);
+	os_mark(answer);
 	os_dump_heap(0);
 	writeln(answer);
 	long answer2 = os_get_integer(answer);
