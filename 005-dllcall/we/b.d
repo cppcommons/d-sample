@@ -230,7 +230,7 @@ abstract class os_object
 	bool m_marked;
 	bool m_referred;
 	//os_handle* get_array();
-	long get_integer();
+	//long get_integer();
 	override string toString() const; //pure @safe;
 	this()
 	{
@@ -271,32 +271,20 @@ static string os_value_to_string(os_handle value) //pure @safe
 class os_array : os_object, os_array_iface, os_number_iface
 {
 	os_handle[] m_array;
-	//uint m_len;
-	//os_handle* m_array2;
-	//os_handle[] m_array3;
 	this(long len)
 	{
 		m_array.length = cast(size_t) len;
-		//m_len = cast(uint) len;
-		//size_t n = os_handle.sizeof * m_len;
-		//void* p = pureMalloc(n);
-		//m_array3 = cast(os_handle[]) p[0 .. n];
-		//writeln(`p=`, p);
-		//m_array2 = cast(os_handle*) pureCalloc(os_handle.sizeof, m_len + 1);
 	}
 
+	/+
 	~this()
 	{
-		//pureFree(m_array3.ptr);
 	}
+	+/
 
-	/*override*/
-	os_handle* get_array()
+	override os_handle* get_array()
 	{
 		return m_array.ptr;
-		//writeln("os_array::get_array(): ", m_array3.ptr);
-		//exit(123);
-		//return m_array3.ptr;
 	}
 
 	override long get_integer()
@@ -309,18 +297,15 @@ class os_array : os_object, os_array_iface, os_number_iface
 		auto app = appender!string();
 		app ~= format!`array(%s)`(oid_string());
 		app ~= "[";
-		//version (none)
 		for (uint i = 0; i < m_array.length; i++)
 		{
 			if (i > 0)
 				app ~= ", ";
-			//os_object o = g_global_map.lookup(m_array[i]);
 			os_object o = g_global_map.lookup(cast(os_handle) m_array[i]);
 			if (!o)
 				app ~= "null";
 			else
 				app ~= o.toString();
-			//app ~= "<>";
 		}
 		app ~= "]";
 		return app.data;
@@ -334,13 +319,6 @@ class os_integer : os_object, os_number_iface
 	{
 		m_value = value;
 	}
-
-	/+
-	override os_handle* get_array()
-	{
-		return null;
-	}
-	+/
 
 	override long get_integer()
 	{
