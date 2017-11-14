@@ -18,6 +18,7 @@ enum os_type
 }
 os_handle  os_new_array(os_size_t size);
 os_size_t  os_array_size(os_handle array);
+void  os_array_clear(os_handle array);
 os_handle  os_get_value(os_handle array, os_size_t index);
 void  os_set_value(os_handle array, os_size_t index, os_handle data);
 void  os_push_value(os_handle array, os_handle data);
@@ -32,7 +33,7 @@ void  os_push_integer(os_handle array, long data);
 os_handle  os_new_string(char *data);
 os_handle  os_new_string2(char *data, os_size_t len);
 char * os_get_string(os_handle array_or_value, os_size_t index);
-char * os_get_string2(os_handle array_or_value, os_size_t index, os_size_t *len);
+char * os_get_string2(os_handle array_or_value, os_size_t *len, os_size_t index);
 void  os_set_string(os_handle array, os_size_t index, char *data);
 void  os_push_string(os_handle array, char *data);
 void  os_set_string2(os_handle array, os_size_t index, char *data, os_size_t len);

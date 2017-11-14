@@ -14,8 +14,8 @@ extern os_handle my_add2(long argc, os_handle argv[])
 	}
 	//os_handle a10 = my_mul2(heap, argc, argv);
 	//argv[0] = a10;
-	long a = (long)os_get_integer(argv[0], 0);
-	long b = (long)os_get_integer(argv[1], 0);
+	long a = (long)os_get_integer(argv[0]);
+	long b = (long)os_get_integer(argv[1]);
 	a = d_mul2(a, 10);
 	printf("my_add2(1)\n");
 	printf("my_add2(2)\n");
