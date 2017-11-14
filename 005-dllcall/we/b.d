@@ -1,4 +1,5 @@
 import core.sync.mutex;
+import std.algorithm.sorting;
 import std.stdio;
 
 static __gshared Mutex g_os_thread_mutex;
@@ -114,6 +115,8 @@ extern (C) char* os_get_string(os_value value);
 extern (C) void os_dump_heap()
 {
 	os_value[] keys = g_os_value_map.keys();
+	alias myComp = (x, y) => x.m_id < y.m_id;
+	keys.sort!(myComp);
 	writeln(keys);
 }
 
