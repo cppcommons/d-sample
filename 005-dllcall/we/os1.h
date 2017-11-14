@@ -18,6 +18,7 @@ enum os_type
 	OS_REAL,
 	OS_STRING
 };
+extern long long os_get_thread_index();
 extern long long os_get_length(os_value value);
 extern os_value os_new_array(os_heap heap, long long len);
 extern os_value *os_get_array(os_value value);

@@ -94,14 +94,14 @@ version (Windows)
 	{
 		return g_os_thread_local.m_thread_id;
 	}
+}
 
-	pragma(inline) static long os_get_thread_no()
-	{
-		if (g_os_thread_local.m_thread_no >= 0)
-			return g_os_thread_local.m_thread_no;
-		g_os_thread_local.m_thread_no = os_get_next_thread_no();
+long os_get_thread_index()
+{
+	if (g_os_thread_local.m_thread_no >= 0)
 		return g_os_thread_local.m_thread_no;
-	}
+	g_os_thread_local.m_thread_no = os_get_next_thread_no();
+	return g_os_thread_local.m_thread_no;
 }
 
 static __gshared os_object[os_value] g_os_value_map;
@@ -119,7 +119,7 @@ abstract class os_object
 	{
 		m_id = os_get_next_value_id();
 		m_thread_id = os_get_thread_id();
-		m_thread_no = os_get_thread_no();
+		m_thread_no = os_get_thread_index();
 		m_marked = false;
 		m_referred = false;
 	}
