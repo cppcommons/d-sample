@@ -46,7 +46,7 @@ shared static this()
 	g_os_global_mutex = new Mutex;
 }
 
-struct os_thread_local
+class os_thread_local
 {
 	uint m_thread_id;
 	long m_thread_no;
@@ -57,12 +57,37 @@ struct os_thread_local
 		m_thread_id = GetCurrentThreadId();
 		m_thread_no = -1;
 	}
+
+	~this()
+	{
+		if (m_thread_no >= 0)
+		{
+			writefln(`os_thread_local::~this() #%d.`, m_thread_no);
+		}
+	}
 }
 
 static  /*thread_local*/ os_thread_local g_os_thread_local;
 static  /*thread_local*/ this()
 {
-	g_os_thread_local = os_thread_local(0);
+	g_os_thread_local = new os_thread_local(0);
+}
+
+static  /*thread_local*/  ~this()
+{
+	{
+		g_os_global_mutex.lock_nothrow();
+		scope (exit)
+			g_os_global_mutex.unlock_nothrow();
+		if (g_os_thread_local is null)
+			return;
+		if (g_os_thread_local.m_thread_no >= 0)
+		{
+			writefln(`THREAD #%d END.`, g_os_thread_local.m_thread_no);
+		}
+		delete g_os_thread_local;
+		g_os_thread_local = null;
+	}
 }
 
 version (Windows)
