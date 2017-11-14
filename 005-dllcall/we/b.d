@@ -39,19 +39,19 @@ import std.array;
 import std.format;
 import std.stdio;
 
-static __gshared Mutex g_os_thread_mutex;
-static this()
+static __gshared Mutex g_os_global_mutex;
+shared static this()
 {
-	g_os_thread_mutex = new Mutex;
+	g_os_global_mutex = new Mutex;
 }
 
 static long os_get_next_thread_no()
 {
 	static __gshared long g_os_thread_no_max = 0;
 	{
-		g_os_thread_mutex.lock();
+		g_os_global_mutex.lock();
 		scope (exit)
-			g_os_thread_mutex.unlock();
+			g_os_global_mutex.unlock();
 		g_os_thread_no_max++;
 		return g_os_thread_no_max;
 	}
@@ -61,9 +61,9 @@ static long os_get_next_value_id()
 {
 	static __gshared long g_os_value_id_max = 100000;
 	{
-		g_os_thread_mutex.lock();
+		g_os_global_mutex.lock();
 		scope (exit)
-			g_os_thread_mutex.unlock();
+			g_os_global_mutex.unlock();
 		g_os_value_id_max++;
 		return g_os_value_id_max;
 	}
@@ -81,9 +81,9 @@ static __gshared long[uint] g_os_thread_no_map;
 static long os_get_thread_no(uint thread_id)
 {
 	{
-		g_os_thread_mutex.lock();
+		g_os_global_mutex.lock();
 		scope (exit)
-			g_os_thread_mutex.unlock();
+			g_os_global_mutex.unlock();
 		long* found = thread_id in g_os_thread_no_map;
 		if (found)
 			return (*found);
@@ -158,9 +158,9 @@ extern (C) os_value os_new_integer(os_heap heap, long data)
 	writeln(`os_new_integer(): data=`, data);
 	auto o = new os_integer(data);
 	{
-		g_os_thread_mutex.lock();
+		g_os_global_mutex.lock();
 		scope (exit)
-			g_os_thread_mutex.unlock();
+			g_os_global_mutex.unlock();
 		g_os_value_map[o.m_id] = o;
 	}
 	return o.m_id;
@@ -173,9 +173,9 @@ extern (C) long os_get_integer(os_value value)
 	if (value == 0)
 		return 0;
 	{
-		g_os_thread_mutex.lock();
+		g_os_global_mutex.lock();
 		scope (exit)
-			g_os_thread_mutex.unlock();
+			g_os_global_mutex.unlock();
 		os_object* found = value in g_os_value_map;
 		if (!found)
 			return 0;
@@ -189,9 +189,9 @@ extern (C) char* os_get_string(os_value value);
 extern (C) void os_dump_heap(os_heap heap)
 {
 	{
-		g_os_thread_mutex.lock();
+		g_os_global_mutex.lock();
 		scope (exit)
-			g_os_thread_mutex.unlock();
+			g_os_global_mutex.unlock();
 		os_value[] keys = g_os_value_map.keys();
 		alias myComp = (x, y) => x < y;
 		keys.sort!(myComp);
