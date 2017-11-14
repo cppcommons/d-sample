@@ -50,7 +50,8 @@ shared static this()
 class os_thread_local
 {
 	uint m_thread_id;
-	long m_thread_no;
+	//long m_thread_no;
+	BigInt m_thread_no;
 	this(int ignored)
 	{
 		import core.sys.windows.windows;
@@ -98,9 +99,9 @@ static  /*thread_local*/  ~this()
 
 version (Windows)
 {
-	pragma(inline) static long os_get_next_thread_no()
+	pragma(inline) static BigInt os_get_next_thread_no()
 	{
-		static __gshared long g_os_thread_no_max = 0;
+		static __gshared BigInt g_os_thread_no_max = 0;
 		{
 			g_os_global_mutex.lock_nothrow();
 			scope (exit)
@@ -133,10 +134,9 @@ version (Windows)
 
 extern (C) long os_get_thread_index()
 {
-	if (g_os_thread_local.m_thread_no >= 0)
-		return g_os_thread_local.m_thread_no;
-	g_os_thread_local.m_thread_no = os_get_next_thread_no();
-	return g_os_thread_local.m_thread_no;
+	if (g_os_thread_local.m_thread_no < 0)
+		g_os_thread_local.m_thread_no = os_get_next_thread_no();
+	return g_os_thread_local.m_thread_no.toLong();
 }
 
 //static __gshared os_object[os_value] g_os_value_map;
@@ -186,7 +186,7 @@ static string os_value_to_string(os_value value) //pure @safe
 		g_os_global_mutex.lock_nothrow();
 		scope (exit)
 			g_os_global_mutex.unlock_nothrow();
-		os_object* found = cast(BigInt)value in g_os_value_map;
+		os_object* found = cast(BigInt) value in g_os_value_map;
 		if (!found)
 			return format!`<#%d>`(value);
 		return found.toString();
@@ -278,7 +278,7 @@ extern (C) os_value* os_get_array(os_value value)
 		g_os_global_mutex.lock_nothrow();
 		scope (exit)
 			g_os_global_mutex.unlock_nothrow();
-		os_object* found = cast(BigInt)value in g_os_value_map;
+		os_object* found = cast(BigInt) value in g_os_value_map;
 		if (!found)
 			return null;
 		return (*found).get_array();
@@ -308,7 +308,7 @@ extern (C) long os_get_integer(os_value value)
 		g_os_global_mutex.lock_nothrow();
 		scope (exit)
 			g_os_global_mutex.unlock_nothrow();
-		os_object* found = cast(BigInt)value in g_os_value_map;
+		os_object* found = cast(BigInt) value in g_os_value_map;
 		if (!found)
 			return 0;
 		writeln(`[DEBUG] `, *found);
@@ -343,7 +343,7 @@ extern (C) bool os_mark(os_value value)
 		g_os_global_mutex.lock_nothrow();
 		scope (exit)
 			g_os_global_mutex.unlock_nothrow();
-		os_object* found = cast(BigInt)value in g_os_value_map;
+		os_object* found = cast(BigInt) value in g_os_value_map;
 		if (!found)
 			return false;
 		return (*found).m_marked = true;
@@ -358,7 +358,7 @@ extern (C) bool os_unmark(os_value value)
 		g_os_global_mutex.lock_nothrow();
 		scope (exit)
 			g_os_global_mutex.unlock_nothrow();
-		os_object* found = cast(BigInt)value in g_os_value_map;
+		os_object* found = cast(BigInt) value in g_os_value_map;
 		if (!found)
 			return false;
 		return (*found).m_marked = false;
@@ -390,7 +390,7 @@ extern (C) void os_sweep(os_heap heap)
 				for (uint i = 0; i < a.m_array.length; i++)
 				{
 					os_value elem = a.m_array[i];
-					os_object* o = cast(BigInt)elem in g_os_value_map;
+					os_object* o = cast(BigInt) elem in g_os_value_map;
 					if (o)
 					{
 						(*o).m_referred = true;
