@@ -1,7 +1,7 @@
 import core.sync.mutex;
 import std.stdio;
 
-static Mutex g_os_thread_mutex;
+static __gshared Mutex g_os_thread_mutex;
 static this()
 {
 	g_os_thread_mutex = new Mutex;
@@ -11,6 +11,7 @@ static int[os_value] g_os_value_map;
 
 abstract class os_value
 {
+	bool m_marked = false;
 	long get_integer();
 	override string toString() const pure @safe;
 }
@@ -40,8 +41,7 @@ class os_integer : os_value
 		return app.data;
 	}
 }
-//alias void* os_value;
-//alias os_value_t* os_value;
+
 alias os_value function(int argc, os_value* argv) os_function_t;
 enum os_type_t
 {
@@ -92,7 +92,11 @@ extern (C) long os_get_integer(os_value value)
 
 extern (C) os_value os_new_string(char* data, long len);
 extern (C) char* os_get_string(os_value value);
-extern (C) void os_dump_heap();
+extern (C) void os_dump_heap()
+{
+	os_value[] keys = g_os_value_map.keys();
+	writeln(keys);
+}
 extern (C) bool os_mark(os_value entry);
 extern (C) void os_sweep();
 extern (C) void os_clear();
@@ -172,7 +176,9 @@ os_value  my_add2(int argc, os_value *argv);
 	os_value[2] argv;
 	argv[0] = os_new_integer(11);
 	argv[1] = os_new_integer(22);
+	os_dump_heap();
 	os_value answer = my_add2(2, argv.ptr);
+	os_dump_heap();
 	writeln(answer);
 	long answer2 = os_get_integer(answer);
 	writeln(`answer2=`, answer2);
@@ -209,30 +215,3 @@ label_exit:
 	CloseHandle(h_snapshot);
 	return result;
 }
-
-/+
-static std::set<DWORD> os_get_thread_dword_list()
-{
-	std::set<DWORD> result;
-	DWORD v_proc_id = ::GetCurrentProcessId();
-	HANDLE h_snapshot = ::CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
-	if (h_snapshot == INVALID_HANDLE_VALUE)
-	{
-		return result;
-	}
-	THREADENTRY32 v_entry;
-	v_entry.dwSize = sizeof(THREADENTRY32);
-	if (!::Thread32First(h_snapshot, &v_entry))
-	{
-		goto label_exit;
-	}
-	do
-	{
-		if (v_entry.th32OwnerProcessID == v_proc_id)
-			result.insert(v_entry.th32ThreadID);
-	} while (::Thread32Next(h_snapshot, &v_entry));
-label_exit:
-	::CloseHandle(h_snapshot);
-	return result;
-}
-+/
