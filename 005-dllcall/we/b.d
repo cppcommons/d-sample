@@ -114,10 +114,15 @@ extern (C) os_value os_new_string(char* data, long len);
 extern (C) char* os_get_string(os_value value);
 extern (C) void os_dump_heap()
 {
-	os_value[] keys = g_os_value_map.keys();
-	alias myComp = (x, y) => x.m_id < y.m_id;
-	keys.sort!(myComp);
-	writeln(keys);
+	{
+		g_os_thread_mutex.lock();
+		scope (exit)
+			g_os_thread_mutex.unlock();
+		os_value[] keys = g_os_value_map.keys();
+		alias myComp = (x, y) => x.m_id < y.m_id;
+		keys.sort!(myComp);
+		writeln(keys);
+	}
 }
 
 extern (C) bool os_mark(os_value entry);
