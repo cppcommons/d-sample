@@ -49,7 +49,7 @@ struct os_thread_local
 {
 	uint m_thread_id;
 	long m_thread_no;
-	this(int dummy)
+	this(int ignored)
 	{
 		import core.sys.windows.windows;
 
@@ -64,7 +64,7 @@ static  /*(thread_local)*/ this()
 	g_os_thread_local = os_thread_local(0);
 }
 
-static long os_get_next_thread_no()
+pragma(inline) static long os_get_next_thread_no()
 {
 	static __gshared long g_os_thread_no_max = 0;
 	{
@@ -76,7 +76,7 @@ static long os_get_next_thread_no()
 	}
 }
 
-static long os_get_next_value_id()
+pragma(inline) static long os_get_next_value_id()
 {
 	static __gshared long g_os_value_id_max = 100000;
 	{
@@ -88,26 +88,17 @@ static long os_get_next_value_id()
 	}
 }
 
-static uint os_get_thread_id()
+pragma(inline) static uint os_get_thread_id()
 {
 	return g_os_thread_local.m_thread_id;
 }
 
-static __gshared long[uint] g_os_thread_no_map;
-
-static long os_get_thread_no(uint thread_id)
+pragma(inline) static long os_get_thread_no()
 {
-	{
-		g_os_global_mutex.lock();
-		scope (exit)
-			g_os_global_mutex.unlock();
-		long* found = thread_id in g_os_thread_no_map;
-		if (found)
-			return (*found);
-		long thread_no = os_get_next_thread_no();
-		g_os_thread_no_map[thread_id] = thread_no;
-		return thread_no;
-	}
+	if (g_os_thread_local.m_thread_no >= 0)
+		return g_os_thread_local.m_thread_no;
+	g_os_thread_local.m_thread_no = os_get_next_thread_no();
+	return g_os_thread_local.m_thread_no;
 }
 
 static __gshared os_object[os_value] g_os_value_map;
@@ -124,8 +115,7 @@ abstract class os_object
 	{
 		m_id = os_get_next_value_id();
 		m_thread_id = os_get_thread_id();
-		//m_thread_id = g_os_thread_local.m_thread_id;
-		m_thread_no = os_get_thread_no(m_thread_id);
+		m_thread_no = os_get_thread_no();
 	}
 
 	string thread_display() const pure @safe
