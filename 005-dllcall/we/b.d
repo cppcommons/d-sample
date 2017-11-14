@@ -64,41 +64,44 @@ static  /*(thread_local)*/ this()
 	g_os_thread_local = os_thread_local(0);
 }
 
-pragma(inline) static long os_get_next_thread_no()
+version (Windows)
 {
-	static __gshared long g_os_thread_no_max = 0;
+	pragma(inline) static long os_get_next_thread_no()
 	{
-		g_os_global_mutex.lock();
-		scope (exit)
-			g_os_global_mutex.unlock();
-		g_os_thread_no_max++;
-		return g_os_thread_no_max;
+		static __gshared long g_os_thread_no_max = 0;
+		{
+			g_os_global_mutex.lock();
+			scope (exit)
+				g_os_global_mutex.unlock();
+			g_os_thread_no_max++;
+			return g_os_thread_no_max;
+		}
 	}
-}
 
-pragma(inline) static long os_get_next_value_id()
-{
-	static __gshared long g_os_value_id_max = 100000;
+	pragma(inline) static long os_get_next_value_id()
 	{
-		g_os_global_mutex.lock();
-		scope (exit)
-			g_os_global_mutex.unlock();
-		g_os_value_id_max++;
-		return g_os_value_id_max;
+		static __gshared long g_os_value_id_max = 100000;
+		{
+			g_os_global_mutex.lock();
+			scope (exit)
+				g_os_global_mutex.unlock();
+			g_os_value_id_max++;
+			return g_os_value_id_max;
+		}
 	}
-}
 
-pragma(inline) static uint os_get_thread_id()
-{
-	return g_os_thread_local.m_thread_id;
-}
+	pragma(inline) static uint os_get_thread_id()
+	{
+		return g_os_thread_local.m_thread_id;
+	}
 
-pragma(inline) static long os_get_thread_no()
-{
-	if (g_os_thread_local.m_thread_no >= 0)
+	pragma(inline) static long os_get_thread_no()
+	{
+		if (g_os_thread_local.m_thread_no >= 0)
+			return g_os_thread_local.m_thread_no;
+		g_os_thread_local.m_thread_no = os_get_next_thread_no();
 		return g_os_thread_local.m_thread_no;
-	g_os_thread_local.m_thread_no = os_get_next_thread_no();
-	return g_os_thread_local.m_thread_no;
+	}
 }
 
 static __gshared os_object[os_value] g_os_value_map;
