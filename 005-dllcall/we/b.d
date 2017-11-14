@@ -35,6 +35,7 @@ extern (C)
 	void os_clear(os_heap heap);
 }
 
+import core.memory;
 import core.sync.mutex;
 import std.algorithm.sorting;
 import std.array;
@@ -152,7 +153,7 @@ class os_map
 		m_mutex = new Mutex;
 	}
 
-	void insert(const os_object o)
+	void insert(os_object o)
 	{
 		if (o is null)
 			return;
@@ -160,11 +161,11 @@ class os_map
 			m_mutex.lock_nothrow();
 			scope (exit)
 				m_mutex.unlock_nothrow();
-			m_map[o.m_id_string] = cast(os_object) o;
+			m_map[o.m_id_string] = o;
 		}
 	}
 
-	os_object lookup(const os_value value)
+	os_object lookup(os_value value)
 	{
 		{
 			m_mutex.lock_nothrow();
@@ -177,7 +178,7 @@ class os_map
 		}
 	}
 
-	void remove(const os_object o)
+	void remove(os_object o)
 	{
 		if (o is null)
 			return;
@@ -259,14 +260,31 @@ static string os_value_to_string(os_value value) //pure @safe
 class os_array : os_object
 {
 	os_value[] m_array;
+	//uint m_len;
+	//os_value* m_array2;
+	//os_value[] m_array3;
 	this(long len)
 	{
-		m_array.length = cast(uint) len;
+		m_array.length = cast(size_t) len;
+		//m_len = cast(uint) len;
+		//size_t n = os_value.sizeof * m_len;
+		//void* p = pureMalloc(n);
+		//m_array3 = cast(os_value[]) p[0 .. n];
+		//writeln(`p=`, p);
+		//m_array2 = cast(os_value*) pureCalloc(os_value.sizeof, m_len + 1);
+	}
+
+	~this()
+	{
+		//pureFree(m_array3.ptr);
 	}
 
 	override os_value* get_array()
 	{
 		return m_array.ptr;
+		//writeln("os_array::get_array(): ", m_array3.ptr);
+		//exit(123);
+		//return m_array3.ptr;
 	}
 
 	override long get_integer()
@@ -276,93 +294,95 @@ class os_array : os_object
 
 	override string toString() const  //pure @safe
 	{
+		writeln("(A)");
 		auto app = appender!string();
 		app ~= format!`array(%s)`(oid_string());
 		app ~= "[";
+		//version (none)
 		for (uint i = 0; i < m_array.length; i++)
 		{
 			if (i > 0)
 				app ~= ", ";
-			os_object o = g_global_map.lookup(m_array[i]);
-			//app ~= os_value_to_string(m_array[i]);
+			//os_object o = g_global_map.lookup(m_array[i]);
+			os_object o = g_global_map.lookup(cast(os_value) m_array[i]);
 			if (!o)
 				app ~= "null";
-			else
-				app ~= o.toString();
+			else //app ~= o.toString();
+				app ~= "<>";
 		}
 		app ~= "]";
 		return app.data;
 	}
 }
 
-version (Windows)
+class os_integer : os_object
 {
-
-	class os_integer : os_object
+	long m_value;
+	this(long value)
 	{
-		long m_value;
-		this(long value)
-		{
-			m_value = value;
-		}
+		m_value = value;
+	}
 
-		override os_value* get_array()
-		{
+	override os_value* get_array()
+	{
+		return null;
+	}
+
+	override long get_integer()
+	{
+		return m_value;
+	}
+
+	override string toString() const  //pure @safe
+	{
+		auto app = appender!string();
+		app ~= "{";
+		app ~= oid_string();
+		app ~= format!` %d`(m_value);
+		app ~= "}";
+		return app.data;
+	}
+}
+
+extern (C) long os_get_length(os_value value);
+extern (C) os_value os_new_array(os_heap heap, long len)
+{
+	writeln(`os_new_array(): len=`, len);
+	auto o = new os_array(len);
+	{
+		g_global_map.insert(o);
+	}
+	return o.m_id_string;
+}
+
+extern (C) os_value* os_get_array(os_value value)
+{
+	if (value is null)
+		return null;
+	{
+		os_object found = g_global_map.lookup(value);
+		if (!found)
 			return null;
-		}
-
-		override long get_integer()
-		{
-			return m_value;
-		}
-
-		override string toString() const  //pure @safe
-		{
-			auto app = appender!string();
-			app ~= "{";
-			app ~= oid_string();
-			app ~= format!` %d`(m_value);
-			app ~= "}";
-			return app.data;
-		}
-	}
-
-	extern (C) long os_get_length(os_value value);
-	extern (C) os_value os_new_array(os_heap heap, long len)
-	{
-		writeln(`os_new_array(): len=`, len);
-		auto o = new os_array(len);
-		{
-			g_global_map.insert(o);
-		}
-		return o.m_id_string;
-	}
-
-	extern (C) os_value* os_get_array(os_value value)
-	{
-		if (value is null)
+		os_array a = cast(os_array) found;
+		if (!a)
 			return null;
-		{
-			os_object found = g_global_map.lookup(value);
-			if (!found)
-				return null;
-			return found.get_array();
-		}
+		return a.get_array();
 	}
+}
 
-	extern (C) os_value os_new_handle(os_heap heap, void* data);
-	extern (C) void* os_get_handle(os_value value);
-	extern (C) os_value os_new_integer(os_heap heap, long data)
+extern (C) os_value os_new_handle(os_heap heap, void* data);
+extern (C) void* os_get_handle(os_value value);
+extern (C) os_value os_new_integer(os_heap heap, long data)
+{
+	writeln(`os_new_integer(): data=`, data);
+	auto o = new os_integer(data);
 	{
-		writeln(`os_new_integer(): data=`, data);
-		auto o = new os_integer(data);
-		{
-			g_global_map.insert(o);
-		}
-		return o.m_id_string;
+		g_global_map.insert(o);
 	}
+	return o.m_id_string;
+}
 
-	/+
+/+
 static char[] os_to_string(char* s)
 {
 	import core.stdc.string : strlen;
@@ -371,298 +391,301 @@ static char[] os_to_string(char* s)
 }
 +/
 
-	extern (C) long os_get_integer(os_value value)
+extern (C) long os_get_integer(os_value value)
+{
+	if (value is null)
+		return 0;
 	{
-		if (value is null)
+		os_object found = g_global_map.lookup(value);
+		if (!found)
 			return 0;
+		writeln(`[DEBUG] `, found);
+		return found.get_integer();
+	}
+}
+
+extern (C) os_value os_new_string(os_heap heap, char* data, long len);
+extern (C) char* os_get_string(os_value value);
+extern (C) void os_dump_heap(os_heap heap)
+{
+	{
+		g_os_global_mutex.lock_nothrow();
+		scope (exit)
+			g_os_global_mutex.unlock_nothrow();
+		os_object[] values = g_global_map.values();
+		writefln("[DUMP HEAP #%u]", heap);
+		foreach (value; values)
 		{
-			os_object found = g_global_map.lookup(value);
-			if (!found)
-				return 0;
-			writeln(`[DEBUG] `, found);
-			return found.get_integer();
+			//writeln("  ", value);
+			writeln("==");
+			writeln(value.m_id);
+			writeln(value.toString());
+			if (!value)
+				continue;
+			writeln("--", value);
 		}
 	}
+}
 
-	extern (C) os_value os_new_string(os_heap heap, char* data, long len);
-	extern (C) char* os_get_string(os_value value);
-	extern (C) void os_dump_heap(os_heap heap)
+extern (C) bool os_mark(os_value value)
+{
+	if (value is null)
+		return false;
 	{
-		{
-			g_os_global_mutex.lock_nothrow();
-			scope (exit)
-				g_os_global_mutex.unlock_nothrow();
-			os_object[] values = g_global_map.values();
-			writefln("[DUMP HEAP #%u]", heap);
-			foreach (value; values)
-			{
-				writeln("  ", value);
-			}
-		}
-	}
-
-	extern (C) bool os_mark(os_value value)
-	{
-		if (value is null)
+		os_object found = g_global_map.lookup(value);
+		if (!found)
 			return false;
-		{
-			os_object found = g_global_map.lookup(value);
-			if (!found)
-				return false;
-			return found.m_marked = true;
-		}
+		return found.m_marked = true;
 	}
+}
 
-	extern (C) bool os_unmark(os_value value)
+extern (C) bool os_unmark(os_value value)
+{
+	if (value is null)
+		return false;
 	{
-		if (value is null)
+		os_object found = g_global_map.lookup(value);
+		if (!found)
 			return false;
-		{
-			os_object found = g_global_map.lookup(value);
-			if (!found)
-				return false;
-			return found.m_marked = false;
-		}
+		return found.m_marked = false;
 	}
+}
 
-	extern (C) void os_sweep(os_heap heap)
+extern (C) void os_sweep(os_heap heap)
+{
 	{
+		g_os_global_mutex.lock_nothrow();
+		scope (exit)
+			g_os_global_mutex.unlock_nothrow();
+		os_object[] values = g_global_map.values();
+		writefln("[SWEEP #%u]", heap);
+		foreach (value; values)
 		{
-			g_os_global_mutex.lock_nothrow();
-			scope (exit)
-				g_os_global_mutex.unlock_nothrow();
-			os_object[] values = g_global_map.values();
-			writefln("[SWEEP #%u]", heap);
-			foreach (value; values)
+			value.m_referred = false;
+		}
+		foreach (value; values)
+		{
+			if (!value.m_marked)
+				continue;
+			value.m_referred = true;
+			os_array a = cast(os_array) value;
+			if (a !is null)
 			{
-				value.m_referred = false;
-			}
-			foreach (value; values)
-			{
-				if (!value.m_marked)
-					continue;
-				value.m_referred = true;
-				os_array a = cast(os_array) value;
-				if (a !is null)
+				for (uint i = 0; i < a.m_array.length; i++)
 				{
-					for (uint i = 0; i < a.m_array.length; i++)
+					os_value elem = a.m_array[i];
+					os_object o = g_global_map.lookup(elem);
+					if (o)
 					{
-						os_value elem = a.m_array[i];
-						os_object o = g_global_map.lookup(elem);
-						if (o)
-						{
-							o.m_referred = true;
-						}
+						o.m_referred = true;
 					}
 				}
 			}
-			foreach (value; values)
+		}
+		foreach (value; values)
+		{
+			if (!value.m_referred)
 			{
-				if (!value.m_referred)
-				{
-					g_global_map.remove(value);
-				}
+				g_global_map.remove(value);
 			}
 		}
 	}
+}
 
-	extern (C) void os_clear(os_heap heap);
+extern (C) void os_clear(os_heap heap);
 
-	private void exit(int code)
+private void exit(int code)
+{
+	import std.c.stdlib;
+
+	std.c.stdlib.exit(code);
+}
+
+// http://forum.dlang.org/post/c6ojg9$c8p$1@digitaldaemon.com
+char[] toString(char* s)
+{
+	import core.stdc.string : strlen;
+
+	return s ? s[0 .. strlen(s)] : cast(char[]) null;
+}
+
+// http://forum.dlang.org/post/c6ojg9$c8p$1@digitaldaemon.com
+wchar[] toString(wchar* s)
+{
+	import core.stdc.wchar_ : wcslen;
+
+	return s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
+}
+
+class A
+{
+	int m_a;
+}
+
+extern (C) int d_mul2(int a, int b)
+{
+	writefln(`d_mul(%d, %d)`, a, b);
+	return a * b;
+}
+
+extern (C) os_value my_mul2(os_heap heap, int argc, os_value* argv)
+{
+	writeln(`my_mul2(0)`);
+	if (argc != 2)
+		return null;
+	long a0 = os_get_integer(argv[0]);
+	long a1 = os_get_integer(argv[1]);
+	return os_new_integer(heap, a0 * a1);
+}
+
+void main(string[] args)
+{
+	import core.thread;
+	import std.stdio;
+	import std.string;
+	import std.container.binaryheap;
+	import std.algorithm.searching; // BinaryHeap.canFind(x)
+	import std.range; // BinaryHeap.take(n)
+
+	int[] a = [4, 1, 3, 2, 16, 9, 10, 14, 8, 7];
+	BinaryHeap!(int[]) h = heapify(a);
+	// largest element
+	writeln(h.front); // 16
+	writeln(h.canFind(16));
+	// a has the heap property
+	//assert(equal(a, [16, 14, 10, 8, 7, 9, 3, 2, 4, 1]));
+	uint[] tid_list = os_get_thread_dword_list();
+	writeln(tid_list);
+	//auto h2 = heapify!"a > b"(tid_list);
+	BinaryHeap!(uint[]) h2 = heapify(tid_list);
+	//writeln(h2);
+	writeln(h2.front);
+	writeln(h2.dup);
+	writeln(h2.front);
+
+	import core.sys.windows.windows;
+
+	DWORD v_thread_dword = GetCurrentThreadId();
+	writeln(v_thread_dword);
+
+	os_value xxx = os_new_integer(0, 123);
+	writeln(toString(xxx));
+	long xxx2 = os_get_integer(xxx);
+	writeln("xxx2=", xxx2);
+	writeln("(1)");
+	os_value dummy_ = os_new_array(0, 2);
+	os_value* dummy_v = os_get_array(dummy_);
+	os_value v_array_ = os_new_array(0, 2);
+	writeln(`toString(v_array_)=`, toString(v_array_));
+	//os_mark(v_array_);
+	os_value* argv2 = os_get_array(v_array_);
+	writeln(`argv2=`, argv2);
+	argv2[0] = null;
+	writeln("(2)");
+	os_value[2] argv;
+	argv[0] = os_new_integer(0, 11);
+	argv[1] = os_new_integer(0, 22);
+	writeln("(2.25)");
+	os_dump_heap(0);
+	writeln("(2.26)");
+	os_value answer = my_add2(0, 2, argv.ptr);
+	writeln("(2.27)");
+	os_mark(answer);
+	writeln("(2.50)");
+	os_dump_heap(0);
+	writeln(answer);
+	long answer2 = os_get_integer(answer);
+	writeln(`answer2=`, answer2);
+	int[os_value] dummy;
+	int* bbb = answer in dummy;
+	writeln("(3)");
+	os_sweep(0);
+	os_dump_heap(0);
+
+	writeln("(4)");
 	{
-		import std.c.stdlib;
-
-		std.c.stdlib.exit(code);
-	}
-
-	// http://forum.dlang.org/post/c6ojg9$c8p$1@digitaldaemon.com
-	char[] toString(char* s)
-	{
-		import core.stdc.string : strlen;
-
-		return s ? s[0 .. strlen(s)] : cast(char[]) null;
-	}
-
-	// http://forum.dlang.org/post/c6ojg9$c8p$1@digitaldaemon.com
-	wchar[] toString(wchar* s)
-	{
-		import core.stdc.wchar_ : wcslen;
-
-		return s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
-	}
-
-	class A
-	{
-		int m_a;
-	}
-
-	extern (C) int d_mul2(int a, int b)
-	{
-		writefln(`d_mul(%d, %d)`, a, b);
-		return a * b;
-	}
-
-	extern (C) os_value my_mul2(os_heap heap, int argc, os_value* argv)
-	{
-		writeln(`my_mul2(0)`);
-		if (argc != 2)
-			return null;
-		long a0 = os_get_integer(argv[0]);
-		long a1 = os_get_integer(argv[1]);
-		return os_new_integer(heap, a0 * a1);
-	}
-
-	void main(string[] args)
-	{
-		import core.thread;
 		import std.stdio;
-		import std.string;
-		import std.container.binaryheap;
-		import std.algorithm.searching; // BinaryHeap.canFind(x)
-		import std.range; // BinaryHeap.take(n)
+		import core.sync.mutex : Mutex;
+		import core.thread;
 
-		int[] a = [4, 1, 3, 2, 16, 9, 10, 14, 8, 7];
-		BinaryHeap!(int[]) h = heapify(a);
-		// largest element
-		writeln(h.front); // 16
-		writeln(h.canFind(16));
-		// a has the heap property
-		//assert(equal(a, [16, 14, 10, 8, 7, 9, 3, 2, 4, 1]));
-		uint[] tid_list = os_get_thread_dword_list();
-		writeln(tid_list);
-		//auto h2 = heapify!"a > b"(tid_list);
-		BinaryHeap!(uint[]) h2 = heapify(tid_list);
-		//writeln(h2);
-		writeln(h2.front);
-		writeln(h2.dup);
-		writeln(h2.front);
-
-		import core.sys.windows.windows;
-
-		DWORD v_thread_dword = GetCurrentThreadId();
-		writeln(v_thread_dword);
-
-		/+
-	A a1 = new A;
-	os_value[] testing;
-	BinaryHeap!(os_value[]) h3 = BinaryHeap!(os_value[])(testing);
-	h3.insert(new os_value(1234));
-	h3.insert(new os_value(5678));
-	writeln(h3.dup);
-	+/
-		/+
-extern (C):
-os_value  my_add2(int argc, os_value *argv);
-	+/
-		os_value xxx = os_new_integer(0, 123);
-		writeln(toString(xxx));
-		long xxx2 = os_get_integer(xxx);
-		writeln("xxx2=", xxx2);
-		os_value dummy_ = os_new_array(0, 2);
-		os_value* dummy_v = os_get_array(dummy_);
-		os_value v_array_ = os_new_array(0, 2);
-		os_mark(v_array_);
-		os_value* argv = os_get_array(v_array_);
-		//os_value[2] argv;
-		argv[0] = os_new_integer(0, 11);
-		argv[1] = os_new_integer(0, 22);
-		os_dump_heap(0);
-		os_value answer = my_add2(0, 2, argv);
-		os_mark(answer);
-		os_dump_heap(0);
-		writeln(answer);
-		long answer2 = os_get_integer(answer);
-		writeln(`answer2=`, answer2);
-		int[os_value] dummy;
-		int* bbb = answer in dummy;
-		os_sweep(0);
-		os_dump_heap(0);
-
+		//static __gshared int total;
+		//static shared int total;
+		int total;
+		void sync_fun()
 		{
-			import std.stdio;
-			import core.sync.mutex : Mutex;
-			import core.thread;
-
-			//static __gshared int total;
-			//static shared int total;
-			int total;
-			void sync_fun()
+			synchronized
 			{
-				synchronized
-				{
-					total += 1;
-				}
+				total += 1;
 			}
-
-			int total2;
-			shared Mutex mtx = new shared Mutex();
-			void sync_fun2()
-			{
-				mtx.lock_nothrow();
-				total2 += 1;
-				mtx.unlock_nothrow();
-			}
-
-			int result1, result2;
-			auto tg = new ThreadGroup;
-			tg.create = {
-				//os_new_integer(0, 1111);
-				for (int i = 0; i < 1000; i++)
-				{
-					sync_fun();
-					sync_fun2();
-				}
-			};
-			tg.create = {
-				os_new_integer(0, 2222);
-				for (int i = 0; i < 1000; i++)
-				{
-					sync_fun();
-					sync_fun2();
-				}
-			};
-			tg.create = {
-				os_new_integer(0, 3333);
-				for (int i = 0; i < 1000; i++)
-				{
-					sync_fun();
-					sync_fun2();
-				}
-			};
-			tg.joinAll();
-			writeln("total=", total);
-			writeln("total2=", total2);
-			os_dump_heap(0);
 		}
+
+		int total2;
+		shared Mutex mtx = new shared Mutex();
+		void sync_fun2()
+		{
+			mtx.lock_nothrow();
+			total2 += 1;
+			mtx.unlock_nothrow();
+		}
+
+		int result1, result2;
+		auto tg = new ThreadGroup;
+		tg.create = {
+			//os_new_integer(0, 1111);
+			for (int i = 0; i < 1000; i++)
+			{
+				sync_fun();
+				sync_fun2();
+			}
+		};
+		tg.create = {
+			os_new_integer(0, 2222);
+			for (int i = 0; i < 1000; i++)
+			{
+				sync_fun();
+				sync_fun2();
+			}
+		};
+		tg.create = {
+			os_new_integer(0, 3333);
+			for (int i = 0; i < 1000; i++)
+			{
+				sync_fun();
+				sync_fun2();
+			}
+		};
+		tg.joinAll();
+		writeln("total=", total);
+		writeln("total2=", total2);
+		os_dump_heap(0);
 	}
+}
 
-	static uint[] os_get_thread_dword_list()
+static uint[] os_get_thread_dword_list()
+{
+	import core.sys.windows.windows;
+	import core.sys.windows.tlhelp32;
+
+	uint[] result;
+	DWORD v_proc_id = GetCurrentProcessId();
+	HANDLE h_snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+	if (h_snapshot == INVALID_HANDLE_VALUE)
 	{
-		import core.sys.windows.windows;
-		import core.sys.windows.tlhelp32;
-
-		uint[] result;
-		DWORD v_proc_id = GetCurrentProcessId();
-		HANDLE h_snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
-		if (h_snapshot == INVALID_HANDLE_VALUE)
-		{
-			return result;
-		}
-		THREADENTRY32 v_entry;
-		v_entry.dwSize = THREADENTRY32.sizeof;
-		if (!Thread32First(h_snapshot, &v_entry))
-		{
-			goto label_exit;
-		}
-		do
-		{
-			if (v_entry.th32OwnerProcessID == v_proc_id)
-				result ~= v_entry.th32ThreadID;
-		}
-		while (Thread32Next(h_snapshot, &v_entry));
-	label_exit:
-		CloseHandle(h_snapshot);
 		return result;
 	}
-
+	THREADENTRY32 v_entry;
+	v_entry.dwSize = THREADENTRY32.sizeof;
+	if (!Thread32First(h_snapshot, &v_entry))
+	{
+		goto label_exit;
+	}
+	do
+	{
+		if (v_entry.th32OwnerProcessID == v_proc_id)
+			result ~= v_entry.th32ThreadID;
+	}
+	while (Thread32Next(h_snapshot, &v_entry));
+label_exit:
+	CloseHandle(h_snapshot);
+	return result;
 }
