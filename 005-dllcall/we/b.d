@@ -341,11 +341,18 @@ extern (C) void os_sweep(os_heap heap)
 		writefln("[SWEEP #%u]", heap);
 		foreach (value; values)
 		{
-			//writeln("  ", value);
-			if (!value.m_marked)
-			{
-				g_os_value_map.remove(value.m_id);
-			}
+			value.m_referred = false;
+		}
+		foreach (value; values)
+		{
+			writeln("  ", value);
+			os_array a = cast(os_array) value;
+			if (a !is null)
+				writeln(cast(void*) a);
+			//if (!value.m_marked)
+			//{
+			//	g_os_value_map.remove(value.m_id);
+			//}
 		}
 	}
 }
