@@ -112,11 +112,15 @@ version (Windows)
 		}
 	}
 
-	//pragma(inline) static long os_get_next_value_id()
+	static __gshared BigInt g_os_value_id_max;
+	shared static this()
+	{
+		g_os_value_id_max = "2000000000000000000000000000000000000000000000000000000000000";
+	}
 	pragma(inline) static BigInt os_get_next_value_id()
 	{
-		//static __gshared long g_os_value_id_max = 100000;
-		static __gshared BigInt g_os_value_id_max = 100000;
+		//static __gshared BigInt g_os_value_id_max = 100000;
+		//static __gshared BigInt g_os_value_id_max = "200000";
 		{
 			g_os_global_mutex.lock_nothrow();
 			scope (exit)
