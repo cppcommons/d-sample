@@ -355,12 +355,12 @@ extern (C) os_handle os_new_integer(long data)
 	return o.m_id_string;
 }
 
-extern (C) long os_get_integer(os_handle value)
+extern (C) long os_get_integer(os_handle array_or_value, os_size_t index = 0)
 {
-	if (value is null)
+	if (array_or_value is null)
 		return 0;
 	{
-		os_object found = g_global_map.lookup(value);
+		os_object found = g_global_map.lookup(array_or_value);
 		if (!found)
 			return 0;
 		os_number_iface iface = cast(os_number_iface) found;
