@@ -23,3 +23,53 @@ extern os_handle my_add2(os_heap heap, long argc, os_handle argv[])
 	argv[1] = os_new_integer(heap, b * 10);
 	return os_new_integer(heap, a + b);
 }
+
+#include <windows.h>
+#include <wininet.h>
+#include <string>
+
+int mainX()
+{
+
+	HINTERNET hInet;
+	HINTERNET hFile;
+	char *lpszBuf;
+	DWORD dwSize;
+
+	lpszBuf = (char *)GlobalAlloc(GPTR, 1024);
+
+	/* ハンドル作成 */
+	hInet = InternetOpenA("TEST", INTERNET_OPEN_TYPE_DIRECT,
+						  NULL, NULL, 0);
+
+	/* URLオープン */
+	hFile = InternetOpenUrlA(hInet,
+							 //"http://www.sm.rim.or.jp/~shishido/src/httpt.txt",
+							 "https://raw.githubusercontent.com/cyginst/cyginst-v1/master/cyginst.bat",
+							 NULL, 0, INTERNET_FLAG_RELOAD, 0);
+
+#if 0x0
+	/* ファイル読み込み */
+	BOOL ok = InternetReadFile(hFile, lpszBuf, 1023, &dwSize);
+	if (ok)
+	{
+		printf("%s\n", lpszBuf);
+		printf("%lu\n", dwSize);
+	}
+#else
+	std::string result;
+	while(InternetReadFile(hFile, lpszBuf, 1023, &dwSize) && dwSize > 0)
+	{
+		//printf("%s", lpszBuf);
+		result.append(lpszBuf, dwSize);
+	}
+	//printf("\n");
+	printf("%s\n", result.c_str());
+#endif
+
+	/* 終了処理 */
+	InternetCloseHandle(hFile);
+	InternetCloseHandle(hInet);
+
+	return 0;
+}

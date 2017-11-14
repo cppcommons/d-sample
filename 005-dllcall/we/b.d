@@ -308,10 +308,29 @@ class os_integer : os_object, os_number_iface
 	}
 }
 
+class os_string : os_object
+{
+	char[] m_value;
+	this(char[] value)
+	{
+		m_value = value;
+	}
+
+	override string toString() const  //pure @safe
+	{
+		auto app = appender!string();
+		app ~= "{";
+		app ~= oid_string();
+		app ~= format!` "%s"`(m_value);
+		app ~= "}";
+		return app.data;
+	}
+}
+
 extern (C) long os_get_length(os_handle value);
 extern (C) os_handle os_new_array(os_heap heap, long len)
 {
-	writeln(`os_new_array(): len=`, len);
+	//writeln(`os_new_array(): len=`, len);
 	auto o = new os_array(len);
 	{
 		g_global_map.insert(o);
@@ -358,7 +377,21 @@ extern (C) long os_get_integer(os_handle value)
 	}
 }
 
-extern (C) os_handle os_new_string(os_heap heap, char* data, long len);
+extern (C) os_handle os_new_string(os_heap heap, char* data);
+extern (C) os_handle os_new_string2(os_heap heap, char* data, long len)
+{
+	char[] s = data[0 .. cast(size_t)len];
+	auto o = new os_string(s);
+	g_global_map.insert(o);
+	return o.m_id_string;
+}
+
+os_handle os_new_string(os_heap heap, string data)
+{
+	char[] s = cast(char[]) data;
+	return os_new_string2(heap, s.ptr, s.length);
+}
+
 extern (C) char* os_get_string(os_handle value);
 extern (C) void os_dump_heap(os_heap heap)
 {
@@ -511,10 +544,10 @@ void main(string[] args)
 	writeln(h2.dup);
 	writeln(h2.front);
 
-	import core.sys.windows.windows;
-
-	DWORD v_thread_dword = GetCurrentThreadId();
-	writeln(v_thread_dword);
+	//import core.sys.windows.windows;
+	//DWORD v_thread_dword = GetCurrentThreadId();
+	//writeln(v_thread_dword);
+	os_new_string(0, "abc");
 
 	os_handle xxx = os_new_integer(0, 123);
 	writeln(toString(xxx));
