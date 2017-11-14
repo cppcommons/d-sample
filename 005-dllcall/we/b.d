@@ -17,6 +17,7 @@ extern (C)
 		OS_STRING,
 	}
 
+	long os_get_thread_index();
 	long os_get_length(os_value value);
 	os_value os_new_array(os_heap heap, long len);
 	os_value* os_get_array(os_value value);
@@ -96,7 +97,7 @@ version (Windows)
 	}
 }
 
-long os_get_thread_index()
+extern (C) long os_get_thread_index()
 {
 	if (g_os_thread_local.m_thread_no >= 0)
 		return g_os_thread_local.m_thread_no;
@@ -124,14 +125,15 @@ abstract class os_object
 		m_referred = false;
 	}
 
-	string thread_display() const pure @safe
+	string oid_string() const pure @safe
 	{
 		auto app = appender!string();
-		app ~= "(";
-		app ~= format!`tid=%d`(m_thread_no);
-		app ~= ":";
-		app ~= format!`0x%x`(m_thread_id);
-		app ~= ")";
+		app ~= format!`#%d`(m_id);
+		//app ~= "(";
+		app ~= format!`@%d`(m_thread_no);
+		//app ~= ":";
+		//app ~= format!`0x%x`(m_thread_id);
+		//app ~= ")";
 		return app.data;
 	}
 }
@@ -153,9 +155,7 @@ class os_integer : os_object
 	{
 		auto app = appender!string();
 		app ~= "{";
-		app ~= format!`#%d `(m_id);
-		//app ~= format!`:tid=%u`(m_thread_id);
-		app ~= thread_display();
+		app ~= oid_string();
 		app ~= format!` %d`(m_value);
 		app.put("}");
 		return app.data;
@@ -163,7 +163,10 @@ class os_integer : os_object
 }
 
 extern (C) long os_get_length(os_value value);
-extern (C) os_value os_new_array(os_heap heap, long len);
+extern (C) os_value os_new_array(os_heap heap, long len)
+{
+	return 0;
+}
 extern (C) os_value* os_get_array(os_value value);
 extern (C) os_value os_new_handle(os_heap heap, void* data);
 extern (C) void* os_get_handle(os_value value);
