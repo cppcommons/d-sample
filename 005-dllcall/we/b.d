@@ -110,7 +110,8 @@ version (Windows)
 		}
 	}
 
-	pragma(inline) static long os_get_next_value_id()
+	//pragma(inline) static long os_get_next_value_id()
+	pragma(inline) static BigInt os_get_next_value_id()
 	{
 		//static __gshared long g_os_value_id_max = 100000;
 		static __gshared BigInt g_os_value_id_max = 100000;
@@ -119,7 +120,8 @@ version (Windows)
 			scope (exit)
 				g_os_global_mutex.unlock_nothrow();
 			g_os_value_id_max++;
-			return g_os_value_id_max.toLong();
+			//return g_os_value_id_max.toLong();
+			return g_os_value_id_max;
 		}
 	}
 
@@ -137,11 +139,13 @@ extern (C) long os_get_thread_index()
 	return g_os_thread_local.m_thread_no;
 }
 
-static __gshared os_object[os_value] g_os_value_map;
+//static __gshared os_object[os_value] g_os_value_map;
+static __gshared os_object[BigInt] g_os_value_map;
 
 abstract class os_object
 {
-	long m_id;
+	//long m_id;
+	BigInt m_id;
 	uint m_thread_id;
 	long m_thread_no;
 	bool m_marked;
@@ -182,7 +186,7 @@ static string os_value_to_string(os_value value) //pure @safe
 		g_os_global_mutex.lock_nothrow();
 		scope (exit)
 			g_os_global_mutex.unlock_nothrow();
-		os_object* found = value in g_os_value_map;
+		os_object* found = cast(BigInt)value in g_os_value_map;
 		if (!found)
 			return format!`<#%d>`(value);
 		return found.toString();
@@ -263,7 +267,7 @@ extern (C) os_value os_new_array(os_heap heap, long len)
 			g_os_global_mutex.unlock_nothrow();
 		g_os_value_map[o.m_id] = o;
 	}
-	return o.m_id;
+	return o.m_id.toLong();
 }
 
 extern (C) os_value* os_get_array(os_value value)
@@ -274,7 +278,7 @@ extern (C) os_value* os_get_array(os_value value)
 		g_os_global_mutex.lock_nothrow();
 		scope (exit)
 			g_os_global_mutex.unlock_nothrow();
-		os_object* found = value in g_os_value_map;
+		os_object* found = cast(BigInt)value in g_os_value_map;
 		if (!found)
 			return null;
 		return (*found).get_array();
@@ -293,7 +297,7 @@ extern (C) os_value os_new_integer(os_heap heap, long data)
 			g_os_global_mutex.unlock_nothrow();
 		g_os_value_map[o.m_id] = o;
 	}
-	return o.m_id;
+	return o.m_id.toLong();
 }
 
 extern (C) long os_get_integer(os_value value)
@@ -304,7 +308,7 @@ extern (C) long os_get_integer(os_value value)
 		g_os_global_mutex.lock_nothrow();
 		scope (exit)
 			g_os_global_mutex.unlock_nothrow();
-		os_object* found = value in g_os_value_map;
+		os_object* found = cast(BigInt)value in g_os_value_map;
 		if (!found)
 			return 0;
 		writeln(`[DEBUG] `, *found);
@@ -339,7 +343,7 @@ extern (C) bool os_mark(os_value value)
 		g_os_global_mutex.lock_nothrow();
 		scope (exit)
 			g_os_global_mutex.unlock_nothrow();
-		os_object* found = value in g_os_value_map;
+		os_object* found = cast(BigInt)value in g_os_value_map;
 		if (!found)
 			return false;
 		return (*found).m_marked = true;
@@ -354,7 +358,7 @@ extern (C) bool os_unmark(os_value value)
 		g_os_global_mutex.lock_nothrow();
 		scope (exit)
 			g_os_global_mutex.unlock_nothrow();
-		os_object* found = value in g_os_value_map;
+		os_object* found = cast(BigInt)value in g_os_value_map;
 		if (!found)
 			return false;
 		return (*found).m_marked = false;
@@ -385,7 +389,8 @@ extern (C) void os_sweep(os_heap heap)
 			{
 				for (uint i = 0; i < a.m_array.length; i++)
 				{
-					os_object* o = a.m_array[i] in g_os_value_map;
+					os_value elem = a.m_array[i];
+					os_object* o = cast(BigInt)elem in g_os_value_map;
 					if (o)
 					{
 						(*o).m_referred = true;
