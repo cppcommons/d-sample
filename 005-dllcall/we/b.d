@@ -288,14 +288,9 @@ extern (C) void os_dump_heap(os_heap heap)
 		g_os_global_mutex.lock();
 		scope (exit)
 			g_os_global_mutex.unlock();
-		//os_value[] keys = g_os_value_map.keys();
-		//alias myComp = (x, y) => x < y;
-		//keys.sort!(myComp);
-		//writeln(keys);
 		os_object[] values = g_os_value_map.values();
 		alias myComp2 = (x, y) => x.m_id < y.m_id;
 		values.sort!(myComp2);
-		//writeln(values);
 		writefln("[DUMP HEAP #%u]", heap);
 		foreach (value; values)
 		{
@@ -334,7 +329,27 @@ extern (C) bool os_unmark(os_value value)
 	}
 }
 
-extern (C) void os_sweep(os_heap heap);
+extern (C) void os_sweep(os_heap heap)
+{
+	{
+		g_os_global_mutex.lock();
+		scope (exit)
+			g_os_global_mutex.unlock();
+		os_object[] values = g_os_value_map.values();
+		alias myComp2 = (x, y) => x.m_id < y.m_id;
+		values.sort!(myComp2);
+		writefln("[SWEEP #%u]", heap);
+		foreach (value; values)
+		{
+			//writeln("  ", value);
+			if (!value.m_marked)
+			{
+				g_os_value_map.remove(value.m_id);
+			}
+		}
+	}
+}
+
 extern (C) void os_clear(os_heap heap);
 
 //extern (C) os_value my_add2(os_heap heap, int argc, os_value* argv);
@@ -426,10 +441,10 @@ extern (C):
 os_value  my_add2(int argc, os_value *argv);
 	+/
 	os_value dummy_ = os_new_array(0, 2);
-	os_mark(dummy_);
 	os_value* dummy_v = os_get_array(dummy_);
 	dummy_v[0] = 1234;
 	os_value v_array_ = os_new_array(0, 2);
+	os_mark(v_array_);
 	os_value* argv = os_get_array(v_array_);
 	//os_value[2] argv;
 	argv[0] = os_new_integer(0, 11);
@@ -443,6 +458,8 @@ os_value  my_add2(int argc, os_value *argv);
 	writeln(`answer2=`, answer2);
 	int[os_value] dummy;
 	int* bbb = answer in dummy;
+	os_sweep(0);
+	os_dump_heap(0);
 	exit(0);
 }
 
