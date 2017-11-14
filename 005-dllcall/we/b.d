@@ -229,8 +229,6 @@ abstract class os_object
 	long m_thread_no;
 	bool m_marked;
 	bool m_referred;
-	//os_handle* get_array();
-	//long get_integer();
 	override string toString() const; //pure @safe;
 	this()
 	{
@@ -254,21 +252,7 @@ abstract class os_object
 	}
 }
 
-/+
-static string os_value_to_string(os_handle value) //pure @safe
-{
-	if (value is null)
-		return "null";
-	{
-		os_object found = g_global_map.lookup(value);
-		if (!found)
-			return "?";
-		return found.toString();
-	}
-}
-+/
-
-class os_array : os_object, os_array_iface, os_number_iface
+class os_array : os_object, os_array_iface //, os_number_iface
 {
 	os_handle[] m_array;
 	this(long len)
@@ -276,20 +260,9 @@ class os_array : os_object, os_array_iface, os_number_iface
 		m_array.length = cast(size_t) len;
 	}
 
-	/+
-	~this()
-	{
-	}
-	+/
-
 	override os_handle* get_array()
 	{
 		return m_array.ptr;
-	}
-
-	override long get_integer()
-	{
-		return 0;
 	}
 
 	override string toString() const  //pure @safe
