@@ -12,7 +12,6 @@ enum os_type
     OS_ADDRESS,
     OS_ARRAY,
     OS_BYTES,
-    OS_HANDLE,
     OS_INTEGER,
     OS_REAL,
     OS_STRING,
