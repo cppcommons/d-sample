@@ -345,14 +345,29 @@ extern (C) void os_sweep(os_heap heap)
 		}
 		foreach (value; values)
 		{
-			writeln("  ", value);
+			if (value.m_marked)
+				value.m_referred = true;
 			os_array a = cast(os_array) value;
 			if (a !is null)
+			{
 				writeln(cast(void*) a);
-			//if (!value.m_marked)
-			//{
-			//	g_os_value_map.remove(value.m_id);
-			//}
+				for (uint i = 0; i < a.m_array.length; i++)
+				{
+					writeln(i);
+					os_object* o = a.m_array[i] in g_os_value_map;
+					if (o)
+					{
+						(*o).m_referred = true;
+					}
+				}
+			}
+		}
+		foreach (value; values)
+		{
+			if (!value.m_referred)
+			{
+				g_os_value_map.remove(value.m_id);
+			}
 		}
 	}
 }
