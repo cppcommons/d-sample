@@ -3,9 +3,9 @@ import lib1;
 
 extern (C)
 {
-	alias char* os_value;
+	alias char* os_handle;
 	alias ulong os_heap;
-	alias os_value function(os_heap heap, int argc, os_value* argv) os_function;
+	alias os_handle function(os_heap heap, int argc, os_handle* argv) os_function;
 	enum os_type
 	{
 		OS_NIL,
@@ -18,19 +18,19 @@ extern (C)
 	}
 
 	long os_get_thread_index();
-	long os_get_length(os_value value);
-	os_value os_new_array(os_heap heap, long len);
-	os_value* os_get_array(os_value value);
-	os_value os_new_handle(os_heap heap, void* data);
-	void* os_get_handle(os_value value);
-	os_value os_new_integer(os_heap heap, long data);
-	long os_get_integer(os_value value);
-	os_value os_new_string(os_heap heap, char* data);
-	os_value os_new_string2(os_heap heap, char* data, long len);
-	char* os_get_string(os_value value);
+	long os_get_length(os_handle value);
+	os_handle os_new_array(os_heap heap, long len);
+	os_handle* os_get_array(os_handle value);
+	os_handle os_new_handle(os_heap heap, void* data);
+	void* os_get_handle(os_handle value);
+	os_handle os_new_integer(os_heap heap, long data);
+	long os_get_integer(os_handle value);
+	os_handle os_new_string(os_heap heap, char* data);
+	os_handle os_new_string2(os_heap heap, char* data, long len);
+	char* os_get_string(os_handle value);
 	void os_dump_heap(os_heap heap);
-	bool os_mark(os_value value);
-	bool os_unmark(os_value value);
+	bool os_mark(os_handle value);
+	bool os_unmark(os_handle value);
 	void os_sweep(os_heap heap);
 	void os_clear(os_heap heap);
 }
@@ -165,7 +165,7 @@ class os_map
 		}
 	}
 
-	os_object lookup(os_value value)
+	os_object lookup(os_handle value)
 	{
 		{
 			m_mutex.lock_nothrow();
@@ -212,7 +212,7 @@ shared static this()
 
 interface os_array_iface
 {
-	os_value* get_array();
+	os_handle* get_array();
 }
 
 interface os_number_iface
@@ -228,7 +228,7 @@ abstract class os_object
 	long m_thread_no;
 	bool m_marked;
 	bool m_referred;
-	//os_value* get_array();
+	//os_handle* get_array();
 	long get_integer();
 	override string toString() const; //pure @safe;
 	this()
@@ -254,7 +254,7 @@ abstract class os_object
 }
 
 /+
-static string os_value_to_string(os_value value) //pure @safe
+static string os_value_to_string(os_handle value) //pure @safe
 {
 	if (value is null)
 		return "null";
@@ -269,19 +269,19 @@ static string os_value_to_string(os_value value) //pure @safe
 
 class os_array : os_object, os_array_iface, os_number_iface
 {
-	os_value[] m_array;
+	os_handle[] m_array;
 	//uint m_len;
-	//os_value* m_array2;
-	//os_value[] m_array3;
+	//os_handle* m_array2;
+	//os_handle[] m_array3;
 	this(long len)
 	{
 		m_array.length = cast(size_t) len;
 		//m_len = cast(uint) len;
-		//size_t n = os_value.sizeof * m_len;
+		//size_t n = os_handle.sizeof * m_len;
 		//void* p = pureMalloc(n);
-		//m_array3 = cast(os_value[]) p[0 .. n];
+		//m_array3 = cast(os_handle[]) p[0 .. n];
 		//writeln(`p=`, p);
-		//m_array2 = cast(os_value*) pureCalloc(os_value.sizeof, m_len + 1);
+		//m_array2 = cast(os_handle*) pureCalloc(os_handle.sizeof, m_len + 1);
 	}
 
 	~this()
@@ -290,7 +290,7 @@ class os_array : os_object, os_array_iface, os_number_iface
 	}
 
 	/*override*/
-	os_value* get_array()
+	os_handle* get_array()
 	{
 		return m_array.ptr;
 		//writeln("os_array::get_array(): ", m_array3.ptr);
@@ -314,7 +314,7 @@ class os_array : os_object, os_array_iface, os_number_iface
 			if (i > 0)
 				app ~= ", ";
 			//os_object o = g_global_map.lookup(m_array[i]);
-			os_object o = g_global_map.lookup(cast(os_value) m_array[i]);
+			os_object o = g_global_map.lookup(cast(os_handle) m_array[i]);
 			if (!o)
 				app ~= "null";
 			else
@@ -335,7 +335,7 @@ class os_integer : os_object, os_number_iface
 	}
 
 	/+
-	override os_value* get_array()
+	override os_handle* get_array()
 	{
 		return null;
 	}
@@ -357,8 +357,8 @@ class os_integer : os_object, os_number_iface
 	}
 }
 
-extern (C) long os_get_length(os_value value);
-extern (C) os_value os_new_array(os_heap heap, long len)
+extern (C) long os_get_length(os_handle value);
+extern (C) os_handle os_new_array(os_heap heap, long len)
 {
 	writeln(`os_new_array(): len=`, len);
 	auto o = new os_array(len);
@@ -368,7 +368,7 @@ extern (C) os_value os_new_array(os_heap heap, long len)
 	return o.m_id_string;
 }
 
-extern (C) os_value* os_get_array(os_value value)
+extern (C) os_handle* os_get_array(os_handle value)
 {
 	if (value is null)
 		return null;
@@ -383,9 +383,9 @@ extern (C) os_value* os_get_array(os_value value)
 	}
 }
 
-extern (C) os_value os_new_handle(os_heap heap, void* data);
-extern (C) void* os_get_handle(os_value value);
-extern (C) os_value os_new_integer(os_heap heap, long data)
+extern (C) os_handle os_new_handle(os_heap heap, void* data);
+extern (C) void* os_get_handle(os_handle value);
+extern (C) os_handle os_new_integer(os_heap heap, long data)
 {
 	writeln(`os_new_integer(): data=`, data);
 	auto o = new os_integer(data);
@@ -404,7 +404,7 @@ static char[] os_to_string(char* s)
 }
 +/
 
-extern (C) long os_get_integer(os_value value)
+extern (C) long os_get_integer(os_handle value)
 {
 	if (value is null)
 		return 0;
@@ -419,8 +419,8 @@ extern (C) long os_get_integer(os_value value)
 	}
 }
 
-extern (C) os_value os_new_string(os_heap heap, char* data, long len);
-extern (C) char* os_get_string(os_value value);
+extern (C) os_handle os_new_string(os_heap heap, char* data, long len);
+extern (C) char* os_get_string(os_handle value);
 extern (C) void os_dump_heap(os_heap heap)
 {
 	{
@@ -443,7 +443,7 @@ extern (C) void os_dump_heap(os_heap heap)
 	}
 }
 
-extern (C) bool os_mark(os_value value)
+extern (C) bool os_mark(os_handle value)
 {
 	if (value is null)
 		return false;
@@ -455,7 +455,7 @@ extern (C) bool os_mark(os_value value)
 	}
 }
 
-extern (C) bool os_unmark(os_value value)
+extern (C) bool os_unmark(os_handle value)
 {
 	if (value is null)
 		return false;
@@ -489,7 +489,7 @@ extern (C) void os_sweep(os_heap heap)
 			{
 				for (uint i = 0; i < a.m_array.length; i++)
 				{
-					os_value elem = a.m_array[i];
+					os_handle elem = a.m_array[i];
 					os_object o = g_global_map.lookup(elem);
 					if (o)
 					{
@@ -544,7 +544,7 @@ extern (C) int d_mul2(int a, int b)
 	return a * b;
 }
 
-extern (C) os_value my_mul2(os_heap heap, int argc, os_value* argv)
+extern (C) os_handle my_mul2(os_heap heap, int argc, os_handle* argv)
 {
 	writeln(`my_mul2(0)`);
 	if (argc != 2)
@@ -584,25 +584,25 @@ void main(string[] args)
 	DWORD v_thread_dword = GetCurrentThreadId();
 	writeln(v_thread_dword);
 
-	os_value xxx = os_new_integer(0, 123);
+	os_handle xxx = os_new_integer(0, 123);
 	writeln(toString(xxx));
 	long xxx2 = os_get_integer(xxx);
 	writeln("xxx2=", xxx2);
 	writeln("(1)");
-	os_value dummy_ = os_new_array(0, 2);
-	os_value* dummy_v = os_get_array(dummy_);
-	os_value v_array_ = os_new_array(0, 2);
+	os_handle dummy_ = os_new_array(0, 2);
+	os_handle* dummy_v = os_get_array(dummy_);
+	os_handle v_array_ = os_new_array(0, 2);
 	writeln(`toString(v_array_)=`, toString(v_array_));
 	os_mark(v_array_);
-	os_value* argv = os_get_array(v_array_);
+	os_handle* argv = os_get_array(v_array_);
 	writeln("(2)");
-	//os_value[2] argv;
+	//os_handle[2] argv;
 	argv[0] = os_new_integer(0, 11);
 	argv[1] = os_new_integer(0, 22);
 	writeln("(2.25)");
 	os_dump_heap(0);
 	writeln("(2.26)");
-	os_value answer = my_add2(0, 2, argv);
+	os_handle answer = my_add2(0, 2, argv);
 	writeln("(2.27)");
 	os_mark(answer);
 	writeln("(2.50)");
@@ -610,7 +610,7 @@ void main(string[] args)
 	writeln(answer);
 	long answer2 = os_get_integer(answer);
 	writeln(`answer2=`, answer2);
-	int[os_value] dummy;
+	int[os_handle] dummy;
 	int* bbb = answer in dummy;
 	writeln("(3)");
 	os_sweep(0);

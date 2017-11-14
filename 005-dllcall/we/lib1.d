@@ -10,9 +10,9 @@ module lib1;
 //C     #include "os1.h"
 import os1;
 
-//C     os_value my_add2(os_heap heap, long argc, os_value argv[]);
+//C     os_handle my_add2(os_heap heap, long argc, os_handle argv[]);
 extern (C):
-os_value  my_add2(os_heap heap, int argc, os_value *argv);
+os_handle  my_add2(os_heap heap, int argc, os_handle *argv);
 //C     int d_mul2(int a, int b);
 int  d_mul2(int a, int b);
 
