@@ -7,7 +7,8 @@ extern "C" {
 
 #include "os1.h"
 
-os_handle my_add2(os_heap heap, long argc, os_handle argv[]);
+//typedef os_handle (*os_function)(long argc, os_handle argv[]);
+os_handle my_add2(long argc, os_handle argv[]);
 int d_mul2(int a, int b);
 
 #ifdef __cplusplus
