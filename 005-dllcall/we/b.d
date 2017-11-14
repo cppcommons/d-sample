@@ -114,8 +114,9 @@ abstract class os_object
 	long m_thread_no;
 	bool m_marked;
 	bool m_referred;
+	os_value* get_array();
 	long get_integer();
-	override string toString() const pure @safe;
+	override string toString() const; //pure @safe;
 	this()
 	{
 		m_id = os_get_next_value_id();
@@ -125,7 +126,7 @@ abstract class os_object
 		m_referred = false;
 	}
 
-	string oid_string() const pure @safe
+	string oid_string() const //pure @safe
 	{
 		auto app = appender!string();
 		app ~= format!`#%d`(m_id);
@@ -138,9 +139,20 @@ abstract class os_object
 	}
 }
 
-static string os_value_to_string(os_value value) pure @safe
+static string os_value_to_string(os_value value) //pure @safe
 {
-	return "<>";
+	if (value == 0)
+		return "null";
+	//return "<>";
+	{
+		g_os_global_mutex.lock();
+		scope (exit)
+			g_os_global_mutex.unlock();
+		os_object* found = value in g_os_value_map;
+		if (!found)
+			return format!`#%d`(value);
+		return found.toString();
+	}
 }
 
 class os_array : os_object
@@ -151,14 +163,20 @@ class os_array : os_object
 		m_array.length = cast(uint) len;
 	}
 
+	override os_value* get_array()
+	{
+		return m_array.ptr;
+	}
+
 	override long get_integer()
 	{
 		return 0;
 	}
 
-	override string toString() const pure @safe
+	override string toString() const //pure @safe
 	{
 		auto app = appender!string();
+		app ~= format!`array:%s`(oid_string());
 		app ~= "[";
 		for (uint i = 0; i < m_array.length; i++)
 		{
@@ -179,12 +197,17 @@ class os_integer : os_object
 		m_value = value;
 	}
 
+	override os_value* get_array()
+	{
+		return null;
+	}
+
 	override long get_integer()
 	{
 		return m_value;
 	}
 
-	override string toString() const pure @safe
+	override string toString() const //pure @safe
 	{
 		auto app = appender!string();
 		app ~= "{";
@@ -209,7 +232,21 @@ extern (C) os_value os_new_array(os_heap heap, long len)
 	return o.m_id;
 }
 
-extern (C) os_value* os_get_array(os_value value);
+extern (C) os_value* os_get_array(os_value value)
+{
+	if (value == 0)
+		return null;
+	{
+		g_os_global_mutex.lock();
+		scope (exit)
+			g_os_global_mutex.unlock();
+		os_object* found = value in g_os_value_map;
+		if (!found)
+			return null;
+		return (*found).get_array();
+	}
+}
+
 extern (C) os_value os_new_handle(os_heap heap, void* data);
 extern (C) void* os_get_handle(os_value value);
 extern (C) os_value os_new_integer(os_heap heap, long data)
@@ -227,8 +264,6 @@ extern (C) os_value os_new_integer(os_heap heap, long data)
 
 extern (C) long os_get_integer(os_value value)
 {
-	import std.stdio;
-
 	if (value == 0)
 		return 0;
 	{
@@ -355,12 +390,13 @@ void main(string[] args)
 extern (C):
 os_value  my_add2(int argc, os_value *argv);
 	+/
-	os_new_array(0, 3);
-	os_value[2] argv;
+	os_value v_array_ = os_new_array(0, 2);
+	os_value* argv = os_get_array(v_array_);
+	//os_value[2] argv;
 	argv[0] = os_new_integer(0, 11);
 	argv[1] = os_new_integer(0, 22);
 	os_dump_heap(0);
-	os_value answer = my_add2(0, 2, argv.ptr);
+	os_value answer = my_add2(0, 2, argv);
 	os_dump_heap(0);
 	writeln(answer);
 	long answer2 = os_get_integer(answer);
