@@ -143,40 +143,63 @@ extern (C) long os_get_thread_index()
 	return g_os_thread_local.m_thread_no.toLong();
 }
 
-//static __gshared os_object[BigInt] g_os_value_map;
-//static __gshared os_object[char* ] g_os_value_map2;
-
 class os_map
 {
+	Mutex m_mutex;
 	os_object[char* ] m_map;
+	this()
+	{
+		m_mutex = new Mutex;
+	}
+
 	void insert(os_object o)
 	{
 		if (o is null)
 			return;
-		m_map[o.m_id_string] = o;
+		{
+			m_mutex.lock_nothrow();
+			scope (exit)
+				m_mutex.unlock_nothrow();
+			m_map[o.m_id_string] = o;
+		}
 	}
 
 	os_object lookup(os_value value)
 	{
-		os_object* found = value in m_map;
-		if (!found)
-			return null;
-		return (*found);
+		{
+			m_mutex.lock_nothrow();
+			scope (exit)
+				m_mutex.unlock_nothrow();
+			os_object* found = value in m_map;
+			if (!found)
+				return null;
+			return (*found);
+		}
 	}
 
 	void remove(os_object o)
 	{
 		if (o is null)
 			return;
-		m_map.remove(o.m_id_string);
+		{
+			m_mutex.lock_nothrow();
+			scope (exit)
+				m_mutex.unlock_nothrow();
+			m_map.remove(o.m_id_string);
+		}
 	}
 
 	os_object[] values()
 	{
-		os_object[] result = m_map.values();
-		alias compare_fn = (x, y) => x.m_id < y.m_id;
-		result.sort!(compare_fn);
-		return result;
+		{
+			m_mutex.lock_nothrow();
+			scope (exit)
+				m_mutex.unlock_nothrow();
+			os_object[] result = m_map.values();
+			alias compare_fn = (x, y) => x.m_id < y.m_id;
+			result.sort!(compare_fn);
+			return result;
+		}
 	}
 }
 
@@ -466,13 +489,6 @@ extern (C) void os_sweep(os_heap heap)
 				{
 					os_value elem = a.m_array[i];
 					os_object o = g_global_map.lookup(elem);
-					//if (elem is null)
-					//	continue;
-					//if (*elem == '#')
-					//	elem++;
-					//BigInt id = os_to_string(elem);
-					//os_object* o = id in g_os_value_map;
-					//os_object* o = cast(BigInt) elem in g_os_value_map;
 					if (o)
 					{
 						o.m_referred = true;
@@ -484,7 +500,6 @@ extern (C) void os_sweep(os_heap heap)
 		{
 			if (!value.m_referred)
 			{
-				//g_os_value_map.remove(value.m_id);
 				g_global_map.remove(value);
 			}
 		}
