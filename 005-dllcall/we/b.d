@@ -4,29 +4,6 @@ import lib2;
 
 extern (C)
 {
-	/+
-	class os_object
-	{
-		char[256] eye_catcher;
-	}
-
-	class os_address : os_object
-	{
-	}
-
-	class os_array : os_object
-	{
-	}
-
-	class os_integer : os_object
-	{
-	}
-
-	class os_string : os_object
-	{
-	}
-	+/
-
 	alias ulong os_size_t;
 	alias long os_offset_t;
 	alias os_object function(int argc, os_object* argv) os_function;
@@ -118,13 +95,6 @@ static  /*thread_local*/  ~this()
 		g_os_global_mutex.lock_nothrow();
 		scope (exit)
 			g_os_global_mutex.unlock_nothrow();
-		/+
-		if (g_os_thread_local is null)
-		{
-			writeln("CALLED AGAIN!");
-			return;
-		}
-		+/
 		if (g_os_thread_local.m_thread_no >= 0)
 		{
 			writefln(`THREAD #%d END.`, g_os_thread_local.m_thread_no);
@@ -153,7 +123,7 @@ shared static this()
 	g_os_object_id_max = "100000";
 }
 
-pragma(inline) static BigInt os_get_next_value_id()
+pragma(inline) static BigInt os_get_next_object_id()
 {
 	{
 		g_os_global_mutex.lock_nothrow();
@@ -193,7 +163,6 @@ private class os_map
 			m_mutex.lock_nothrow();
 			scope (exit)
 				m_mutex.unlock_nothrow();
-			//m_map[o.m_id_string] = o;
 			m_map[o] = o;
 		}
 	}
@@ -258,7 +227,7 @@ private interface os_number_iface
 private abstract class os_object
 
 {
-	char[256] eye_catcher;
+	//char[256] eye_catcher;
 	BigInt m_id;
 	char* m_id_string;
 	uint m_thread_id;
@@ -268,8 +237,8 @@ private abstract class os_object
 	override string toString() const; //pure @safe;
 	this()
 	{
-		eye_catcher = "EYE_CATCHER";
-		m_id = os_get_next_value_id();
+		//eye_catcher = "EYE_CATCHER";
+		m_id = os_get_next_object_id();
 		string s = format(`#%d`, m_id);
 		m_id_string = cast(char*) toStringz(s);
 		m_thread_id = os_get_thread_id();
@@ -577,7 +546,7 @@ void main(string[] args)
 
 	os_object xxx = os_new_integer(123);
 	//writeln(toString(xxx));
-	writeln(xxx.eye_catcher);
+	//writeln(xxx.eye_catcher);
 	os_string yyy;
 
 	os_get_integer(yyy);
@@ -589,7 +558,6 @@ void main(string[] args)
 	os_object dummy_ = os_new_array(2);
 	//os_object** dummy_v = os_get_array(dummy_);
 	os_object v_array_ = os_new_array(2);
-	writeln(`toString(v_array_)=`, v_array_.eye_catcher);
 	os_mark(v_array_);
 	//os_object** argv = os_get_array(v_array_);
 	writeln("(2)");
