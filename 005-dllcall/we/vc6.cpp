@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-int main()
+__declspec(dllexport) int main()
 {
 	printf("hello vc6\n");
 	return 0;
