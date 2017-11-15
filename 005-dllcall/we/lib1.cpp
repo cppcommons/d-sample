@@ -5,7 +5,7 @@
 
 #include <stdio.h>
 
-extern os_object *my_add2(long argc, os_object *argv[])
+extern os_object my_add2(long argc, os_object argv[])
 {
 	if (argc != 2)
 	{
@@ -13,8 +13,7 @@ extern os_object *my_add2(long argc, os_object *argv[])
 	}
 	//os_handle a10 = my_mul2(heap, argc, argv);
 	//argv[0] = a10;
-	os_integer *i0 = (os_integer *)os_new_integer(123);
-	printf("i0->eye_catcher=%s\n", i0->eye_catcher);
+	os_integer i0 = os_new_integer(123);
 	long a = (long)os_get_integer(argv[0]);
 	long b = (long)os_get_integer(argv[1]);
 	a = d_mul2(a, 10);

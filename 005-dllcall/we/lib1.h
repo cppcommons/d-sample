@@ -8,8 +8,8 @@ extern "C" {
 #include "os1.h"
 
 //os_handle my_add2(long argc, os_handle argv[]);
-extern os_object *my_add2(long argc, os_object *argv[]);
-int d_mul2(int a, int b);
+extern "C" os_object my_add2(long argc, os_object argv[]);
+extern "C" int d_mul2(int a, int b);
 
 #ifdef __cplusplus
 }
