@@ -3,33 +3,48 @@ import lib1;
 
 extern (C)
 {
+	alias char* os_handle;
+	alias ulong os_size_t;
+	alias long os_offset_t;
+	alias os_handle function(int argc, os_handle* argv) os_function;
+	enum os_type
+	{
+		OS_NIL,
+		OS_ADDRESS,
+		OS_ARRAY,
+		OS_BYTES,
+		OS_INTEGER,
+		OS_REAL,
+		OS_STRING,
+	}
+
 	os_handle os_new_array(os_size_t size);
 	os_size_t os_array_size(os_handle array);
 	void os_array_clear(os_handle array);
-	os_handle os_get_value(os_handle array, os_size_t index);
-	void os_set_value(os_handle array, os_size_t index, os_handle data);
+	os_handle os_get_value(os_handle array_or_value, os_offset_t index);
+	void os_set_value(os_handle array, os_offset_t index, os_handle data);
 	void os_push_value(os_handle array, os_handle data);
 	os_handle os_new_address(void* data);
-	void* os_get_address(os_handle array_or_value, os_size_t index);
-	void os_set_address(os_handle array, os_size_t index, void* data);
+	void* os_get_address(os_handle array_or_value, os_offset_t index);
+	void os_set_address(os_handle array, os_offset_t index, void* data);
 	void os_push_address(os_handle array, void* data);
 	os_handle os_new_integer(long data);
-	long os_get_integer(os_handle array_or_value, os_size_t index);
-	void os_set_integer(os_handle array, os_size_t index, long data);
+	long os_get_integer(os_handle array_or_value, os_offset_t index);
+	void os_set_integer(os_handle array, os_offset_t index, long data);
 	void os_push_integer(os_handle array, long data);
 	os_handle os_new_string(char* data);
-	os_handle os_new_string2(char* data, os_size_t len);
-	char* os_get_string(os_handle array_or_value, os_size_t index);
-	char* os_get_string2(os_handle array_or_value, os_size_t* len, os_size_t index);
-	void os_set_string(os_handle array, os_size_t index, char* data);
+	os_handle os_new_string2(char* data, os_size_t size);
+	char* os_get_string(os_handle array_or_value, os_offset_t index);
+	char* os_get_string2(os_handle array_or_value, os_size_t* len, os_offset_t index);
+	void os_set_string(os_handle array, os_offset_t index, char* data);
 	void os_push_string(os_handle array, char* data);
-	void os_set_string2(os_handle array, os_size_t index, char* data, os_size_t len);
-	void os_push_string2(os_handle array, char* data, os_size_t len);
-	void os_dump_heap(os_size_t heap);
+	void os_set_string2(os_handle array, os_offset_t index, char* data, os_size_t size);
+	void os_push_string2(os_handle array, char* data, os_size_t size);
+	void os_dump_heap();
 	bool os_mark(os_handle value);
 	bool os_unmark(os_handle value);
-	void os_sweep(os_size_t heap);
-	void os_clear(os_size_t heap);
+	void os_sweep();
+	void os_clear();
 }
 
 import core.memory;
@@ -251,9 +266,9 @@ abstract class os_object
 class os_array : os_object, os_array_iface //, os_number_iface
 {
 	os_handle[] m_array;
-	this(os_size_t len)
+	this(os_size_t size)
 	{
-		m_array.length = cast(size_t) len;
+		m_array.length = cast(size_t) size;
 	}
 
 	override os_handle* get_array()
@@ -356,7 +371,7 @@ extern (C) os_handle os_new_integer(long data)
 	return o.m_id_string;
 }
 
-extern (C) long os_get_integer(os_handle array_or_value, os_size_t index = 0)
+extern (C) long os_get_integer(os_handle array_or_value, os_offset_t index = -1)
 {
 	if (array_or_value is null)
 		return 0;
@@ -372,9 +387,9 @@ extern (C) long os_get_integer(os_handle array_or_value, os_size_t index = 0)
 }
 
 extern (C) os_handle os_new_string(char* data);
-extern (C) os_handle os_new_string2(char* data, os_size_t len)
+extern (C) os_handle os_new_string2(char* data, os_size_t size)
 {
-	char[] s = data[0 .. cast(size_t) len];
+	char[] s = data[0 .. cast(size_t) size];
 	auto o = new os_string(s);
 	g_global_map.insert(o);
 	return o.m_id_string;
@@ -386,8 +401,8 @@ os_handle os_new_string(string data)
 	return os_new_string2(s.ptr, s.length);
 }
 
-extern (C) char* os_get_string(os_handle array_or_value, os_size_t index = 0);
-extern (C) char* os_get_string2(os_handle array_or_value, os_size_t* len, os_size_t index = 0);
+extern (C) char* os_get_string(os_handle array_or_value, os_offset_t index = -1);
+extern (C) char* os_get_string2(os_handle array_or_value, os_size_t* len, os_offset_t index = -1);
 
 extern (C) void os_dump_heap()
 {
@@ -499,6 +514,7 @@ class A
 	int m_a;
 }
 
+/+
 extern (C) int d_mul2(int a, int b)
 {
 	writefln(`d_mul(%d, %d)`, a, b);
@@ -514,6 +530,7 @@ extern (C) os_handle my_mul2(int argc, os_handle* argv)
 	long a1 = os_get_integer(argv[1]);
 	return os_new_integer(a0 * a1);
 }
++/
 
 void main(string[] args)
 {
