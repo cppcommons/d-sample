@@ -1,19 +1,20 @@
 #include "lib1.h"
 
 //extern "C" os_function my_mul2;
-extern "C" os_handle my_mul2(long argc, os_handle argv[]);
+//extern "C" os_handle my_mul2(long argc, os_handle argv[]);
 
 #include <stdio.h>
 
-extern os_handle my_add2(long argc, os_handle argv[])
+extern os_object *my_add2(long argc, os_object *argv[])
 {
-	printf("my_add2(0): 0x%p\n", my_mul2);
 	if (argc != 2)
 	{
 		return 0;
 	}
 	//os_handle a10 = my_mul2(heap, argc, argv);
 	//argv[0] = a10;
+	os_integer *i0 = (os_integer *)os_new_integer(123);
+	printf("i0->eye_catcher=%s\n", i0->eye_catcher);
 	long a = (long)os_get_integer(argv[0]);
 	long b = (long)os_get_integer(argv[1]);
 	a = d_mul2(a, 10);
@@ -58,7 +59,7 @@ int mainX()
 	}
 #else
 	std::string result;
-	while(InternetReadFile(hFile, lpszBuf, 1023, &dwSize) && dwSize > 0)
+	while (InternetReadFile(hFile, lpszBuf, 1023, &dwSize) && dwSize > 0)
 	{
 		//printf("%s", lpszBuf);
 		result.append(lpszBuf, dwSize);

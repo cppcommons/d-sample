@@ -15,7 +15,7 @@ extern (C) int d_mul2(int a, int b)
 	return a * b;
 }
 
-extern (C) os_handle my_mul2(int argc, os_handle* argv)
+extern (C) os_object my_mul2(int argc, os_object *argv)
 {
 	writeln(`my_mul2(0)`);
 	if (argc != 2)
@@ -23,6 +23,11 @@ extern (C) os_handle my_mul2(int argc, os_handle* argv)
 	long a0 = os_get_integer(argv[0]);
 	long a1 = os_get_integer(argv[1]);
 	return os_new_integer(a0 * a1);
+}
+
+extern (C) void my_str1(os_string s)
+{
+
 }
 
 private void dummy()

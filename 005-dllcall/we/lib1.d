@@ -8,12 +8,14 @@ module lib1;
 //C     #endif
 
 //C     #include "os1.h"
-import os1;
+//import os1;
+import b;
 
-//typedef os_handle (*os_function)(long argc, os_handle argv[]);
-//C     os_handle my_add2(long argc, os_handle argv[]);
+//os_handle my_add2(long argc, os_handle argv[]);
+//C     extern os_object *my_add2(long argc, os_object *argv[]);
 extern (C):
-os_handle  my_add2(int argc, os_handle *argv);
+//os_object * my_add2(int argc, os_object **argv);
+os_object my_add2(int argc, os_object *argv);
 //C     int d_mul2(int a, int b);
 int  d_mul2(int a, int b);
 

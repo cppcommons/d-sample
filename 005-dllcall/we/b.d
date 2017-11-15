@@ -1,12 +1,35 @@
-import os1;
+//import os1;
 import lib1;
+import lib2;
 
 extern (C)
 {
-	alias char* os_handle;
+	/+
+	class os_object
+	{
+		char[256] eye_catcher;
+	}
+
+	class os_address : os_object
+	{
+	}
+
+	class os_array : os_object
+	{
+	}
+
+	class os_integer : os_object
+	{
+	}
+
+	class os_string : os_object
+	{
+	}
+	+/
+
 	alias ulong os_size_t;
 	alias long os_offset_t;
-	alias os_handle function(int argc, os_handle* argv) os_function;
+	alias os_object function(int argc, os_object* argv) os_function;
 	enum os_type
 	{
 		OS_NIL,
@@ -18,31 +41,31 @@ extern (C)
 		OS_STRING,
 	}
 
-	os_handle os_new_array(os_size_t size);
-	os_size_t os_array_size(os_handle array);
-	void os_array_clear(os_handle array);
-	os_handle os_get_value(os_handle array_or_value, os_offset_t index);
-	void os_set_value(os_handle array, os_offset_t index, os_handle data);
-	void os_push_value(os_handle array, os_handle data);
-	os_handle os_new_address(void* data);
-	void* os_get_address(os_handle array_or_value, os_offset_t index);
-	void os_set_address(os_handle array, os_offset_t index, void* data);
-	void os_push_address(os_handle array, void* data);
-	os_handle os_new_integer(long data);
-	long os_get_integer(os_handle array_or_value, os_offset_t index);
-	void os_set_integer(os_handle array, os_offset_t index, long data);
-	void os_push_integer(os_handle array, long data);
-	os_handle os_new_string(char* data);
-	os_handle os_new_string2(char* data, os_size_t size);
-	char* os_get_string(os_handle array_or_value, os_offset_t index);
-	char* os_get_string2(os_handle array_or_value, os_size_t* len, os_offset_t index);
-	void os_set_string(os_handle array, os_offset_t index, char* data);
-	void os_push_string(os_handle array, char* data);
-	void os_set_string2(os_handle array, os_offset_t index, char* data, os_size_t size);
-	void os_push_string2(os_handle array, char* data, os_size_t size);
+	os_array os_new_array(os_size_t size);
+	os_size_t os_array_size(os_object array);
+	void os_array_clear(os_object array);
+	os_object os_get_value(os_object array_or_value, os_offset_t index);
+	void os_set_value(os_object array, os_offset_t index, os_object data);
+	void os_push_value(os_object array, os_object data);
+	//os_address os_new_address(void* data);
+	void* os_get_address(os_object array_or_value, os_offset_t index);
+	void os_set_address(os_object array, os_offset_t index, void* data);
+	void os_push_address(os_object array, void* data);
+	os_integer os_new_integer(long data);
+	long os_get_integer(os_object array_or_value, os_offset_t index);
+	void os_set_integer(os_object array, os_offset_t index, long data);
+	void os_push_integer(os_object array, long data);
+	os_string os_new_string(char* data);
+	os_string os_new_string2(char* data, os_size_t size);
+	char* os_get_string(os_object array_or_value, os_offset_t index);
+	char* os_get_string2(os_object array_or_value, os_size_t* len, os_offset_t index);
+	void os_set_string(os_object array, os_offset_t index, char* data);
+	void os_push_string(os_object array, char* data);
+	void os_set_string2(os_object array, os_offset_t index, char* data, os_size_t size);
+	void os_push_string2(os_object array, char* data, os_size_t size);
 	void os_dump_heap();
-	bool os_mark(os_handle value);
-	bool os_unmark(os_handle value);
+	bool os_mark(os_object value);
+	bool os_unmark(os_object value);
 	void os_sweep();
 	void os_clear();
 }
@@ -62,7 +85,7 @@ shared static this()
 	g_os_global_mutex = new Mutex;
 }
 
-class os_thread_local
+private class os_thread_local
 {
 	uint m_thread_id;
 	BigInt m_thread_no;
@@ -111,42 +134,39 @@ static  /*thread_local*/  ~this()
 	}
 }
 
-version (Windows)
+pragma(inline) static BigInt os_get_next_thread_no()
 {
-	pragma(inline) static BigInt os_get_next_thread_no()
+	static __gshared BigInt g_os_thread_no_max = 0;
 	{
-		static __gshared BigInt g_os_thread_no_max = 0;
-		{
-			g_os_global_mutex.lock_nothrow();
-			scope (exit)
-				g_os_global_mutex.unlock_nothrow();
-			g_os_thread_no_max++;
-			return g_os_thread_no_max;
-		}
+		g_os_global_mutex.lock_nothrow();
+		scope (exit)
+			g_os_global_mutex.unlock_nothrow();
+		g_os_thread_no_max++;
+		return g_os_thread_no_max;
 	}
+}
 
-	static __gshared BigInt g_os_value_id_max;
-	shared static this()
-	{
-		//g_os_value_id_max = "2000000000000000000000000000000000000000000000000000000000000";
-		g_os_value_id_max = "100000";
-	}
+static __gshared BigInt g_os_object_id_max;
+shared static this()
+{
+	//g_os_object_id_max = "2000000000000000000000000000000000000000000000000000000000000";
+	g_os_object_id_max = "100000";
+}
 
-	pragma(inline) static BigInt os_get_next_value_id()
+pragma(inline) static BigInt os_get_next_value_id()
+{
 	{
-		{
-			g_os_global_mutex.lock_nothrow();
-			scope (exit)
-				g_os_global_mutex.unlock_nothrow();
-			g_os_value_id_max++;
-			return g_os_value_id_max;
-		}
+		g_os_global_mutex.lock_nothrow();
+		scope (exit)
+			g_os_global_mutex.unlock_nothrow();
+		g_os_object_id_max++;
+		return g_os_object_id_max;
 	}
+}
 
-	pragma(inline) static uint os_get_thread_id()
-	{
-		return g_os_thread_local.m_thread_id;
-	}
+pragma(inline) static uint os_get_thread_id()
+{
+	return g_os_thread_local.m_thread_id;
 }
 
 extern (C) BigInt os_get_thread_index()
@@ -156,10 +176,10 @@ extern (C) BigInt os_get_thread_index()
 	return g_os_thread_local.m_thread_no;
 }
 
-class os_map
+private class os_map
 {
 	Mutex m_mutex;
-	os_object[char* ] m_map;
+	os_object[os_object] m_map;
 	this()
 	{
 		m_mutex = new Mutex;
@@ -173,11 +193,12 @@ class os_map
 			m_mutex.lock_nothrow();
 			scope (exit)
 				m_mutex.unlock_nothrow();
-			m_map[o.m_id_string] = o;
+			//m_map[o.m_id_string] = o;
+			m_map[o] = o;
 		}
 	}
 
-	os_object lookup(os_handle value)
+	os_object lookup(os_object value)
 	{
 		{
 			m_mutex.lock_nothrow();
@@ -198,7 +219,7 @@ class os_map
 			m_mutex.lock_nothrow();
 			scope (exit)
 				m_mutex.unlock_nothrow();
-			m_map.remove(o.m_id_string);
+			m_map.remove(o);
 		}
 	}
 
@@ -222,18 +243,22 @@ shared static this()
 	g_global_map = new os_map;
 }
 
-interface os_array_iface
+/+
+private interface os_array_iface
 {
-	os_handle* get_array();
+	os_object** get_array();
 }
++/
 
-interface os_number_iface
+private interface os_number_iface
 {
 	long get_integer();
 }
 
-abstract class os_object
+private abstract class os_object
+
 {
+	char[256] eye_catcher;
 	BigInt m_id;
 	char* m_id_string;
 	uint m_thread_id;
@@ -243,6 +268,7 @@ abstract class os_object
 	override string toString() const; //pure @safe;
 	this()
 	{
+		eye_catcher = "EYE_CATCHER";
 		m_id = os_get_next_value_id();
 		string s = format(`#%d`, m_id);
 		m_id_string = cast(char*) toStringz(s);
@@ -263,18 +289,20 @@ abstract class os_object
 	}
 }
 
-class os_array : os_object, os_array_iface //, os_number_iface
+private class os_array : os_object //, os_array_iface //, os_number_iface
 {
-	os_handle[] m_array;
+	os_object[] m_array;
 	this(os_size_t size)
 	{
 		m_array.length = cast(size_t) size;
 	}
 
-	override os_handle* get_array()
+	/+
+	override os_object** get_array()
 	{
 		return m_array.ptr;
 	}
+	+/
 
 	override string toString() const  //pure @safe
 	{
@@ -285,7 +313,7 @@ class os_array : os_object, os_array_iface //, os_number_iface
 		{
 			if (i > 0)
 				app ~= ", ";
-			os_object o = g_global_map.lookup(cast(os_handle) m_array[i]);
+			os_object o = g_global_map.lookup(cast(os_object) m_array[i]);
 			if (!o)
 				app ~= "null";
 			else
@@ -296,7 +324,7 @@ class os_array : os_object, os_array_iface //, os_number_iface
 	}
 }
 
-class os_integer : os_object, os_number_iface
+private class os_integer : os_object, os_number_iface
 {
 	long m_value;
 	this(long value)
@@ -320,7 +348,7 @@ class os_integer : os_object, os_number_iface
 	}
 }
 
-class os_string : os_object
+private class os_string : os_object
 {
 	char[] m_value;
 	this(char[] value)
@@ -339,17 +367,18 @@ class os_string : os_object
 	}
 }
 
-extern (C) os_handle os_new_array(os_size_t size)
+extern (C) os_array os_new_array(os_size_t size)
+
 {
-	//writeln(`os_new_array(): len=`, len);
 	auto o = new os_array(size);
 	{
 		g_global_map.insert(o);
 	}
-	return o.m_id_string;
+	return o;
 }
 
-extern (C) os_handle* os_get_array(os_handle value)
+/+
+extern (C) os_object** os_get_array(os_object* value)
 {
 	if (value is null)
 		return null;
@@ -363,15 +392,16 @@ extern (C) os_handle* os_get_array(os_handle value)
 		return iface.get_array();
 	}
 }
++/
 
-extern (C) os_handle os_new_integer(long data)
+extern (C) os_integer os_new_integer(long data)
 {
 	auto o = new os_integer(data);
 	g_global_map.insert(o);
-	return o.m_id_string;
+	return o;
 }
 
-extern (C) long os_get_integer(os_handle array_or_value, os_offset_t index = -1)
+extern (C) long os_get_integer(os_object array_or_value, os_offset_t index = -1)
 {
 	if (array_or_value is null)
 		return 0;
@@ -386,23 +416,23 @@ extern (C) long os_get_integer(os_handle array_or_value, os_offset_t index = -1)
 	}
 }
 
-extern (C) os_handle os_new_string(char* data);
-extern (C) os_handle os_new_string2(char* data, os_size_t size)
+extern (C) os_object os_new_string(char* data);
+extern (C) os_object os_new_string2(char* data, os_size_t size)
 {
 	char[] s = data[0 .. cast(size_t) size];
 	auto o = new os_string(s);
 	g_global_map.insert(o);
-	return o.m_id_string;
+	return o;
 }
 
-os_handle os_new_string(string data)
+os_object os_new_string(string data)
 {
 	char[] s = cast(char[]) data;
 	return os_new_string2(s.ptr, s.length);
 }
 
-extern (C) char* os_get_string(os_handle array_or_value, os_offset_t index = -1);
-extern (C) char* os_get_string2(os_handle array_or_value, os_size_t* len, os_offset_t index = -1);
+extern (C) char* os_get_string(os_object array_or_value, os_offset_t index = -1);
+extern (C) char* os_get_string2(os_object array_or_value, os_size_t* len, os_offset_t index = -1);
 
 extern (C) void os_dump_heap()
 {
@@ -419,7 +449,7 @@ extern (C) void os_dump_heap()
 	}
 }
 
-extern (C) bool os_mark(os_handle value)
+extern (C) bool os_mark(os_object value)
 {
 	if (value is null)
 		return false;
@@ -431,7 +461,7 @@ extern (C) bool os_mark(os_handle value)
 	}
 }
 
-extern (C) bool os_unmark(os_handle value)
+extern (C) bool os_unmark(os_object value)
 {
 	if (value is null)
 		return false;
@@ -465,7 +495,7 @@ extern (C) void os_sweep()
 			{
 				for (uint i = 0; i < a.m_array.length; i++)
 				{
-					os_handle elem = a.m_array[i];
+					os_object elem = a.m_array[i];
 					os_object o = g_global_map.lookup(elem);
 					if (o)
 					{
@@ -514,24 +544,6 @@ class A
 	int m_a;
 }
 
-/+
-extern (C) int d_mul2(int a, int b)
-{
-	writefln(`d_mul(%d, %d)`, a, b);
-	return a * b;
-}
-
-extern (C) os_handle my_mul2(int argc, os_handle* argv)
-{
-	writeln(`my_mul2(0)`);
-	if (argc != 2)
-		return null;
-	long a0 = os_get_integer(argv[0]);
-	long a1 = os_get_integer(argv[1]);
-	return os_new_integer(a0 * a1);
-}
-+/
-
 void main(string[] args)
 {
 	import core.thread;
@@ -560,27 +572,34 @@ void main(string[] args)
 	//import core.sys.windows.windows;
 	//DWORD v_thread_dword = GetCurrentThreadId();
 	//writeln(v_thread_dword);
+
 	os_new_string("abc");
 
-	os_handle xxx = os_new_integer(123);
-	writeln(toString(xxx));
+	os_object xxx = os_new_integer(123);
+	//writeln(toString(xxx));
+	writeln(xxx.eye_catcher);
+	os_string yyy;
+
+	os_get_integer(yyy);
+	//my_str1(xxx);
+
 	long xxx2 = os_get_integer(xxx);
 	writeln("xxx2=", xxx2);
 	writeln("(1)");
-	os_handle dummy_ = os_new_array(2);
-	os_handle* dummy_v = os_get_array(dummy_);
-	os_handle v_array_ = os_new_array(2);
-	writeln(`toString(v_array_)=`, toString(v_array_));
+	os_object dummy_ = os_new_array(2);
+	//os_object** dummy_v = os_get_array(dummy_);
+	os_object v_array_ = os_new_array(2);
+	writeln(`toString(v_array_)=`, v_array_.eye_catcher);
 	os_mark(v_array_);
-	os_handle* argv = os_get_array(v_array_);
+	//os_object** argv = os_get_array(v_array_);
 	writeln("(2)");
-	//os_handle[2] argv;
+	os_object[2] argv;
 	argv[0] = os_new_integer(11);
 	argv[1] = os_new_integer(22);
 	writeln("(2.25)");
 	os_dump_heap();
 	writeln("(2.26)");
-	os_handle answer = my_add2(2, argv);
+	os_object answer = my_add2(2, argv.ptr);
 	writeln("(2.27)");
 	os_mark(answer);
 	writeln("(2.50)");
@@ -588,8 +607,8 @@ void main(string[] args)
 	writeln(answer);
 	long answer2 = os_get_integer(answer);
 	writeln(`answer2=`, answer2);
-	int[os_handle] dummy;
-	int* bbb = answer in dummy;
+	//int[os_object* ] dummy;
+	//int* bbb = answer in dummy;
 	writeln("(3)");
 	os_sweep();
 	os_dump_heap();
