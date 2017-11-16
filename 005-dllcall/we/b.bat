@@ -44,3 +44,4 @@ cl /MD minimal_client.c ^
 		"svn_wc-1.lib"
 endlocal
 copy mini.exe E:\opt\svn\vc6\svn-win32-1.7.22\bin
+E:\opt\svn\vc6\svn-win32-1.7.22\bin\mini.exe https://github.com/cppcommons/d-sample/trunk

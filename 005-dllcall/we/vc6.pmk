@@ -22,16 +22,16 @@ package.target   = "vc6-run" -- Exe Name
 
 	package.buildflags = 
 	{ 
-		--"no-64bit-checks",
+		"no-64bit-checks",
 		-- "static-runtime",
-		--"extra-warnings"
+		"extra-warnings"
 	}
 
 	package.config["Release"].buildflags = 
 	{ 
-		--"no-symbols", 
-		--"optimize-size",
-		--"no-frame-pointers"
+		"no-symbols", 
+		"optimize-size",
+		"no-frame-pointers"
 	}
 
 
