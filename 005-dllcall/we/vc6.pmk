@@ -10,8 +10,8 @@ project.config["Release"].bindir = "." -- リリース実行ファイルの出�
 project.config["Release"].libdir = "." -- リリースライブラリの出力先
 
 package.name     = "vc6-run" -- Project Name
---package.language = "c++"
-package.language = "c"
+package.language = "c++"
+--package.language = "c"
 package.kind     = "exe"
 --package.kind     = "winexe"
 --package.kind     = "dll"
@@ -24,7 +24,7 @@ package.target   = "vc6-run" -- Exe Name
 	{ 
 		"no-64bit-checks",
 		-- "static-runtime",
-		"extra-warnings"
+		--"extra-warnings"
 	}
 
 	package.config["Release"].buildflags = 
@@ -48,10 +48,10 @@ package.target   = "vc6-run" -- Exe Name
 -- Include
 
 	package.includepaths = {
-		"E:/opt/svn/vc6/svn-win32-1.7.22_dev/svn-win32-1.7.22/include",
-		"E:/opt/svn/vc6/svn-win32-1.7.22_dev/svn-win32-1.7.22/include/apr",
-		"E:/opt/svn/vc6/svn-win32-1.7.22_dev/svn-win32-1.7.22/include/apr-iconv",
-		"E:/opt/svn/vc6/svn-win32-1.7.22_dev/svn-win32-1.7.22/include/apr-util"
+		"E:/opt/svn/vc6/svn-win32-1.8.17-ap24_dev/svn-win32-1.8.17/include",
+		"E:/opt/svn/vc6/svn-win32-1.8.17-ap24_dev/svn-win32-1.8.17/include/apr",
+		"E:/opt/svn/vc6/svn-win32-1.8.17-ap24_dev/svn-win32-1.8.17/include/apr-iconv",
+		"E:/opt/svn/vc6/svn-win32-1.8.17-ap24_dev/svn-win32-1.8.17/include/apr-util"
 		}
 
 -- Libraries
@@ -61,13 +61,13 @@ package.target   = "vc6-run" -- Exe Name
 	end
 
 	package.libpaths = {
-		"E:/opt/svn/vc6/svn-win32-1.7.22_dev/svn-win32-1.7.22/lib",
-		"E:/opt/svn/vc6/svn-win32-1.7.22_dev/svn-win32-1.7.22/lib/apr",
-		"E:/opt/svn/vc6/svn-win32-1.7.22_dev/svn-win32-1.7.22/lib/apr-iconv",
-		"E:/opt/svn/vc6/svn-win32-1.7.22_dev/svn-win32-1.7.22/lib/apr-util",
-		"E:/opt/svn/vc6/svn-win32-1.7.22_dev/svn-win32-1.7.22/lib/neon",
-		"E:/opt/svn/vc6/svn-win32-1.7.22_dev/svn-win32-1.7.22/lib/sasl",
-		"E:/opt/svn/vc6/svn-win32-1.7.22_dev/svn-win32-1.7.22/lib/serf"
+		"E:/opt/svn/vc6/svn-win32-1.8.17-ap24_dev/svn-win32-1.8.17/lib",
+		"E:/opt/svn/vc6/svn-win32-1.8.17-ap24_dev/svn-win32-1.8.17/lib/apr",
+		"E:/opt/svn/vc6/svn-win32-1.8.17-ap24_dev/svn-win32-1.8.17/lib/apr-iconv",
+		"E:/opt/svn/vc6/svn-win32-1.8.17-ap24_dev/svn-win32-1.8.17/lib/apr-util",
+		"E:/opt/svn/vc6/svn-win32-1.8.17-ap24_dev/svn-win32-1.8.17/lib/neon",
+		"E:/opt/svn/vc6/svn-win32-1.8.17-ap24_dev/svn-win32-1.8.17/lib/sasl",
+		"E:/opt/svn/vc6/svn-win32-1.8.17-ap24_dev/svn-win32-1.8.17/lib/serf"
 		}
 	package.links = {
 		"libapr-1",
@@ -106,5 +106,6 @@ package.target   = "vc6-run" -- Exe Name
 	package.files =
 	{
 		-- matchrecursive("vc6*.h", "vc6*.c", "vc6*.cpp")
-		matchrecursive("minimal_client.c")
+		-- matchrecursive("minimal_client.c")
+		matchrecursive("minimal_client.cpp")
 	}

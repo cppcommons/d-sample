@@ -46,6 +46,7 @@
 #include "svn_fs.h"
 #include "svn_auth.h"
 
+#if 0x0
 /* Display a prompt and read a one-line response into the provided buffer,
    removing a trailing newline if present. */
 static svn_error_t *
@@ -121,6 +122,10 @@ my_username_prompt_callback(svn_auth_cred_username_t **cred,
 	*cred = ret;
 	return SVN_NO_ERROR;
 }
+#endif
+
+typedef int (*proc_svn_cmdline_init)(const char *progname,
+									 /*FILE*/ void *error_stream);
 
 int main(int argc, const char **argv)
 {
@@ -131,7 +136,10 @@ int main(int argc, const char **argv)
 	apr_hash_index_t *hi;
 	svn_client_ctx_t *ctx;
 	const char *URL;
-	svn_auth_baton_t *ab; 
+	svn_auth_baton_t *ab;
+	proc_svn_cmdline_init func_p;
+
+	func_p = svn_cmdline_init;
 
 	printf("argc=%d\n", argc);
 
@@ -212,6 +220,7 @@ int main(int argc, const char **argv)
 #endif
 
 		printf("6");
+#if 0x0		
 		/* Depending on what your client does, you'll want to read about
        (and implement) the various callback function types below.  */
 
@@ -258,19 +267,19 @@ int main(int argc, const char **argv)
 			/* Register the auth-providers into the context's auth_baton. */
 			svn_auth_open(&ctx->auth_baton, providers, pool);
 		}
+#endif
 	} /* end of client_ctx setup */
 
 	/* Now do the real work. */
-
 	printf("pre-7\n");
-	//svn_auth_baton_t *ab; 
+	//svn_auth_baton_t *ab;
 	if ((err = svn_cmdline_create_auth_baton(&ab,
-											 1, //opt_state.non_interactive,
+											 1,	//opt_state.non_interactive,
 											 NULL, //opt_state.auth_username,
 											 NULL, //opt_state.auth_password,
 											 NULL, //opt_state.config_dir,
-											 1, //opt_state.no_auth_cache,
-											 1, //opt_state.trust_server_cert,
+											 1,	//opt_state.no_auth_cache,
+											 1,	//opt_state.trust_server_cert,
 											 NULL, //cfg_config,
 											 ctx->cancel_func,
 											 ctx->cancel_baton,
