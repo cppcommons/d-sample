@@ -61,7 +61,8 @@ void main(string[] args)
 		string path = prefix ~ "/" ~ name;
 		auto fname = baseName(path);
 		// print some data about each member
-		writefln("%10s  %08x  %-24s  %s", am.expandedSize, am.crc32, name, DosFileTimeToSysTime(am.time()));
+		writefln("%10s  %08x  %-24s  %s", am.expandedSize, am.crc32, name,
+				DosFileTimeToSysTime(am.time()));
 		assert(am.expandedData.length == 0);
 		// decompress the archive member
 		zip.expand(am);
@@ -76,7 +77,19 @@ void main(string[] args)
 	CSIDL_COMMON_APPDATA=C:\ProgramData
 	CSIDL_DESKTOP=C:\Users\javacommons\Desktop
 	+/
+	import std.file : read; // file:///C:\D\dmd2\src\phobos\std\file.d
+	import easywin_loader;
 
+	auto dll_bytes = cast(ubyte[]) read(
+			`C:\Users\javacommons\Desktop\.easy-install\svn-win32-dll-702f3170fedfdd6e20b8f8f5f4fc25f4\libsvn_client-1.dll`);
+	HMEMORYMODULE hmod = MemoryLoadLibrary(cast(void*) dll_bytes.ptr);
+	writefln("0x%08x", hmod);
+	EASYWIN_PROC proc = MemoryGetProcAddress(hmod,
+			cast(char*) "svn_client__arbitrary_nodes_diff".ptr);
+	writefln("0x%08x", proc);
+	EASYWIN_PROC proc2 = MemoryGetProcAddress(hmod,
+			cast(char*) "svn_client_version".ptr);
+	writefln("0x%08x", proc2);
 	exit(0);
 }
 
