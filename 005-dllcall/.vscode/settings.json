@@ -17,7 +17,11 @@
 		"mutex": "cpp",
 		"type_traits": "cpp",
 		"iomanip": "cpp",
-		"xiosbase": "c"
+		"xiosbase": "c",
+		"functional": "cpp",
+		"fstream": "cpp",
+		"iosfwd": "cpp",
+		"ostream": "cpp"
 	},
 	"window.title": "${activeEditorLong}",
 	"terminal.integrated.shell.windows": "C:\\Windows\\System32\\cmd.exe",

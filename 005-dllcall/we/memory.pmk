@@ -1,0 +1,105 @@
+-- http://d.hatena.ne.jp/ousttrue/20080430/1209583972
+project.name = "memory-run" -- ソリューション名になる
+--project.configs = { "Debug", "Release" } -- コンフィグの種類を定義
+project.configs = { "Release" } -- コンフィグの種類を定義
+project.config["Release"].bindir = "." -- リリース実行ファイルの出力先
+project.config["Release"].libdir = "." -- リリースライブラリの出力先
+
+package.name     = "memory-run" -- Project Name
+package.language = "c++"
+package.kind     = "exe"
+--package.kind     = "winexe"
+--package.kind     = "dll"
+--package.kind     = "lib"
+package.target   = "memory-run" -- Exe Name
+
+-- Build Flags
+
+	package.buildflags = 
+	{ 
+		"no-64bit-checks",
+		-- "static-runtime",
+		--"extra-warnings"
+	}
+
+	package.config["Release"].buildflags = 
+	{ 
+		"no-symbols", 
+		"optimize-size",
+		"no-frame-pointers"
+	}
+
+
+-- Defines
+
+	package.defines = {
+		"_CRT_SECURE_NO_DEPRECATE",     -- to avoid VS2005 stdlib warnings
+	}
+
+	if (target == "gnu") then           -- to get Lua popen support under OS X
+		table.insert(package.defines, "USE_POPEN=1")   
+	end
+
+-- Include
+
+	package.includepaths = {
+		"E:/opt/svn/vc6/svn-win32-1.8.17-ap24_dev/svn-win32-1.8.17/include",
+		"E:/opt/svn/vc6/svn-win32-1.8.17-ap24_dev/svn-win32-1.8.17/include/apr",
+		"E:/opt/svn/vc6/svn-win32-1.8.17-ap24_dev/svn-win32-1.8.17/include/apr-iconv",
+		"E:/opt/svn/vc6/svn-win32-1.8.17-ap24_dev/svn-win32-1.8.17/include/apr-util"
+		}
+
+-- Libraries
+
+	if (OS == "linux") then
+		package.links = { "m" }
+	end
+
+	package.libpaths = {
+		"E:/opt/svn/vc6/svn-win32-1.8.17-ap24_dev/svn-win32-1.8.17/lib",
+		"E:/opt/svn/vc6/svn-win32-1.8.17-ap24_dev/svn-win32-1.8.17/lib/apr",
+		"E:/opt/svn/vc6/svn-win32-1.8.17-ap24_dev/svn-win32-1.8.17/lib/apr-iconv",
+		"E:/opt/svn/vc6/svn-win32-1.8.17-ap24_dev/svn-win32-1.8.17/lib/apr-util",
+		"E:/opt/svn/vc6/svn-win32-1.8.17-ap24_dev/svn-win32-1.8.17/lib/neon",
+		"E:/opt/svn/vc6/svn-win32-1.8.17-ap24_dev/svn-win32-1.8.17/lib/sasl",
+		"E:/opt/svn/vc6/svn-win32-1.8.17-ap24_dev/svn-win32-1.8.17/lib/serf"
+		}
+	package.links = {
+		"os2-vc6",
+		"libapr-1",
+		"libapriconv-1",
+		"libaprutil-1",
+		"xml",
+		"libsvn_client-1",
+		"libsvn_delta-1",
+		"libsvn_diff-1",
+		"libsvn_fs-1",
+		"libsvn_fs_base-1",
+		"libsvn_fs_fs-1",
+		"libsvn_fs_util-1",
+		"libsvn_ra-1",
+		"libsvn_ra_local-1",
+		"libsvn_ra_serf-1",
+		"libsvn_ra_svn-1",
+		"libsvn_repos-1",
+		"libsvn_subr-1",
+		"libsvn_wc-1",
+		"libsasl",
+		"serf-1",
+		"svn_client-1",
+		"svn_delta-1",
+		"svn_diff-1",
+		"svn_fs-1",
+		"svn_ra-1",
+		"svn_repos-1",
+		"svn_subr-1",
+		"svn_wc-1"
+	 }
+
+
+-- Files
+
+	package.files =
+	{
+		matchrecursive("memory.h", "memory.c", "memory.cpp")
+	}
