@@ -49,11 +49,18 @@ static HCUSTOMMODULE OS_LoadLibrary(LPCSTR filename, void *userdata)
 	std::string content = readSvnDll(filename);
 	if (content.size() > 0)
 	{
-		std::cout << "  [SIZE] " << content.size() << std::endl;
-		HCUSTOMMODULE v_module = OS_MemoryLoadLibrary(content.c_str());
-		g_module_set.insert(v_module);
-		g_module_map[filename2] = v_module;
-		return v_module;
+		//if (filename2.rfind("LIVSVN", 0) == 0 || filename2.rfind("LIVAPR", 0) == 0)
+		if (filename2.rfind("LIVSVN", 0) == 0 ||
+			filename2.rfind("LIVAPR", 0) == 0 ||
+			filename2.rfind("SASL", 0) == 0 ||
+			filename2.rfind("INTL3", 0) == 0)
+		{
+			std::cout << "  [SIZE] " << content.size() << std::endl;
+			HCUSTOMMODULE v_module = OS_MemoryLoadLibrary(content.c_str());
+			g_module_set.insert(v_module);
+			g_module_map[filename2] = v_module;
+			return v_module;
+		}
 	}
 	HMODULE result = LoadLibraryA(filename);
 	if (result == NULL)
@@ -99,5 +106,15 @@ int main()
 	HMEMORYMODULE hmod = OS_MemoryLoadLibrary(content.c_str());
 	printf("hmod=0x%p\n", hmod);
 	printf("hmod(2)=0x%08x\n", hmod);
+	if (hmod)
+	{
+		typedef int (*proc_main)(int argc, const char **argv);
+		proc_main f_main = (proc_main)MemoryGetProcAddress(hmod, "main");
+		printf("f_main=0x%p\n", f_main);
+		std::vector<const char *> v_args;
+		v_args.push_back("dummy.exe");
+		v_args.push_back("https://github.com/cppcommons/d-sample/trunk");
+		f_main(v_args.size(), &v_args[0]);
+	}
 	return 0;
 }
