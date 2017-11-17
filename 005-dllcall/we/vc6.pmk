@@ -12,9 +12,9 @@ project.config["Release"].libdir = "." -- リリースライブラリの出力�
 package.name     = "vc6-run" -- Project Name
 package.language = "c++"
 --package.language = "c"
-package.kind     = "exe"
+--package.kind     = "exe"
 --package.kind     = "winexe"
---package.kind     = "dll"
+package.kind     = "dll"
 --package.kind     = "lib"
 package.target   = "vc6-run" -- Exe Name
 

@@ -1,5 +1,14 @@
+#include "os2.h"
+#define EXPORT_FUNCTION extern "C" __declspec(dllexport)
 typedef int (*proc_main)(int argc, const char **argv);
+EXPORT_FUNCTION int main(int argc, const char **argv);
+EXPORT_FUNCTION os_int32 vc6_add2(os_int32 a, os_int32 b);
+EXPORT_FUNCTION os_int32 vc6_add2(os_int32 a, os_int32 b)
+{
+	return a + b;
+}
 
+#ifndef __HTOD__
 #include "svn_client.h"
 #include "svn_cmdline.h"
 #include "svn_pools.h"
@@ -13,12 +22,10 @@ typedef int (*proc_main)(int argc, const char **argv);
 #include <map>
 //#include <mutex>
 
-#include "os2.h"
-
 typedef int (*proc_svn_cmdline_init)(const char *progname,
 									 FILE *error_stream);
-
-__declspec(dllexport) int main(int argc, const char **argv)
+//__declspec(dllexport) int main(int argc, const char **argv)
+EXPORT_FUNCTION int main(int argc, const char **argv)
 {
 	apr_pool_t *pool;
 	svn_error_t *err;
@@ -30,6 +37,11 @@ __declspec(dllexport) int main(int argc, const char **argv)
 	svn_auth_baton_t *ab;
 	proc_svn_cmdline_init func_p;
 
+	if (1)
+	{
+		os_int32 test_int = vc6_add2(111, 222);
+		printf("test_int=%d\n", test_int);
+	}
 	func_p = svn_cmdline_init;
 
 	printf("argc=%d\n", argc);
@@ -245,3 +257,4 @@ __declspec(dllexport) int main(int argc, const char **argv)
 	printf("9\n");
 	return EXIT_SUCCESS;
 }
+#endif //if !defined(__HTOD__)

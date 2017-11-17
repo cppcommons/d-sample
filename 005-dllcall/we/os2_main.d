@@ -1,4 +1,5 @@
 import os2;
+import vc6;
 
 private void exit(int code)
 {
@@ -36,6 +37,9 @@ void main(string[] args)
 	import std.container.binaryheap;
 	import std.algorithm.searching; // BinaryHeap.canFind(x)
 	import std.range; // BinaryHeap.take(n)
+
+	os_int32 test_int = vc6_add2(111, 222);
+	writeln(`test_int=`, test_int);
 
 	int[] a = [4, 1, 3, 2, 16, 9, 10, 14, 8, 7];
 	BinaryHeap!(int[]) h = heapify(a);
