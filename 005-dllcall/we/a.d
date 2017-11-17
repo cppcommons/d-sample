@@ -73,6 +73,7 @@ void main(string[] args)
 	writefln(`  ===> Writing to: %s`, abs_path);
 	+/
 
+	/+
 	string[] keys = g_map.keys;
 	foreach (key; keys)
 	{
@@ -84,6 +85,7 @@ void main(string[] args)
 		f.rawWrite(bytes);
 		f.close();
 	}
+	+/
 
 	string[] cmdline = ["explorer.exe", store_path];
 	run_command(cmdline);
@@ -107,16 +109,19 @@ void main(string[] args)
 	writeln("Archive: ", "svn_win32_dll_zip");
 	writefln("%-10s  %-8s  Name", "Length", "CRC-32");
 	// iterate over all zip members
+	string prefix = store_path;
+	prefix = prefix.replace(`\`, `/`);
 	foreach (name, am; zip.directory)
 	{
-		//string path = prefix ~ "/" ~ name;
-		string path = name;
+		string path = prefix ~ "/" ~ name;
+		//string path = name;
+		/+
 		if (path.endsWith("/"))
 		{
 			mkdirRecurse(path);
 			setTimes(path, DosFileTimeToSysTime(am.time()), DosFileTimeToSysTime(am.time()));
 			continue;
-		}
+		}+/
 		string[] array = path.split("/");
 		auto fname = array[array.length - 1];
 		array.length--;
@@ -124,7 +129,7 @@ void main(string[] args)
 		string dir_part = "";
 		if (array.length > 0)
 		{
-			dir_part = array.join("/") ~ "/";
+			dir_part = array.join("/"); // ~ "/";
 		}
 		writeln("dir_part=", dir_part);
 		// print some data about each member
@@ -133,11 +138,11 @@ void main(string[] args)
 		// decompress the archive member
 		zip.expand(am);
 		assert(am.expandedData.length == am.expandedSize);
-		//mkdirRecurse(dir_part);
-		//auto f = File(path, "wb");
-		//f.rawWrite(am.expandedData);
-		//f.close();
-		//setTimes(path, DosFileTimeToSysTime(am.time()), DosFileTimeToSysTime(am.time()));
+		mkdirRecurse(dir_part);
+		auto f = File(path, "wb");
+		f.rawWrite(am.expandedData);
+		f.close();
+		setTimes(path, DosFileTimeToSysTime(am.time()), DosFileTimeToSysTime(am.time()));
 	}
 
 	/+
@@ -177,7 +182,7 @@ string prepare_sore_path(int id)
 
 	string dir1 = get_common_path(id, true);
 	writeln(`dir1=`, dir1);
-	string dir2 = dir1 ~ `\.os-1\` ~ sha1_uuid_for_string("OS-1");
+	string dir2 = dir1 ~ `\.easy-install\` ~ sha1_uuid_for_string("OS-1");
 	writeln(`dir2=`, dir2);
 	mkdirRecurse(dir2);
 	return dir2;
