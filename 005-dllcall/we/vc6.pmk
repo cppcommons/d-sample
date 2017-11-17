@@ -70,6 +70,7 @@ package.target   = "vc6-run" -- Exe Name
 		"E:/opt/svn/vc6/svn-win32-1.8.17-ap24_dev/svn-win32-1.8.17/lib/serf"
 		}
 	package.links = {
+		"os2-vc6",
 		"libapr-1",
 		"libapriconv-1",
 		"libaprutil-1",
@@ -105,7 +106,7 @@ package.target   = "vc6-run" -- Exe Name
 
 	package.files =
 	{
-		-- matchrecursive("vc6*.h", "vc6*.c", "vc6*.cpp")
+		matchrecursive("vc6*.h", "vc6*.c", "vc6*.cpp")
 		-- matchrecursive("minimal_client.c")
-		matchrecursive("minimal_client.cpp")
+		--matchrecursive("minimal_client.cpp")
 	}

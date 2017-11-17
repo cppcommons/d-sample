@@ -472,6 +472,17 @@ private int handle_exe_output(string ext, string[] args)
 		source_files ~= "gcstub.obj";
 		source_files ~= "phobos.lib";
 		source_files ~= "snn.lib";
+		source_files ~= format!`%s.def`(g_context.fileName);
+		string def_path = format!`%s.def`(g_context.fullPath);
+		//writefln(`dub_json_path="%s"`, dub_json_path);
+		string def_text = format!`LIBRARY %s
+EXETYPE NT
+CODE PRELOAD DISCARDABLE
+DATA PRELOAD MULTIPLE
+`(g_context.fileName);
+		File file0 = File(def_path, "w");
+		file0.write(def_text);
+		file0.close();
 	}
 	if (main_source)
 		jsonObj["mainSourceFile"] = main_source;

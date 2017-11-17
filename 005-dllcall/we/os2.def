@@ -1,0 +1,6 @@
+LIBRARY OS2.DLL
+EXPORTS
+add
+gc_clrProxy
+gc_setProxy
+multiply
