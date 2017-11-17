@@ -27,7 +27,8 @@ inline std::string readFile(const char *filename)
 
 inline std::string readSvnDll(const char *basename)
 {
-	std::string folder = "E:\\opt\\svn\\vc6\\svn-win32-1.8.17-ap24\\svn-win32-1.8.17\\bin";
+	//std::string folder = "E:\\opt\\svn\\vc6\\svn-win32-1.8.17-ap24\\svn-win32-1.8.17\\bin";
+	std::string folder = "E:\\opt\\opt.m32\\usr\\bin";
 	std::string path = folder + "\\" + std::string(basename);
 	std::string content = readFile(path.c_str());
 	return content;
@@ -48,6 +49,8 @@ static HCUSTOMMODULE OS_LoadLibrary(LPCSTR filename, void *userdata)
 	std::string content = readSvnDll(filename);
 	if (content.size() > 0)
 	{
+
+#if 0x0
 		if (
 			filename2.rfind("libapr", 0) == 0 ||
 			filename2.rfind("libsvn_client-1", 0) == 0 ||
@@ -62,6 +65,10 @@ static HCUSTOMMODULE OS_LoadLibrary(LPCSTR filename, void *userdata)
 			filename2.rfind("intl3", 0) == 0 ||
 			filename2.rfind("libeay32", 0) == 0 ||
 			filename2.rfind("libdb48", 0) == 0)
+#else
+
+		if (filename2.rfind("msys-gcc_s-1", 0) != 0)
+#endif
 		{
 			std::cout << "[MEMORY]" << filename2 << " [SIZE] " << content.size() << std::endl;
 			HCUSTOMMODULE v_module = OS_MemoryLoadLibrary(content.c_str());
@@ -110,10 +117,13 @@ static HMEMORYMODULE OS_MemoryLoadLibrary(const void *data)
 int main()
 {
 	printf("memory.cpp\n");
-	const char *filename = "vc6-run.dll";
+	//const char *filename = "vc6-run.dll";
+	const char *filename = "E:\\opt\\svn\\vc6.dll";
+
 	std::string content = readFile(filename);
 	std::cout << "content.length=" << content.size() << std::endl;
-	HMEMORYMODULE hmod = OS_MemoryLoadLibrary(content.c_str());
+	//HMEMORYMODULE hmod = OS_MemoryLoadLibrary(content.c_str());
+	HMEMORYMODULE hmod = MemoryLoadLibrary(content.c_str());
 	printf("hmod=0x%p\n", hmod);
 	printf("hmod(2)=0x%08x\n", hmod);
 	if (hmod)
