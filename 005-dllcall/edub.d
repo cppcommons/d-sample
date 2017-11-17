@@ -296,7 +296,7 @@ private string my_json_pprint(ref JSONValue jsonObj)
 	return result;
 }
 
-private int handle_exe_output(string[] args)
+private int handle_exe_output(string ext, string[] args)
 {
 	string pop(ref string[] list)
 	{
@@ -344,7 +344,20 @@ private int handle_exe_output(string[] args)
 	JSONValue jsonObj = parseJSON("{}"); //dummyAlist;
 	jsonObj["name"] = g_context.baseName.toLower;
 	jsonObj["targetName"] = g_context.baseName;
-	jsonObj["targetType"] = "executable";
+	switch (ext)
+	{
+	case ".exe":
+		jsonObj["targetType"] = "executable";
+		break;
+	case ".dll":
+		jsonObj["targetType"] = "dynamicLibrary";
+		break;
+	case ".lib":
+		jsonObj["targetType"] = "library";
+		break;
+	default:
+		break;
+	}
 	string[] dub_opts;
 	string main_source;
 	string[] source_files;
@@ -363,6 +376,7 @@ private int handle_exe_output(string[] args)
 	}
 
 	_PackageSpec[] packages;
+
 	string uuid = sha1UUID(":").toString;
 	uuid = format!`{%s}`(uuid);
 	while (args.length)
@@ -452,6 +466,12 @@ private int handle_exe_output(string[] args)
 			//source_files ~= expand_wild_cards(arg);
 			source_files ~= arg;
 		}
+	}
+	if (ext == ".dll")
+	{
+		source_files ~= "gcstub.obj";
+		source_files ~= "phobos.lib";
+		source_files ~= "snn.lib";
 	}
 	if (main_source)
 		jsonObj["mainSourceFile"] = main_source;
@@ -562,7 +582,8 @@ int main(string[] args)
 	switch (g_context.extension.toLower)
 	{
 	case ".exe":
-		return handle_exe_output(args[2 .. $]);
+	case ".dll":
+		return handle_exe_output(g_context.extension.toLower, args[2 .. $]);
 	case ".json":
 		break;
 	default:

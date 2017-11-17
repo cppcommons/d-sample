@@ -16,7 +16,8 @@
 		"xlocale": "cpp",
 		"mutex": "cpp",
 		"type_traits": "cpp",
-		"iomanip": "cpp"
+		"iomanip": "cpp",
+		"xiosbase": "c"
 	},
 	"window.title": "${activeEditorLong}",
 	"terminal.integrated.shell.windows": "C:\\Windows\\System32\\cmd.exe",

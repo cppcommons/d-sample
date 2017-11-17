@@ -13,7 +13,7 @@ rmdir /s /q edub2.exe.bin
 ::edub2 apps.json debug
 ::goto skip
 ::src=C:\D\dmd2\src\phobos 
-edub2 test1.exe debug app1.d ../*.d emake*.d .\emake*.d ^
+edub2 test1.dll debug app1.d ../*.d emake*.d .\emake*.d ^
 arsd/dom.d@https://raw.githubusercontent.com/adamdruppe/arsd/master/dom.d ^
 defines=A:@B ^
 defs=C:@D ^
