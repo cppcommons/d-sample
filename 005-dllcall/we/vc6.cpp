@@ -17,9 +17,9 @@ EXPORT_FUNCTION os_int32 vc6_add2(os_int32 a, os_int32 b)
 #include "svn_auth.h"
 
 #include <windows.h>
-#include <string>
-#include <vector>
-#include <map>
+//#include <string>
+//#include <vector>
+//#include <map>
 //#include <mutex>
 
 typedef int (*proc_svn_cmdline_init)(const char *progname,
@@ -65,6 +65,7 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
 
 	os_dump_heap();
 
+#if 0x0
 #ifndef VC6_DLL
 	if (argc == 2)
 	{
@@ -79,7 +80,8 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
 #else
 	printf("[IN VC6_DLL]\n");
 #endif
-
+#endif
+	printf("0.1\n");
 	if (argc <= 1)
 	{
 		//printf("Usage:  %s URL\n", argv[0]);
@@ -94,7 +96,7 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
 	/* Initialize the app.  Send all error messages to 'stderr'.  */
 	if (svn_cmdline_init("minimal_client", /*stderr*/ stdout) != EXIT_SUCCESS)
 	{
-		printf("0\n");
+		printf("0.2\n");
 		return EXIT_FAILURE;
 	}
 

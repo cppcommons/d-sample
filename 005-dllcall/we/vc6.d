@@ -6,6 +6,9 @@ int  main(int argc, char **argv);
 os_int32  vc6_add2(os_int32 a, os_int32 b);
 
 
+//#include <string>
+//#include <vector>
+//#include <map>
 //#include <mutex>
 
 //__declspec(dllexport) int main(int argc, const char **argv)
@@ -23,7 +26,6 @@ os_int32  vc6_add2(os_int32 a, os_int32 b);
 		//HMODULE hmod = LoadLibraryA("vc6-dll.dll");
 		/*FARPROC*/
 		//return proc(1, argv);
-
 		//printf("Usage:  %s URL\n", argv[0]);
 		//return EXIT_FAILURE;
 
