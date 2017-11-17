@@ -7,6 +7,7 @@ private void exit(int code)
 
 shared static immutable ubyte[] svn_win32_dll_zip = cast(immutable ubyte[]) import(
 		"svn-win32-1.8.17-dll.zip");
+/+		
 shared static immutable ubyte[] intl3_svn_dll = cast(immutable ubyte[]) import("intl3_svn.dll");
 shared static immutable ubyte[][string] g_map;
 shared static this()
@@ -37,10 +38,6 @@ shared static this()
 	g_map["saslSRP.dll"] = cast(immutable ubyte[]) import("saslSRP.dll");
 	g_map["ssleay32.dll"] = cast(immutable ubyte[]) import("ssleay32.dll");
 }
-
-/+
-
-
 +/
 
 void main(string[] args)
@@ -49,7 +46,7 @@ void main(string[] args)
 	import std.stdio;
 	import std.string;
 
-	writeln(intl3_svn_dll.length);
+	//writeln(intl3_svn_dll.length);
 
 	string home = get_home_path();
 	writeln(home);
@@ -62,30 +59,8 @@ void main(string[] args)
 	writeln(`CSIDL_COMMON_APPDATA=`, get_common_path(CSIDL_COMMON_APPDATA, true));
 	writeln(`CSIDL_DESKTOP=`, get_common_path(CSIDL_DESKTOP, true));
 
-	string store_path = prepare_sore_path(CSIDL_DESKTOP);
+	string store_path = prepare_sore_path(CSIDL_DESKTOP, "svn-win32", svn_win32_dll_zip);
 	writeln(store_path);
-
-	/+
-	string abs_path = store_path ~ `\` ~ `intl3_svn.dll`;
-	File f = File(abs_path, "wb");
-	f.rawWrite(intl3_svn_dll);
-	f.close();
-	writefln(`  ===> Writing to: %s`, abs_path);
-	+/
-
-	/+
-	string[] keys = g_map.keys;
-	foreach (key; keys)
-	{
-		//g_map["intl3_svn.dll"] = cast(immutable ubyte[]) import("intl3_svn.dll");
-		immutable ubyte[] bytes = g_map[key];
-		string abs_path = store_path ~ `\` ~ key;
-		writefln(`  ===> Writing to: %s (%u bytes)`, abs_path, bytes.length);
-		File f = File(abs_path, "wb");
-		f.rawWrite(bytes);
-		f.close();
-	}
-	+/
 
 	string[] cmdline = ["explorer.exe", store_path];
 	run_command(cmdline);
@@ -94,7 +69,7 @@ void main(string[] args)
 
 	import std.algorithm : startsWith, endsWith;
 	import std.array : join, split;
-	import std.datetime.systime : DosFileTimeToSysTime;
+	import std.datetime.systime : DosFileTimeToSysTime, SysTime;
 	import std.file : mkdirRecurse, read, setTimes;
 	import std.stdio : stdout, writefln, writeln;
 	import std.stdio : File;
@@ -113,36 +88,16 @@ void main(string[] args)
 	prefix = prefix.replace(`\`, `/`);
 	foreach (name, am; zip.directory)
 	{
+		import std.path : baseName;
 		string path = prefix ~ "/" ~ name;
-		//string path = name;
-		/+
-		if (path.endsWith("/"))
-		{
-			mkdirRecurse(path);
-			setTimes(path, DosFileTimeToSysTime(am.time()), DosFileTimeToSysTime(am.time()));
-			continue;
-		}+/
-		string[] array = path.split("/");
-		auto fname = array[array.length - 1];
-		array.length--;
-		writeln(array, fname);
-		string dir_part = "";
-		if (array.length > 0)
-		{
-			dir_part = array.join("/"); // ~ "/";
-		}
-		writeln("dir_part=", dir_part);
+		auto fname = baseName(path);
 		// print some data about each member
 		writefln("%10s  %08x  %s %s", am.expandedSize, am.crc32, name, am.time());
 		assert(am.expandedData.length == 0);
 		// decompress the archive member
 		zip.expand(am);
 		assert(am.expandedData.length == am.expandedSize);
-		mkdirRecurse(dir_part);
-		auto f = File(path, "wb");
-		f.rawWrite(am.expandedData);
-		f.close();
-		setTimes(path, DosFileTimeToSysTime(am.time()), DosFileTimeToSysTime(am.time()));
+		write_if_not_exist(path, am.expandedData, DosFileTimeToSysTime(am.time()));
 	}
 
 	/+
@@ -164,25 +119,39 @@ int run_command(string[] cmdline)
 	return wait(pid);
 }
 
-string prepare_sore_path(int id)
+import std.datetime.systime : SysTime;
+
+void write_if_not_exist(string path, ubyte[] bytes, SysTime time)
 {
-	/+
-	import std.file : chdir, copy, dirEntries, exists, getcwd, mkdirRecurse,
-		read, rename, remove, rmdirRecurse, setTimes, write, FileException,
-		PreserveAttributes, SpanMode;
-	+/
-	// file:///C:\D\dmd2\src\phobos\std\file.d
-	import std.file : mkdirRecurse;
+	import std.file : exists, mkdirRecurse,  /*read,*/ setTimes;
+	import std.stdio : File;
+	import std.path : dirName;
 
-	// file:///C:\D\dmd2\src\phobos\std\stdio.d
-	import std.stdio : writeln;
+	if (exists(path))
+	{
+		import std.stdio : writeln;
 
-	// file:///C:\D\dmd2\src\phobos\std\string.d
-	import std.string : replace;
+		writeln(`[EXISTS] `, path);
+		return;
+	}
+	string dir_part = dirName(path);
+	mkdirRecurse(dir_part);
+	auto f = File(path, "wb");
+	f.rawWrite(bytes);
+	f.close();
+	setTimes(path, time, time);
+}
+
+string prepare_sore_path(int id, string name, immutable(ubyte[]) bytes)
+{
+	import std.file : mkdirRecurse; // file:///C:\D\dmd2\src\phobos\std\file.d
+	import std.format : format; // file:///C:\D\dmd2\src\phobos\std\format.d
+	import std.stdio : writeln; // file:///C:\D\dmd2\src\phobos\std\stdio.d
+	import std.string : replace; // file:///C:\D\dmd2\src\phobos\std\string.d
 
 	string dir1 = get_common_path(id, true);
 	writeln(`dir1=`, dir1);
-	string dir2 = dir1 ~ `\.easy-install\` ~ sha1_uuid_for_string("OS-1");
+	string dir2 = dir1 ~ format!`\.easy-install\%s-%s`(name, md5_string(bytes));
 	writeln(`dir2=`, dir2);
 	mkdirRecurse(dir2);
 	return dir2;
@@ -219,10 +188,11 @@ private string md5_string(immutable ubyte[] bytes)
 {
 	// file:///C:\D\dmd2\src\phobos\std\digest\md.d
 	import std.digest.md;
+	import std.uni : toLower;
 
 	auto md5 = new MD5Digest();
 	ubyte[] hash = md5.digest(cast(ubyte[]) bytes);
-	return toHexString(hash);
+	return toHexString(hash).toLower;
 }
 
 private string get_home_path(bool create = false)
