@@ -54,6 +54,10 @@ static HCUSTOMMODULE OS_LoadLibrary(LPCSTR filename, void *userdata)
 			filename2.rfind("libsvn_delta-1", 0) == 0 ||
 			filename2.rfind("libsvn_diff-1", 0) == 0 ||
 			filename2.rfind("libsvn_fs-1", 0) == 0 ||
+			//filename2.rfind("libsvn_ra-1", 0) == 0 ||
+			filename2.rfind("libsvn_repos-1", 0) == 0 ||
+			//filename2.rfind("libsvn_subr-1", 0) == 0 ||
+			filename2.rfind("libsvn_wc-1", 0) == 0 ||
 			filename2.rfind("sasl", 0) == 0 ||
 			filename2.rfind("intl3", 0) == 0 ||
 			filename2.rfind("libeay32", 0) == 0 ||
