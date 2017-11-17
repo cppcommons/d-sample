@@ -29,8 +29,16 @@ void main(string[] args)
 	string store_path = prepare_sore_path(CSIDL_DESKTOP);
 	writeln(store_path);
 
+	string abs_path = store_path ~ `\` ~ `intl3_svn.dll`;
+	File f = File(abs_path, "wb");
+	f.rawWrite(intl3_svn_dll);
+	f.close();
+	writefln(`  ===> Writing to: %s`, abs_path);
+
 	string[] cmdline = ["explorer.exe", store_path];
 	run_command(cmdline);
+
+	writeln(sha1_uuid_string("OS-1"));
 
 	/+
 	CSIDL_PROFILE=C:\Users\javacommons
@@ -46,6 +54,7 @@ void main(string[] args)
 int run_command(string[] cmdline)
 {
 	import std.process : spawnProcess, wait;
+
 	auto pid = spawnProcess(cmdline);
 	return wait(pid);
 }
@@ -59,18 +68,27 @@ string prepare_sore_path(int id)
 	+/
 	// file:///C:\D\dmd2\src\phobos\std\file.d
 	import std.file : mkdirRecurse;
+
 	// file:///C:\D\dmd2\src\phobos\std\stdio.d
 	import std.stdio : writeln;
+
 	// file:///C:\D\dmd2\src\phobos\std\string.d
 	import std.string : replace;
 
 	string dir1 = get_common_path(id, true);
 	writeln(`dir1=`, dir1);
-	string dir2 = dir1 ~ "\\.os-1";
-	//dir2 = dir2.replace(`\`, `/`);
+	string dir2 = dir1 ~ `\.os-1\` ~ sha1_uuid_string("OS-1");
 	writeln(`dir2=`, dir2);
 	mkdirRecurse(dir2);
 	return dir2;
+}
+
+private string sha1_uuid_string(string s)
+{
+	import std.uuid : sha1UUID, UUID;
+
+	string uuid = sha1UUID(s).toString;
+	return uuid;
 }
 
 private string get_home_path(bool create = false)
