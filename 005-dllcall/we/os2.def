@@ -6,6 +6,10 @@ gc_setProxy
 multiply
 os_dump_heap
 os_get_integer
+os_mark
+os_new_array
 os_new_integer
 os_new_string
 os_new_string2
+os_sweep
+os_unmark

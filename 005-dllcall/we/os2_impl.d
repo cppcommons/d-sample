@@ -317,7 +317,7 @@ private class os_string : os_object
 	}
 }
 
-extern (C) os_array os_new_array(os_size_t size)
+extern (C) export os_array os_new_array(os_size_t size)
 
 {
 	auto o = new os_array(size);
@@ -405,7 +405,7 @@ extern (C) export void os_dump_heap()
 	}
 }
 
-extern (C) bool os_mark(os_object value)
+extern (C) export bool os_mark(os_object value)
 {
 	if (value is null)
 		return false;
@@ -417,7 +417,7 @@ extern (C) bool os_mark(os_object value)
 	}
 }
 
-extern (C) bool os_unmark(os_object value)
+extern (C) export bool os_unmark(os_object value)
 {
 	if (value is null)
 		return false;
@@ -429,7 +429,7 @@ extern (C) bool os_unmark(os_object value)
 	}
 }
 
-extern (C) void os_sweep()
+extern (C) export void os_sweep()
 {
 	{
 		g_os_global_mutex.lock_nothrow();

@@ -1,6 +1,12 @@
 c:\dm\bin\htod -cpp -hc os2.h os2.d
 if %errorlevel% neq 0 ( exit /b )
+rm -rf os2.dll.bin
 edub os2.dll build os2_impl.d
+if %errorlevel% neq 0 ( exit /b )
+C:\dm\bin\implib /system os2-dm32.lib os2.dll
+if %errorlevel% neq 0 ( exit /b )
+rm -rf os2.exe.bin
+edub os2_main.exe run os2_main.d os2-dm32.lib
 if %errorlevel% neq 0 ( exit /b )
 pexports os2.dll > os2.def
 if %errorlevel% neq 0 ( exit /b )
