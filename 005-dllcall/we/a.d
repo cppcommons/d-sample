@@ -7,38 +7,6 @@ private void exit(int code)
 
 shared static immutable ubyte[] svn_win32_dll_zip = cast(immutable ubyte[]) import(
 		"svn-win32-1.8.17-dll.zip");
-/+		
-shared static immutable ubyte[] intl3_svn_dll = cast(immutable ubyte[]) import("intl3_svn.dll");
-shared static immutable ubyte[][string] g_map;
-shared static this()
-{
-	g_map["intl3_svn.dll"] = cast(immutable ubyte[]) import("intl3_svn.dll");
-	g_map["libapr-1.dll"] = cast(immutable ubyte[]) import("libapr-1.dll");
-	g_map["libapriconv-1.dll"] = cast(immutable ubyte[]) import("libapriconv-1.dll");
-	g_map["libaprutil-1.dll"] = cast(immutable ubyte[]) import("libaprutil-1.dll");
-	g_map["libdb48.dll"] = cast(immutable ubyte[]) import("libdb48.dll");
-	g_map["libeay32.dll"] = cast(immutable ubyte[]) import("libeay32.dll");
-	g_map["libsasl.dll"] = cast(immutable ubyte[]) import("libsasl.dll");
-	g_map["libsvn_client-1.dll"] = cast(immutable ubyte[]) import("libsvn_client-1.dll");
-	g_map["libsvn_delta-1.dll"] = cast(immutable ubyte[]) import("libsvn_delta-1.dll");
-	g_map["libsvn_diff-1.dll"] = cast(immutable ubyte[]) import("libsvn_diff-1.dll");
-	g_map["libsvn_fs-1.dll"] = cast(immutable ubyte[]) import("libsvn_fs-1.dll");
-	g_map["libsvn_ra-1.dll"] = cast(immutable ubyte[]) import("libsvn_ra-1.dll");
-	g_map["libsvn_repos-1.dll"] = cast(immutable ubyte[]) import("libsvn_repos-1.dll");
-	g_map["libsvn_subr-1.dll"] = cast(immutable ubyte[]) import("libsvn_subr-1.dll");
-	g_map["libsvn_wc-1.dll"] = cast(immutable ubyte[]) import("libsvn_wc-1.dll");
-	g_map["saslANONYMOUS.dll"] = cast(immutable ubyte[]) import("saslANONYMOUS.dll");
-	g_map["saslCRAMMD5.dll"] = cast(immutable ubyte[]) import("saslCRAMMD5.dll");
-	g_map["saslDIGESTMD5.dll"] = cast(immutable ubyte[]) import("saslDIGESTMD5.dll");
-	g_map["saslLOGIN.dll"] = cast(immutable ubyte[]) import("saslLOGIN.dll");
-	g_map["saslNTLM.dll"] = cast(immutable ubyte[]) import("saslNTLM.dll");
-	g_map["saslOTP.dll"] = cast(immutable ubyte[]) import("saslOTP.dll");
-	g_map["saslPLAIN.dll"] = cast(immutable ubyte[]) import("saslPLAIN.dll");
-	g_map["saslSASLDB.dll"] = cast(immutable ubyte[]) import("saslSASLDB.dll");
-	g_map["saslSRP.dll"] = cast(immutable ubyte[]) import("saslSRP.dll");
-	g_map["ssleay32.dll"] = cast(immutable ubyte[]) import("ssleay32.dll");
-}
-+/
 
 void main(string[] args)
 {
