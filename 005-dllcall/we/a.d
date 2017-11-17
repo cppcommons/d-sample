@@ -5,7 +5,43 @@ private void exit(int code)
 	std.c.stdlib.exit(code);
 }
 
-static shared immutable ubyte[] intl3_svn_dll = cast(immutable ubyte[]) import("intl3_svn.dll");
+shared static immutable ubyte[] svn_win32_dll_zip = cast(immutable ubyte[]) import(
+		"svn-win32-1.8.17-dll.zip");
+shared static immutable ubyte[] intl3_svn_dll = cast(immutable ubyte[]) import("intl3_svn.dll");
+shared static immutable ubyte[][string] g_map;
+shared static this()
+{
+	g_map["intl3_svn.dll"] = cast(immutable ubyte[]) import("intl3_svn.dll");
+	g_map["libapr-1.dll"] = cast(immutable ubyte[]) import("libapr-1.dll");
+	g_map["libapriconv-1.dll"] = cast(immutable ubyte[]) import("libapriconv-1.dll");
+	g_map["libaprutil-1.dll"] = cast(immutable ubyte[]) import("libaprutil-1.dll");
+	g_map["libdb48.dll"] = cast(immutable ubyte[]) import("libdb48.dll");
+	g_map["libeay32.dll"] = cast(immutable ubyte[]) import("libeay32.dll");
+	g_map["libsasl.dll"] = cast(immutable ubyte[]) import("libsasl.dll");
+	g_map["libsvn_client-1.dll"] = cast(immutable ubyte[]) import("libsvn_client-1.dll");
+	g_map["libsvn_delta-1.dll"] = cast(immutable ubyte[]) import("libsvn_delta-1.dll");
+	g_map["libsvn_diff-1.dll"] = cast(immutable ubyte[]) import("libsvn_diff-1.dll");
+	g_map["libsvn_fs-1.dll"] = cast(immutable ubyte[]) import("libsvn_fs-1.dll");
+	g_map["libsvn_ra-1.dll"] = cast(immutable ubyte[]) import("libsvn_ra-1.dll");
+	g_map["libsvn_repos-1.dll"] = cast(immutable ubyte[]) import("libsvn_repos-1.dll");
+	g_map["libsvn_subr-1.dll"] = cast(immutable ubyte[]) import("libsvn_subr-1.dll");
+	g_map["libsvn_wc-1.dll"] = cast(immutable ubyte[]) import("libsvn_wc-1.dll");
+	g_map["saslANONYMOUS.dll"] = cast(immutable ubyte[]) import("saslANONYMOUS.dll");
+	g_map["saslCRAMMD5.dll"] = cast(immutable ubyte[]) import("saslCRAMMD5.dll");
+	g_map["saslDIGESTMD5.dll"] = cast(immutable ubyte[]) import("saslDIGESTMD5.dll");
+	g_map["saslLOGIN.dll"] = cast(immutable ubyte[]) import("saslLOGIN.dll");
+	g_map["saslNTLM.dll"] = cast(immutable ubyte[]) import("saslNTLM.dll");
+	g_map["saslOTP.dll"] = cast(immutable ubyte[]) import("saslOTP.dll");
+	g_map["saslPLAIN.dll"] = cast(immutable ubyte[]) import("saslPLAIN.dll");
+	g_map["saslSASLDB.dll"] = cast(immutable ubyte[]) import("saslSASLDB.dll");
+	g_map["saslSRP.dll"] = cast(immutable ubyte[]) import("saslSRP.dll");
+	g_map["ssleay32.dll"] = cast(immutable ubyte[]) import("ssleay32.dll");
+}
+
+/+
+
+
++/
 
 void main(string[] args)
 {
@@ -29,16 +65,80 @@ void main(string[] args)
 	string store_path = prepare_sore_path(CSIDL_DESKTOP);
 	writeln(store_path);
 
+	/+
 	string abs_path = store_path ~ `\` ~ `intl3_svn.dll`;
 	File f = File(abs_path, "wb");
 	f.rawWrite(intl3_svn_dll);
 	f.close();
 	writefln(`  ===> Writing to: %s`, abs_path);
+	+/
+
+	string[] keys = g_map.keys;
+	foreach (key; keys)
+	{
+		//g_map["intl3_svn.dll"] = cast(immutable ubyte[]) import("intl3_svn.dll");
+		immutable ubyte[] bytes = g_map[key];
+		string abs_path = store_path ~ `\` ~ key;
+		writefln(`  ===> Writing to: %s (%u bytes)`, abs_path, bytes.length);
+		File f = File(abs_path, "wb");
+		f.rawWrite(bytes);
+		f.close();
+	}
 
 	string[] cmdline = ["explorer.exe", store_path];
 	run_command(cmdline);
 
-	writeln(sha1_uuid_string("OS-1"));
+	writeln(sha1_uuid_for_string("OS-1"));
+
+	import std.algorithm : startsWith, endsWith;
+	import std.array : join, split;
+	import std.datetime.systime : DosFileTimeToSysTime;
+	import std.file : mkdirRecurse, read, setTimes;
+	import std.stdio : stdout, writefln, writeln;
+	import std.stdio : File;
+	import std.digest.crc;
+
+	// file:///C:\D\dmd2\src\phobos\std\zip.d
+	import std.zip;
+
+	auto zip_uuid = md5_string(svn_win32_dll_zip);
+	writeln(`zip_uuid=`, zip_uuid);
+	auto zip = new ZipArchive(cast(void[]) svn_win32_dll_zip);
+	writeln("Archive: ", "svn_win32_dll_zip");
+	writefln("%-10s  %-8s  Name", "Length", "CRC-32");
+	// iterate over all zip members
+	foreach (name, am; zip.directory)
+	{
+		//string path = prefix ~ "/" ~ name;
+		string path = name;
+		if (path.endsWith("/"))
+		{
+			mkdirRecurse(path);
+			setTimes(path, DosFileTimeToSysTime(am.time()), DosFileTimeToSysTime(am.time()));
+			continue;
+		}
+		string[] array = path.split("/");
+		auto fname = array[array.length - 1];
+		array.length--;
+		writeln(array, fname);
+		string dir_part = "";
+		if (array.length > 0)
+		{
+			dir_part = array.join("/") ~ "/";
+		}
+		writeln("dir_part=", dir_part);
+		// print some data about each member
+		writefln("%10s  %08x  %s %s", am.expandedSize, am.crc32, name, am.time());
+		assert(am.expandedData.length == 0);
+		// decompress the archive member
+		zip.expand(am);
+		assert(am.expandedData.length == am.expandedSize);
+		//mkdirRecurse(dir_part);
+		//auto f = File(path, "wb");
+		//f.rawWrite(am.expandedData);
+		//f.close();
+		//setTimes(path, DosFileTimeToSysTime(am.time()), DosFileTimeToSysTime(am.time()));
+	}
 
 	/+
 	CSIDL_PROFILE=C:\Users\javacommons
@@ -77,18 +177,47 @@ string prepare_sore_path(int id)
 
 	string dir1 = get_common_path(id, true);
 	writeln(`dir1=`, dir1);
-	string dir2 = dir1 ~ `\.os-1\` ~ sha1_uuid_string("OS-1");
+	string dir2 = dir1 ~ `\.os-1\` ~ sha1_uuid_for_string("OS-1");
 	writeln(`dir2=`, dir2);
 	mkdirRecurse(dir2);
 	return dir2;
 }
 
-private string sha1_uuid_string(string s)
+private string sha1_uuid_for_string(string s)
 {
+	// file:///C:\D\dmd2\src\phobos\std\uuid.d
 	import std.uuid : sha1UUID, UUID;
 
 	string uuid = sha1UUID(s).toString;
 	return uuid;
+}
+
+private string sha1_uuid_for_bytes(ubyte[] bytes)
+{
+	// file:///C:\D\dmd2\src\phobos\std\uuid.d
+	import std.uuid : sha1UUID, UUID;
+
+	string uuid = sha1UUID(bytes).toString;
+	return uuid;
+}
+
+private string sha1_uuid_for_bytes(immutable ubyte[] bytes)
+{
+	// file:///C:\D\dmd2\src\phobos\std\uuid.d
+	import std.uuid : sha1UUID, UUID;
+
+	string uuid = sha1UUID(cast(ubyte[]) bytes).toString;
+	return uuid;
+}
+
+private string md5_string(immutable ubyte[] bytes)
+{
+	// file:///C:\D\dmd2\src\phobos\std\digest\md.d
+	import std.digest.md;
+
+	auto md5 = new MD5Digest();
+	ubyte[] hash = md5.digest(cast(ubyte[]) bytes);
+	return toHexString(hash);
 }
 
 private string get_home_path(bool create = false)
