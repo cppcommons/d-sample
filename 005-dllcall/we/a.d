@@ -80,15 +80,51 @@ void main(string[] args)
 	import std.file : read; // file:///C:\D\dmd2\src\phobos\std\file.d
 	import easywin_loader;
 
+	extern (C) HCUSTOMMODULE OS_LoadLibrary(char* a_name, void* a_userdata)
+	{
+		char[] to_string(char* s)
+		{
+			import core.stdc.string : strlen;
+
+			return s ? s[0 .. strlen(s)] : cast(char[]) null;
+		}
+
+		import core.sys.windows.windows : LoadLibraryA;
+
+		writeln(`[LOAD] `, to_string(a_name));
+		return LoadLibraryA(a_name);
+	}
+
+	extern (C) EASYWIN_PROC OS_GetProcAddress(HCUSTOMMODULE a_module,
+			char* a_name, void* a_userdata)
+	{
+		char[] to_string(char* s)
+		{
+			import core.stdc.string : strlen;
+
+			return s ? s[0 .. strlen(s)] : cast(char[]) null;
+		}
+
+		import core.sys.windows.winbase : GetProcAddress;
+
+		writeln(`  [PROC] `, to_string(a_name));
+		return GetProcAddress(a_module, a_name);
+	}
+
+	extern (C) void OS_FreeLibrary(HCUSTOMMODULE a_module, void* a_userdata)
+	{
+	}
+
 	auto dll_bytes = cast(ubyte[]) read(
 			`C:\Users\javacommons\Desktop\.easy-install\svn-win32-dll-702f3170fedfdd6e20b8f8f5f4fc25f4\libsvn_client-1.dll`);
-	HMEMORYMODULE hmod = MemoryLoadLibrary(cast(void*) dll_bytes.ptr);
+	//HMEMORYMODULE hmod = MemoryLoadLibrary(cast(void*) dll_bytes.ptr);
+	HMEMORYMODULE hmod = MemoryLoadLibraryEx(cast(void*) dll_bytes.ptr,
+			&OS_LoadLibrary, &OS_GetProcAddress, &OS_FreeLibrary, null);
 	writefln("0x%08x", hmod);
 	EASYWIN_PROC proc = MemoryGetProcAddress(hmod,
 			cast(char*) "svn_client__arbitrary_nodes_diff".ptr);
 	writefln("0x%08x", proc);
-	EASYWIN_PROC proc2 = MemoryGetProcAddress(hmod,
-			cast(char*) "svn_client_version".ptr);
+	EASYWIN_PROC proc2 = MemoryGetProcAddress(hmod, cast(char*) "svn_client_version".ptr);
 	writefln("0x%08x", proc2);
 	exit(0);
 }

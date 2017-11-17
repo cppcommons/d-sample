@@ -4,9 +4,14 @@ typedef void *HMEMORYMODULE;
 typedef void *HMEMORYRSRC;
 typedef void *HCUSTOMMODULE;
 typedef void *EASYWIN_PROC;
-typedef HCUSTOMMODULE (*CustomLoadLibraryFunc)(/*LPCSTR*/ const char *, void *);
-typedef /*FARPROC*/ EASYWIN_PROC (*CustomGetProcAddressFunc)(HCUSTOMMODULE, /*LPCSTR*/ const char *, void *);
-typedef void (*CustomFreeLibraryFunc)(HCUSTOMMODULE, void *);
+typedef HCUSTOMMODULE (*CustomLoadLibraryFunc)(/*LPCSTR*/ const char *a_filename, void *a_userdata);
+//static HCUSTOMMODULE _LoadLibrary(LPCSTR filename, void *userdata)
+typedef /*FARPROC*/ EASYWIN_PROC (*CustomGetProcAddressFunc)(
+	HCUSTOMMODULE a_module, /*LPCSTR*/ const char *a_name, void *a_userdata);
+//static /*FARPROC*/ EASYWIN_PROC _GetProcAddress(HCUSTOMMODULE module, /*LPCSTR*/ const char *name, void *userdata)
+typedef void (*CustomFreeLibraryFunc)(HCUSTOMMODULE a_module, void *a_userdata);
+//static void _FreeLibrary(HCUSTOMMODULE module, void *userdata)
+
 /**
  * Load DLL from memory location.
  *

@@ -6,9 +6,13 @@ alias void *HMEMORYMODULE;
 alias void *HMEMORYRSRC;
 alias void *HCUSTOMMODULE;
 alias void *EASYWIN_PROC;
-alias HCUSTOMMODULE  function(char *, void *)CustomLoadLibraryFunc;
-alias EASYWIN_PROC  function(HCUSTOMMODULE , char *, void *)CustomGetProcAddressFunc;
-alias void  function(HCUSTOMMODULE , void *)CustomFreeLibraryFunc;
+alias HCUSTOMMODULE  function(char *a_filename, void *a_userdata)CustomLoadLibraryFunc;
+//static HCUSTOMMODULE _LoadLibrary(LPCSTR filename, void *userdata)
+alias EASYWIN_PROC  function(HCUSTOMMODULE a_module, char *a_name, void *a_userdata)CustomGetProcAddressFunc;
+//static /*FARPROC*/ EASYWIN_PROC _GetProcAddress(HCUSTOMMODULE module, /*LPCSTR*/ const char *name, void *userdata)
+alias void  function(HCUSTOMMODULE a_module, void *a_userdata)CustomFreeLibraryFunc;
+//static void _FreeLibrary(HCUSTOMMODULE module, void *userdata)
+
 /**
  * Load DLL from memory location.
  *
