@@ -4,3 +4,8 @@ add
 gc_clrProxy
 gc_setProxy
 multiply
+os_dump_heap
+os_get_integer
+os_new_integer
+os_new_string
+os_new_string2

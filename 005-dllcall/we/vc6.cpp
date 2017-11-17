@@ -45,6 +45,14 @@ __declspec(dllexport) int main(int argc, const char **argv)
 	os_int32 answer = add(11,22);
 	printf("answer=%d\n", answer);
 
+	os_object o = os_new_integer(12345);
+	os_new_integer(6789);
+	os_int64 o2 = os_get_integer(o);
+	printf("o2=%lld\n", o2);
+	os_new_string("xyz");
+
+	os_dump_heap();
+
 #ifndef VC6_DLL
 	if (argc == 2)
 	{
@@ -53,7 +61,8 @@ __declspec(dllexport) int main(int argc, const char **argv)
 		printf("hmod=0x%p\n", hmod);
 		/*FARPROC*/proc_main proc = (proc_main)GetProcAddress(hmod, "main");
 		printf("proc=0x%p\n", proc);
-		return proc(1, argv);
+		//return proc(1, argv);
+		return 0;
 	}
 #else
 	printf("[IN VC6_DLL]\n");

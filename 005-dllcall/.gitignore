@@ -1,6 +1,10 @@
 dub.json
 *.bin
+*.exp
+*.dll
 *.exe.json
+*.dll.json
+*.dll.def
 *.exe.cbp
 *.dll.cbp
 *.lib.cbp

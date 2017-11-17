@@ -6,4 +6,3 @@ setlocal
 set PATH=E:\opt\svn\vc6\svn-win32-1.8.17-ap24\svn-win32-1.8.17\bin;%PATH%
 vc6-run.exe https://github.com/cppcommons/d-sample/trunk
 endlocal
-c:\dm\bin\htod -cpp -hc os2.h os2.d
