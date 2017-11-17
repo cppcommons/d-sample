@@ -37,10 +37,9 @@ static HMEMORYMODULE OS_MemoryLoadLibrary(const void *data);
 
 static HCUSTOMMODULE OS_LoadLibrary(LPCSTR filename, void *userdata)
 {
-	std::cout << "[LOAD] " << filename << std::endl;
+	//std::cout << "[LOAD] " << filename << std::endl;
 	std::string filename2 = filename;
-	//filename2 = filename2.toupper();
-	std::transform(filename2.begin(), filename2.end(), filename2.begin(), ::toupper);
+	std::transform(filename2.begin(), filename2.end(), filename2.begin(), ::tolower);
 	if (g_module_map.count(filename2) > 0)
 	{
 		std::cout << "[ALREADY LOADED] " << filename2 << std::endl;
@@ -49,13 +48,18 @@ static HCUSTOMMODULE OS_LoadLibrary(LPCSTR filename, void *userdata)
 	std::string content = readSvnDll(filename);
 	if (content.size() > 0)
 	{
-		//if (filename2.rfind("LIVSVN", 0) == 0 || filename2.rfind("LIVAPR", 0) == 0)
-		if (filename2.rfind("LIVSVN", 0) == 0 ||
-			filename2.rfind("LIVAPR", 0) == 0 ||
-			filename2.rfind("SASL", 0) == 0 ||
-			filename2.rfind("INTL3", 0) == 0)
+		if (
+			filename2.rfind("libapr", 0) == 0 ||
+			filename2.rfind("libsvn_client-1", 0) == 0 ||
+			filename2.rfind("libsvn_delta-1", 0) == 0 ||
+			filename2.rfind("libsvn_diff-1", 0) == 0 ||
+			filename2.rfind("libsvn_fs-1", 0) == 0 ||
+			filename2.rfind("sasl", 0) == 0 ||
+			filename2.rfind("intl3", 0) == 0 ||
+			filename2.rfind("libeay32", 0) == 0 ||
+			filename2.rfind("libdb48", 0) == 0)
 		{
-			std::cout << "  [SIZE] " << content.size() << std::endl;
+			std::cout << "[MEMORY]" << filename2 << " [SIZE] " << content.size() << std::endl;
 			HCUSTOMMODULE v_module = OS_MemoryLoadLibrary(content.c_str());
 			g_module_set.insert(v_module);
 			g_module_map[filename2] = v_module;
@@ -77,10 +81,12 @@ static FARPROC OS_GetProcAddress(HCUSTOMMODULE module, LPCSTR name, void *userda
 #if 0x1
 	if (g_module_set.count(module) > 0)
 	{
+#if 0x0
 		if (IS_INTRESOURCE(name))
 			std::cout << "  [FOUND(int)] " << (int)name << std::endl;
 		else
 			std::cout << "  [FOUND] " << name << std::endl;
+#endif
 		return MemoryGetProcAddress((HMEMORYMODULE)module, name);
 	}
 #endif
