@@ -27,7 +27,7 @@ void main(string[] args)
 	writeln(`CSIDL_COMMON_APPDATA=`, get_common_path(CSIDL_COMMON_APPDATA, true));
 	writeln(`CSIDL_DESKTOP=`, get_common_path(CSIDL_DESKTOP, true));
 
-	string store_path = prepare_sore_path(CSIDL_DESKTOP, "svn-win32", svn_win32_dll_zip);
+	string store_path = prepare_sore_path(CSIDL_DESKTOP, "svn-win32-dll", svn_win32_dll_zip);
 	writeln(store_path);
 
 	string[] cmdline = ["explorer.exe", store_path];
@@ -46,21 +46,22 @@ void main(string[] args)
 	// file:///C:\D\dmd2\src\phobos\std\zip.d
 	import std.zip;
 
-	auto zip_uuid = md5_string(svn_win32_dll_zip);
-	writeln(`zip_uuid=`, zip_uuid);
+	auto zip_md5 = md5_string(svn_win32_dll_zip);
+	writeln(`zip_md5=`, zip_md5);
 	auto zip = new ZipArchive(cast(void[]) svn_win32_dll_zip);
 	writeln("Archive: ", "svn_win32_dll_zip");
-	writefln("%-10s  %-8s  Name", "Length", "CRC-32");
+	writefln("%-10s  %-8s  %-24s  %s", "Length", "CRC-32", "Name", "Timestamp");
 	// iterate over all zip members
 	string prefix = store_path;
 	prefix = prefix.replace(`\`, `/`);
 	foreach (name, am; zip.directory)
 	{
 		import std.path : baseName;
+
 		string path = prefix ~ "/" ~ name;
 		auto fname = baseName(path);
 		// print some data about each member
-		writefln("%10s  %08x  %s %s", am.expandedSize, am.crc32, name, am.time());
+		writefln("%10s  %08x  %-24s  %s", am.expandedSize, am.crc32, name, DosFileTimeToSysTime(am.time()));
 		assert(am.expandedData.length == 0);
 		// decompress the archive member
 		zip.expand(am);
@@ -99,7 +100,7 @@ void write_if_not_exist(string path, ubyte[] bytes, SysTime time)
 	{
 		import std.stdio : writeln;
 
-		writeln(`[EXISTS] `, path);
+		//writeln(`[EXISTS] `, path);
 		return;
 	}
 	string dir_part = dirName(path);
@@ -182,37 +183,28 @@ private string get_home_path(bool create = false)
 
 private string get_common_path(int id, bool create = false)
 {
-	version (Windows)
+	// file:///C:\D\dmd2\src\druntime\import\core\sys\windows\shlobj.d
+	import core.sys.windows.shlobj : CSIDL_FLAG_CREATE, SHGetFolderPathW;
+
+	// file:///C:\D\dmd2\src\druntime\import\core\sys\windows\windows.d
+	import core.sys.windows.windows : MAX_PATH;
+
+	// file:///C:\D\dmd2\src\phobos\std\conv.d
+	import std.conv : to;
+
+	wchar[] to_string(wchar* s)
 	{
-		// file:///C:\D\dmd2\src\druntime\import\core\sys\windows\shlobj.d
-		import core.sys.windows.shlobj : CSIDL_FLAG_CREATE, SHGetFolderPathW;
+		import core.stdc.wchar_ : wcslen;
 
-		// file:///C:\D\dmd2\src\druntime\import\core\sys\windows\windows.d
-		import core.sys.windows.windows : MAX_PATH;
-
-		// file:///C:\D\dmd2\src\phobos\std\conv.d
-		import std.conv : to;
-
-		wchar[] to_string(wchar* s)
-		{
-			import core.stdc.wchar_ : wcslen;
-
-			return s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
-		}
-
-		if (create)
-			id |= CSIDL_FLAG_CREATE;
-		wchar[MAX_PATH] buffer;
-		if (SHGetFolderPathW(null, id, null, 0, buffer.ptr) >= 0)
-			return to!string(to_string(buffer.ptr));
-		return null;
+		return s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
 	}
-	else
-	{ // Not tested!
-		import std.path : expandTilde;
 
-		return expandTilde("~/");
-	}
+	if (create)
+		id |= CSIDL_FLAG_CREATE;
+	wchar[MAX_PATH] buffer;
+	if (SHGetFolderPathW(null, id, null, 0, buffer.ptr) >= 0)
+		return to!string(to_string(buffer.ptr));
+	return null;
 }
 
 /+
