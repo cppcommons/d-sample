@@ -2,6 +2,26 @@ import core.sys.windows.dll : SimpleDllMain; // file:///C:\D\dmd2\src\druntime\i
 
 mixin SimpleDllMain;
 
+string to_string(char* s)
+{
+	import core.stdc.string : strlen;
+	import std.conv : to;
+
+	//return s ? s[0 .. strlen(s)] : cast(char[]) null;
+	char[] result = s ? s[0 .. strlen(s)] : cast(char[]) null;
+	return to!string(s);
+}
+
+wstring to_wstring(wchar* s)
+{
+	import core.stdc.wchar_ : wcslen;
+	import std.conv : to;
+
+	//return s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
+	wchar[] result = s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
+	return to!wstring(result);
+}
+
 private void exit(int code)
 {
 	import std.c.stdlib;
@@ -18,13 +38,18 @@ shared static immutable ubyte[] svn_win32_dll_zip = cast(immutable ubyte[]) impo
 import core.sys.windows.windows;
 import core.sys.windows.winbase;
 
-extern (Windows) export void sayHello(HWND hwnd, HINSTANCE hinst, wchar* lpszCmdLine, int nCmdShow)
+//extern (Windows) export void sayHello(HWND hwnd, HINSTANCE hinst, wchar* lpszCmdLine, int nCmdShow)
+extern (Windows) export void sayHello(HWND hwnd, HINSTANCE hinst, char* lpszCmdLine, int nCmdShow)
 {
 	import core.stdc.stdio; //freopen
+	import std.stdio : writeln;
+
 	AllocConsole();
-    freopen( "CONIN$", "r", stdin ); 
-    freopen( "CONOUT$", "w", stdout ); 
-    freopen( "CONOUT$", "w", stderr ); 
+	freopen("CONIN$", "r", stdin);
+	freopen("CONOUT$", "w", stdout);
+	freopen("CONOUT$", "w", stderr);
+	//writeln("lpszCmdLine=", to_wstring(lpszCmdLine));
+	writeln("lpszCmdLine=", to_string(lpszCmdLine));
 	MessageBoxA(null, cast(char*) "a", cast(char*) "b", MB_OK);
 	string[] args;
 	args ~= "dummy.exe";
