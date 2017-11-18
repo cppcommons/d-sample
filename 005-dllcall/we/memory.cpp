@@ -118,7 +118,8 @@ int main()
 {
 	printf("memory.cpp\n");
 	//const char *filename = "vc6-run.dll";
-	const char *filename = "E:\\opt\\svn\\vc6.dll";
+	//const char *filename = "E:\\opt\\svn\\vc6.dll";
+	const char *filename = "vc6-dll.dll";
 
 	std::string content = readFile(filename);
 	std::cout << "content.length=" << content.size() << std::endl;

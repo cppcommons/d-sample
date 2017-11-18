@@ -1,3 +1,7 @@
+import core.sys.windows.dll : SimpleDllMain;
+
+mixin SimpleDllMain; // file:///C:\D\dmd2\src\druntime\import\core\sys\windows\dll.d
+
 private void exit(int code)
 {
 	import std.c.stdlib;
@@ -8,7 +12,13 @@ private void exit(int code)
 shared static immutable ubyte[] svn_win32_dll_zip = cast(immutable ubyte[]) import(
 		"svn-win32-1.8.17-dll.zip");
 
-void main(string[] args)
+extern (C) export void cmain()
+{
+	string[] args = ["dummy.exe"];
+	xmain(args);
+}
+
+void xmain(string[] args)
 {
 	import core.thread;
 	import std.stdio;
@@ -27,113 +37,131 @@ void main(string[] args)
 	writeln(`CSIDL_COMMON_APPDATA=`, get_common_path(CSIDL_COMMON_APPDATA, true));
 	writeln(`CSIDL_DESKTOP=`, get_common_path(CSIDL_DESKTOP, true));
 
-	string store_path = prepare_sore_path(CSIDL_DESKTOP, "svn-win32-dll", svn_win32_dll_zip);
-	writeln(store_path);
-
-	string[] cmdline = ["explorer.exe", store_path];
-	run_command(cmdline);
-
-	writeln(sha1_uuid_for_string("OS-1"));
-
-	import std.algorithm : startsWith, endsWith;
-	import std.array : join, split;
-	import std.datetime.systime : DosFileTimeToSysTime, SysTime;
-	import std.file : mkdirRecurse, read, setTimes;
-	import std.stdio : stdout, writefln, writeln;
-	//import std.stdio : File;
-	import std.digest.crc;
-
-	// file:///C:\D\dmd2\src\phobos\std\zip.d
-	import std.zip;
-
-	auto zip_md5 = md5_string(svn_win32_dll_zip);
-	writeln(`zip_md5=`, zip_md5);
-	auto zip = new ZipArchive(cast(void[]) svn_win32_dll_zip);
-	writeln("Archive: ", "svn_win32_dll_zip");
-	writefln("%-10s  %-8s  %-24s  %s", "Length", "CRC-32", "Name", "Timestamp");
-	// iterate over all zip members
-	string prefix = store_path;
-	prefix = prefix.replace(`\`, `/`);
-	foreach (name, am; zip.directory)
+	version (Windows)
 	{
-		import std.path : baseName;
 
-		string path = prefix ~ "/" ~ name;
-		auto fname = baseName(path);
-		// print some data about each member
-		writefln("%10s  %08x  %-24s  %s", am.expandedSize, am.crc32, name,
-				DosFileTimeToSysTime(am.time()));
-		assert(am.expandedData.length == 0);
-		// decompress the archive member
-		zip.expand(am);
-		assert(am.expandedData.length == am.expandedSize);
-		write_if_not_exist(path, am.expandedData, DosFileTimeToSysTime(am.time()));
-	}
+		string store_path = prepare_sore_path(CSIDL_DESKTOP, "svn-win32-dll", svn_win32_dll_zip);
+		writeln(store_path);
 
-	/+
+		string[] cmdline = ["explorer.exe", store_path];
+		run_command(cmdline);
+
+		writeln(sha1_uuid_for_string("OS-1"));
+
+		import std.algorithm : startsWith, endsWith;
+		import std.array : join, split;
+		import std.datetime.systime : DosFileTimeToSysTime, SysTime;
+		import std.file : mkdirRecurse, read, setTimes;
+		import std.stdio : stdout, writefln, writeln;
+
+		//import std.stdio : File;
+		import std.digest.crc;
+
+		// file:///C:\D\dmd2\src\phobos\std\zip.d
+		import std.zip;
+
+		auto zip_md5 = md5_string(svn_win32_dll_zip);
+		writeln(`zip_md5=`, zip_md5);
+		auto zip = new ZipArchive(cast(void[]) svn_win32_dll_zip);
+		writeln("Archive: ", "svn_win32_dll_zip");
+		writefln("%-10s  %-8s  %-24s  %s", "Length", "CRC-32", "Name", "Timestamp");
+		// iterate over all zip members
+		string prefix = store_path;
+		prefix = prefix.replace(`\`, `/`);
+		foreach (name, am; zip.directory)
+		{
+			import std.path : baseName;
+
+			string path = prefix ~ "/" ~ name;
+			auto fname = baseName(path);
+			// print some data about each member
+			writefln("%10s  %08x  %-24s  %s", am.expandedSize, am.crc32, name,
+					DosFileTimeToSysTime(am.time()));
+			assert(am.expandedData.length == 0);
+			// decompress the archive member
+			zip.expand(am);
+			assert(am.expandedData.length == am.expandedSize);
+			write_if_not_exist(path, am.expandedData, DosFileTimeToSysTime(am.time()));
+		}
+		delete zip;
+
+		/+
 	CSIDL_PROFILE=C:\Users\javacommons
 	CSIDL_APPDATA=C:\Users\javacommons\AppData\Roaming
 	CSIDL_LOCAL_APPDATA=C:\Users\javacommons\AppData\Local
 	CSIDL_COMMON_APPDATA=C:\ProgramData
 	CSIDL_DESKTOP=C:\Users\javacommons\Desktop
 	+/
-	import std.file : read; // file:///C:\D\dmd2\src\phobos\std\file.d
-	import easywin_loader;
+		import std.file : read; // file:///C:\D\dmd2\src\phobos\std\file.d
+		import easywin_loader;
 
-	extern (C) HCUSTOMMODULE OS_LoadLibrary(char* a_name, void* a_userdata)
-	{
-		char[] to_string(char* s)
+		extern (C) HCUSTOMMODULE OS_LoadLibrary(char* a_name, void* a_userdata)
 		{
-			import core.stdc.string : strlen;
+			char[] to_string(char* s)
+			{
+				import core.stdc.string : strlen;
 
-			return s ? s[0 .. strlen(s)] : cast(char[]) null;
+				return s ? s[0 .. strlen(s)] : cast(char[]) null;
+			}
+
+			import core.sys.windows.windows : LoadLibraryA;
+
+			writeln(`[LOAD] `, to_string(a_name));
+			return LoadLibraryA(a_name);
 		}
 
-		import core.sys.windows.windows : LoadLibraryA;
-
-		writeln(`[LOAD] `, to_string(a_name));
-		return LoadLibraryA(a_name);
-	}
-
-	extern (C) EASYWIN_PROC OS_GetProcAddress(HCUSTOMMODULE a_module,
-			char* a_name, void* a_userdata)
-	{
-		char[] to_string(char* s)
+		extern (C) EASYWIN_PROC OS_GetProcAddress(HCUSTOMMODULE a_module,
+				char* a_name, void* a_userdata)
 		{
-			import core.stdc.string : strlen;
+			char[] to_string(char* s)
+			{
+				import core.stdc.string : strlen;
 
-			return s ? s[0 .. strlen(s)] : cast(char[]) null;
+				return s ? s[0 .. strlen(s)] : cast(char[]) null;
+			}
+
+			import core.sys.windows.winbase : GetProcAddress;
+
+			writeln(`  [PROC] `, to_string(a_name));
+			return GetProcAddress(a_module, a_name);
 		}
 
-		import core.sys.windows.winbase : GetProcAddress;
-
-		writeln(`  [PROC] `, to_string(a_name));
-		return GetProcAddress(a_module, a_name);
+		extern (C) void OS_FreeLibrary(HCUSTOMMODULE a_module, void* a_userdata)
+		{
+		}
 	}
 
-	extern (C) void OS_FreeLibrary(HCUSTOMMODULE a_module, void* a_userdata)
+	version (Windows)
 	{
+		auto dll_bytes = cast(ubyte[]) read( //`C:\Users\javacommons\Desktop\.easy-install\svn-win32-dll-702f3170fedfdd6e20b8f8f5f4fc25f4\libsvn_client-1.dll`
+				`vc6-dll.dll`);
+		//HMEMORYMODULE hmod = MemoryLoadLibrary(cast(void*) dll_bytes.ptr);
+		HMEMORYMODULE hmod = MemoryLoadLibraryEx(cast(void*) dll_bytes.ptr,
+				&OS_LoadLibrary, &OS_GetProcAddress, &OS_FreeLibrary, null);
+		writefln("0x%08x", hmod);
+		EASYWIN_PROC proc = MemoryGetProcAddress(hmod,
+				cast(char*) "svn_client__arbitrary_nodes_diff".ptr);
+		writefln("0x%08x", proc);
+		EASYWIN_PROC proc2 = MemoryGetProcAddress(hmod, cast(char*) "svn_client_version".ptr);
+		writefln("0x%08x", proc2);
+		EASYWIN_PROC proc3 = MemoryGetProcAddress(hmod, cast(char*) "main".ptr);
+		writefln("0x%08x", proc3);
 	}
 
-	auto dll_bytes = cast(ubyte[]) read( //`C:\Users\javacommons\Desktop\.easy-install\svn-win32-dll-702f3170fedfdd6e20b8f8f5f4fc25f4\libsvn_client-1.dll`
-			`vc6-dll.dll`);
-	//HMEMORYMODULE hmod = MemoryLoadLibrary(cast(void*) dll_bytes.ptr);
-	HMEMORYMODULE hmod = MemoryLoadLibraryEx(cast(void*) dll_bytes.ptr,
-			&OS_LoadLibrary, &OS_GetProcAddress, &OS_FreeLibrary, null);
-	writefln("0x%08x", hmod);
-	EASYWIN_PROC proc = MemoryGetProcAddress(hmod,
-			cast(char*) "svn_client__arbitrary_nodes_diff".ptr);
-	writefln("0x%08x", proc);
-	EASYWIN_PROC proc2 = MemoryGetProcAddress(hmod, cast(char*) "svn_client_version".ptr);
-	writefln("0x%08x", proc2);
-	EASYWIN_PROC proc3 = MemoryGetProcAddress(hmod, cast(char*) "main".ptr);
-	writefln("0x%08x", proc3);
 	import vc6;
+	import core.sys.windows.windows;
+	import core.sys.windows.winbase;
+
+	//HMODULE the_dll = LoadLibraryA(cast(char*) "vc6-dll.dll".ptr);
+	//writefln("the_dll=0x%08x", the_dll);
+	//proc_main f_main = cast(proc_main) GetProcAddress(the_dll, cast(char*) "main".ptr);
 	proc_main f_main = cast(proc_main) proc3;
-	char*[] cargs;
+	writefln("f_main=0x%08x", f_main);
+	static char*[] cargs;
 	cargs ~= cast(char*) "dummy.exe".ptr;
 	cargs ~= cast(char*) "https://github.com/cppcommons/d-sample/trunk".ptr;
 	f_main(cargs.length, cargs.ptr);
+	writeln("END");
 	//exit(0);
 }
 
