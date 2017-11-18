@@ -152,22 +152,33 @@ int dmain(string[] args)
 				return to!string(s);
 			}
 
-			import core.sys.windows.windows : LoadLibraryA;
+			import core.sys.windows.windows;
+			import core.sys.windows.winbase;
+			import std.path : dirName;
 			import std.string : toStringz;
 			import std.uni : toUpper;
+			import std.utf : toUTF16z;
 
 			//writeln(`c`);
 
-			string basename = to_string(a_name).toUpper;
+			string basename = to_string(a_name);
+			string key = basename.toUpper;
 			//writeln(`c2`);
-			string* found = basename in g_module_map;
+			string* found = key in g_module_map;
 			//writeln(`c3`);
-			if (found)
-				basename = (*found);
+			//if (found)
+			//	basename = (*found);
 			//writeln(`c4`);
 			writeln(`[LOAD] `, basename);
-			//return LoadLibraryA(a_name);
-			return LoadLibraryA(toStringz(basename));
+			if (!found)
+				return LoadLibraryA(a_name);
+			string folder = dirName(*found);
+			const(wchar)* folderW = toUTF16z(folder);
+			//wstring folderW = to!wstring(folder);
+			SetDllDirectoryW(folderW);
+			HCUSTOMMODULE hmod = LoadLibraryA(toStringz(basename));
+			SetDllDirectoryW(null);
+			return hmod;
 		}
 
 		extern (C) EASYWIN_PROC OS_GetProcAddress(HCUSTOMMODULE a_module,
