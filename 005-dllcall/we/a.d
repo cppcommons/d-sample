@@ -50,7 +50,7 @@ extern (Windows) export void sayHello(HWND hwnd, HINSTANCE hinst, char* lpszCmdL
 	freopen("CONOUT$", "w", stderr);
 	//writeln("lpszCmdLine=", to_wstring(lpszCmdLine));
 	writeln("lpszCmdLine=", to_string(lpszCmdLine));
-	MessageBoxA(null, cast(char*) "a", cast(char*) "b", MB_OK);
+	//MessageBoxA(null, cast(char*) "a", cast(char*) "b", MB_OK);
 	string[] args;
 	args ~= "dummy.exe";
 	args ~= "https://github.com/cppcommons/d-sample/trunk";
