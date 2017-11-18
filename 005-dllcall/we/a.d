@@ -12,17 +12,57 @@ private void exit(int code)
 shared static immutable ubyte[] svn_win32_dll_zip = cast(immutable ubyte[]) import(
 		"svn-win32-1.8.17-dll.zip");
 
+/+
 extern (C) export void cmain()
 {
 	string[] args = ["dummy.exe"];
 	xmain(args);
 }
++/
 
-void xmain(string[] args)
+//void wmain(string[] args)
+extern (C) export void wmain(int argc, wchar** argv)
 {
+	char[] to_string(char* s)
+	{
+		import core.stdc.string : strlen;
+
+		return s ? s[0 .. strlen(s)] : cast(char[]) null;
+	}
+
+	wchar[] to_wstring(wchar* s)
+	{
+		import core.stdc.wchar_ : wcslen;
+
+		return s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
+	}
+
+	string to_mb_string(in char[] s, uint codePage = 0)
+	{
+		import std.windows.charset : toMBSz;
+		import std.conv : to;
+
+		const(char)* mbsz = toMBSz(s, codePage);
+		return to!string(to_string(cast(char*) mbsz));
+	}
+
+	string[] args;
+	for (int i = 0; i < argc; i++)
+	{
+		import std.conv : to;
+
+		args ~= to!string(to_wstring(argv[i]));
+	}
 	import core.thread;
 	import std.stdio;
 	import std.string;
+
+	writeln(`args=`, args);
+
+	foreach (arg; args)
+	{
+		writeln(`to_mb_string(arg)=`, to_mb_string(arg));
+	}
 
 	//writeln(intl3_svn_dll.length);
 
