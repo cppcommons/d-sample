@@ -63,6 +63,9 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
 	svn_auth_baton_t *ab;
 	proc_svn_cmdline_init func_p;
 
+	freopen("CONIN$", "r", stdin);
+	freopen("CONOUT$", "w", stdout);
+	freopen("CONOUT$", "w", stderr);
 	if (1)
 	{
 		os_int32 test_int = vc6_add2(111, 222);

@@ -12,6 +12,28 @@ private void exit(int code)
 shared static immutable ubyte[] svn_win32_dll_zip = cast(immutable ubyte[]) import(
 		"svn-win32-1.8.17-dll.zip");
 
+//extern "C" 
+//__declspec( dllexport )
+//void CALLBACK sayHello( HWND, HINSTANCE, wchar_t const*, int )
+import core.sys.windows.windows;
+import core.sys.windows.winbase;
+
+extern (Windows) export void sayHello(HWND hwnd, HINSTANCE hinst, wchar* lpszCmdLine, int nCmdShow)
+{
+	import core.stdc.stdio; //freopen
+	AllocConsole();
+    freopen( "CONIN$", "r", stdin ); 
+    freopen( "CONOUT$", "w", stdout ); 
+    freopen( "CONOUT$", "w", stderr ); 
+	MessageBoxA(null, cast(char*) "a", cast(char*) "b", MB_OK);
+	string[] args;
+	args ~= "dummy.exe";
+	args ~= "https://github.com/cppcommons/d-sample/trunk";
+	dmain(args);
+	MessageBoxA(null, cast(char*) "c", cast(char*) "d", MB_OK);
+	return;
+}
+
 extern (C) export int wmain(int argc, wchar** argv)
 {
 	wchar[] to_wstring(wchar* s)
