@@ -20,8 +20,26 @@ extern (C) export void cmain()
 }
 +/
 
-//void wmain(string[] args)
 extern (C) export int wmain(int argc, wchar** argv)
+{
+	wchar[] to_wstring(wchar* s)
+	{
+		import core.stdc.wchar_ : wcslen;
+
+		return s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
+	}
+
+	string[] args;
+	for (int i = 0; i < argc; i++)
+	{
+		import std.conv : to;
+
+		args ~= to!string(to_wstring(argv[i]));
+	}
+	return dmain(args);
+}
+
+int dmain(string[] args)
 {
 	char[] to_string(char* s)
 	{
@@ -46,13 +64,6 @@ extern (C) export int wmain(int argc, wchar** argv)
 		return to!string(to_string(cast(char*) mbsz));
 	}
 
-	string[] args;
-	for (int i = 0; i < argc; i++)
-	{
-		import std.conv : to;
-
-		args ~= to!string(to_wstring(argv[i]));
-	}
 	import core.thread;
 	import std.stdio;
 	import std.string;
