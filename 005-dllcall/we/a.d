@@ -31,6 +31,8 @@ extern (C) export int wmain(int argc, wchar** argv)
 	return dmain(args);
 }
 
+__gshared static string[string] g_module_map;
+
 int dmain(string[] args)
 {
 	char[] to_string(char* s)
@@ -108,19 +110,25 @@ int dmain(string[] args)
 		foreach (name, am; zip.directory)
 		{
 			import std.path : baseName;
+			import std.uni : toUpper;
 
 			string path = prefix ~ "/" ~ name;
-			auto fname = baseName(path);
+			auto fname = baseName(path).toUpper;
 			// print some data about each member
-			writefln("%10s  %08x  %-24s  %s", am.expandedSize, am.crc32, name,
+			writefln("%10s  %08x  %-24s  %s", am.expandedSize, am.crc32, fname,
 					DosFileTimeToSysTime(am.time()));
 			assert(am.expandedData.length == 0);
 			// decompress the archive member
 			zip.expand(am);
 			assert(am.expandedData.length == am.expandedSize);
 			write_if_not_exist(path, am.expandedData, DosFileTimeToSysTime(am.time()));
+			import std.path : baseName;
+
+			//string basename = baseName(path).toUpper;
+			g_module_map[fname] = path;
 		}
 		delete zip;
+		//writeln(g_module_map);
 
 		/+
 	CSIDL_PROFILE=C:\Users\javacommons
@@ -134,17 +142,32 @@ int dmain(string[] args)
 
 		extern (C) HCUSTOMMODULE OS_LoadLibrary(char* a_name, void* a_userdata)
 		{
-			char[] to_string(char* s)
+			string to_string(char* s)
 			{
 				import core.stdc.string : strlen;
+				import std.conv : to;
 
-				return s ? s[0 .. strlen(s)] : cast(char[]) null;
+				//return s ? s[0 .. strlen(s)] : cast(char[]) null;
+				char[] result = s ? s[0 .. strlen(s)] : cast(char[]) null;
+				return to!string(s);
 			}
 
 			import core.sys.windows.windows : LoadLibraryA;
+			import std.string : toStringz;
+			import std.uni : toUpper;
 
-			writeln(`[LOAD] `, to_string(a_name));
-			return LoadLibraryA(a_name);
+			//writeln(`c`);
+
+			string basename = to_string(a_name).toUpper;
+			//writeln(`c2`);
+			string* found = basename in g_module_map;
+			//writeln(`c3`);
+			if (found)
+				basename = (*found);
+			//writeln(`c4`);
+			writeln(`[LOAD] `, basename);
+			//return LoadLibraryA(a_name);
+			return LoadLibraryA(toStringz(basename));
 		}
 
 		extern (C) EASYWIN_PROC OS_GetProcAddress(HCUSTOMMODULE a_module,
@@ -168,6 +191,8 @@ int dmain(string[] args)
 		}
 	}
 
+	writeln(`a`);
+
 	version (Windows)
 	{
 		auto dll_bytes = cast(ubyte[]) read( //`C:\Users\javacommons\Desktop\.easy-install\svn-win32-dll-702f3170fedfdd6e20b8f8f5f4fc25f4\libsvn_client-1.dll`
@@ -184,6 +209,8 @@ int dmain(string[] args)
 		EASYWIN_PROC proc3 = MemoryGetProcAddress(hmod, cast(char*) "main".ptr);
 		writefln("0x%08x", proc3);
 	}
+
+	writeln(`b`);
 
 	import vc6;
 	import core.sys.windows.windows;
