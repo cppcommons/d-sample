@@ -26,6 +26,9 @@
 	},
 	"window.title": "${activeEditorLong}",
 	"terminal.integrated.shell.windows": "C:\\Windows\\System32\\cmd.exe",
+	"terminal.integrated.shellArgs.windows": [
+		"/k setenv.bat"
+	],
 	"terminal.integrated.fontSize": 20,
 	"editor.fontSize": 20,
 	"editor.detectIndentation": false,

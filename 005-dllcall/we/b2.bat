@@ -1,6 +1,3 @@
-setlocal
-call "C:\Program Files (x86)\Microsoft Visual Studio\VC98\Bin\VCVARS32.BAT"
-@echo on
 cl /MD minimal_client.c ^
  -IE:\opt\svn\vc6\svn-win32-1.8.17-ap24_dev\svn-win32-1.8.17\include ^
  -IE:\opt\svn\vc6\svn-win32-1.8.17-ap24_dev\svn-win32-1.8.17\include\apr ^
@@ -41,6 +38,5 @@ cl /MD minimal_client.c ^
 		"svn_repos-1.lib" ^
 		"svn_subr-1.lib" ^
 		"svn_wc-1.lib"
-endlocal
 copy mini.exe E:\opt\svn\vc6\svn-win32-1.8.17-ap24\svn-win32-1.8.17\bin
 E:\opt\svn\vc6\svn-win32-1.8.17-ap24\svn-win32-1.8.17\bin\mini.exe https://github.com/cppcommons/d-sample/trunk

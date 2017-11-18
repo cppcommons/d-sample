@@ -1,12 +1,8 @@
-setlocal
-call "C:\Program Files (x86)\Microsoft Visual Studio\VC98\Bin\VCVARS32.BAT"
-@echo on
 pexports e:\opt\opt.m32\usr\bin\msys-svn_subr-1-0.dll > msys-svn_subr-1-0.def
 lib /DEF:msys-svn_subr-1-0.def /MACHINE:X86 /OUT:msys-svn_subr-1-0.lib
 pexports e:\opt\opt.m32\usr\bin\msys-apr-1-0.dll > msys-apr-1-0.def
 lib /DEF:msys-apr-1-0.def /MACHINE:X86 /OUT:msys-apr-1-0.lib
 if %errorlevel% neq 0 ( exit /b )
-endlocal
 
 ::cp vc6.cpp vc6_iface.h
 ::c:\dm\bin\htod -cpp -hc vc6_iface.h

@@ -4,10 +4,6 @@ extern "C" {
 typedef int (*proc_main)(int argc, const char **argv);
 EXPORT_FUNCTION int main(int argc, const char **argv);
 EXPORT_FUNCTION os_int32 vc6_add2(os_int32 a, os_int32 b);
-EXPORT_FUNCTION os_int32 vc6_add2(os_int32 a, os_int32 b)
-{
-	return a + b;
-}
 
 static dummy()
 {
@@ -15,6 +11,10 @@ static dummy()
 }
 
 #ifndef __HTOD__
+EXPORT_FUNCTION os_int32 vc6_add2(os_int32 a, os_int32 b)
+{
+	return a + b;
+}
 #include "svn_client.h"
 #include "svn_cmdline.h"
 #include "svn_pools.h"

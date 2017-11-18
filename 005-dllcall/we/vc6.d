@@ -6,7 +6,6 @@ alias int  function(int argc, char **argv)proc_main;
 int  main(int argc, char **argv);
 os_int32  vc6_add2(os_int32 a, os_int32 b);
 
-os_int32  vc6_add2(os_int32 , os_int32 );
 
 
 //#include <string>

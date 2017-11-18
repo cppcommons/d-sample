@@ -1,9 +1,5 @@
-setlocal
-call "C:\Program Files (x86)\Microsoft Visual Studio\VC98\Bin\VCVARS32.BAT"
-@echo on
 cl /MD -oa-main.exe a-main.cpp
 if %errorlevel% neq 0 ( exit /b )
-endlocal
 c:\dm\bin\dmc -c easywin_loader.cpp
 if %errorlevel% neq 0 ( exit /b )
 c:\dm\bin\htod -cpp -hc easywin_loader.cpp
