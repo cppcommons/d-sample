@@ -40,7 +40,7 @@ void main(string[] args)
 	import std.datetime.systime : DosFileTimeToSysTime, SysTime;
 	import std.file : mkdirRecurse, read, setTimes;
 	import std.stdio : stdout, writefln, writeln;
-	import std.stdio : File;
+	//import std.stdio : File;
 	import std.digest.crc;
 
 	// file:///C:\D\dmd2\src\phobos\std\zip.d
@@ -115,8 +115,8 @@ void main(string[] args)
 	{
 	}
 
-	auto dll_bytes = cast(ubyte[]) read(
-			`C:\Users\javacommons\Desktop\.easy-install\svn-win32-dll-702f3170fedfdd6e20b8f8f5f4fc25f4\libsvn_client-1.dll`);
+	auto dll_bytes = cast(ubyte[]) read( //`C:\Users\javacommons\Desktop\.easy-install\svn-win32-dll-702f3170fedfdd6e20b8f8f5f4fc25f4\libsvn_client-1.dll`
+			`vc6-dll.dll`);
 	//HMEMORYMODULE hmod = MemoryLoadLibrary(cast(void*) dll_bytes.ptr);
 	HMEMORYMODULE hmod = MemoryLoadLibraryEx(cast(void*) dll_bytes.ptr,
 			&OS_LoadLibrary, &OS_GetProcAddress, &OS_FreeLibrary, null);
@@ -126,7 +126,15 @@ void main(string[] args)
 	writefln("0x%08x", proc);
 	EASYWIN_PROC proc2 = MemoryGetProcAddress(hmod, cast(char*) "svn_client_version".ptr);
 	writefln("0x%08x", proc2);
-	exit(0);
+	EASYWIN_PROC proc3 = MemoryGetProcAddress(hmod, cast(char*) "main".ptr);
+	writefln("0x%08x", proc3);
+	import vc6;
+	proc_main f_main = cast(proc_main) proc3;
+	char*[] cargs;
+	cargs ~= cast(char*) "dummy.exe".ptr;
+	cargs ~= cast(char*) "https://github.com/cppcommons/d-sample/trunk".ptr;
+	f_main(cargs.length, cargs.ptr);
+	//exit(0);
 }
 
 int run_command(string[] cmdline)

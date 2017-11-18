@@ -2,8 +2,11 @@
 module vc6;
 import os2;
 extern (C):
+alias int  function(int argc, char **argv)proc_main;
 int  main(int argc, char **argv);
 os_int32  vc6_add2(os_int32 a, os_int32 b);
+
+os_int32  vc6_add2(os_int32 , os_int32 );
 
 
 //#include <string>
@@ -96,3 +99,4 @@ os_int32  vc6_add2(os_int32 a, os_int32 b);
 		/* 'val' is actually an svn_dirent_t structure; a more complex
           program would mine it for extra printable information. */
 
+int  dummy();

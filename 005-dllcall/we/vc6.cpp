@@ -1,3 +1,4 @@
+extern "C" {
 #include "os2.h"
 #define EXPORT_FUNCTION extern "C" __declspec(dllexport)
 typedef int (*proc_main)(int argc, const char **argv);
@@ -6,6 +7,11 @@ EXPORT_FUNCTION os_int32 vc6_add2(os_int32 a, os_int32 b);
 EXPORT_FUNCTION os_int32 vc6_add2(os_int32 a, os_int32 b)
 {
 	return a + b;
+}
+
+static dummy()
+{
+	proc_main fn = main;
 }
 
 #ifndef __HTOD__
@@ -260,3 +266,4 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
 	return EXIT_SUCCESS;
 }
 #endif //if !defined(__HTOD__)
+} // extern "C"
