@@ -12,14 +12,6 @@ private void exit(int code)
 shared static immutable ubyte[] svn_win32_dll_zip = cast(immutable ubyte[]) import(
 		"svn-win32-1.8.17-dll.zip");
 
-/+
-extern (C) export void cmain()
-{
-	string[] args = ["dummy.exe"];
-	xmain(args);
-}
-+/
-
 extern (C) export int wmain(int argc, wchar** argv)
 {
 	wchar[] to_wstring(wchar* s)
@@ -48,12 +40,14 @@ int dmain(string[] args)
 		return s ? s[0 .. strlen(s)] : cast(char[]) null;
 	}
 
+	/+
 	wchar[] to_wstring(wchar* s)
 	{
 		import core.stdc.wchar_ : wcslen;
 
 		return s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
 	}
+	+/
 
 	string to_mb_string(in char[] s, uint codePage = 0)
 	{
