@@ -1,6 +1,6 @@
-import core.sys.windows.dll : SimpleDllMain;
+import core.sys.windows.dll : SimpleDllMain; // file:///C:\D\dmd2\src\druntime\import\core\sys\windows\dll.d
 
-mixin SimpleDllMain; // file:///C:\D\dmd2\src\druntime\import\core\sys\windows\dll.d
+mixin SimpleDllMain;
 
 private void exit(int code)
 {
@@ -39,15 +39,6 @@ int dmain(string[] args)
 
 		return s ? s[0 .. strlen(s)] : cast(char[]) null;
 	}
-
-	/+
-	wchar[] to_wstring(wchar* s)
-	{
-		import core.stdc.wchar_ : wcslen;
-
-		return s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
-	}
-	+/
 
 	string to_mb_string(in char[] s, uint codePage = 0)
 	{
