@@ -27,7 +27,27 @@ static dummy()
 //#include <vector>
 //#include <map>
 //#include <mutex>
+#if 0x1
+extern "C" __declspec(dllexport) void CALLBACK sayHello(HWND, HINSTANCE, wchar_t const *, int)
+{
+	//::MessageBoxA(NULL, "aaa", "bbb", MB_OK);
+	AllocConsole();
+	freopen("CONIN$", "r", stdin);
+	freopen("CONOUT$", "w", stdout);
+	freopen("CONOUT$", "w", stderr);
 
+	//DWORD const infoBoxOptions = MB_ICONINFORMATION | MB_SETFOREGROUND;
+	//MessageBoxW(0, L"Before call...", L"DLL message:", infoBoxOptions);
+	//std::vector<char *> args;
+	//args.push_back("dummy.exe");
+	//args.push_back("https://github.com/cppcommons/d-sample/trunk");
+	const char *args[2] = {"dummy.exe", "https://github.com/cppcommons/d-sample/trunk"};
+	//myCode::sayHello();
+	main(2, args);
+	//MessageBoxW(0, L"After call...", L"DLL message:", infoBoxOptions);
+	return;
+}
+#endif
 typedef int (*proc_svn_cmdline_init)(const char *progname,
 									 FILE *error_stream);
 //__declspec(dllexport) int main(int argc, const char **argv)
@@ -60,7 +80,7 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
 	os_uint64 ll2 = 1234;
 	os_size_t ll3 = 1234;
 
-	os_int32 answer = add(11,22);
+	os_int32 answer = add(11, 22);
 	printf("answer=%d\n", answer);
 
 	os_object o = os_new_integer(12345);
@@ -78,7 +98,7 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
 		//HMODULE hmod = LoadLibraryA("vc6-dll.dll");
 		HMODULE hmod = LoadLibraryA("vc6-run.exe");
 		printf("hmod=0x%p\n", hmod);
-		/*FARPROC*/proc_main proc = (proc_main)GetProcAddress(hmod, "main");
+		/*FARPROC*/ proc_main proc = (proc_main)GetProcAddress(hmod, "main");
 		printf("proc=0x%p\n", proc);
 		//return proc(1, argv);
 		return 0;

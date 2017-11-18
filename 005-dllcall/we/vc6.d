@@ -13,7 +13,15 @@ os_int32  vc6_add2(os_int32 , os_int32 );
 //#include <vector>
 //#include <map>
 //#include <mutex>
+	//::MessageBoxA(NULL, "aaa", "bbb", MB_OK);
 
+	//DWORD const infoBoxOptions = MB_ICONINFORMATION | MB_SETFOREGROUND;
+	//MessageBoxW(0, L"Before call...", L"DLL message:", infoBoxOptions);
+	//std::vector<char *> args;
+	//args.push_back("dummy.exe");
+	//args.push_back("https://github.com/cppcommons/d-sample/trunk");
+	//myCode::sayHello();
+	//MessageBoxW(0, L"After call...", L"DLL message:", infoBoxOptions);
 //__declspec(dllexport) int main(int argc, const char **argv)
 
 
