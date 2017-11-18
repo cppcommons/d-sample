@@ -14,3 +14,4 @@ edub a-dll.dll build a.d easywin_loader.obj --build=release os.lib lib1.lib c:\d
 if %errorlevel% neq 0 ( exit /b )
 ::a-main.exe a b c
 rundll32 a-dll.dll,_sayHello@16 a b c
+echo errorlevel=%errorlevel%

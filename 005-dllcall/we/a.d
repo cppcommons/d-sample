@@ -45,6 +45,8 @@ extern (Windows) export void sayHello(HWND hwnd, HINSTANCE hinst, char* lpszCmdL
 	import std.stdio : writeln;
 
 	AllocConsole();
+	//if (!AttachConsole(ATTACH_PARENT_PROCESS))
+	//	AllocConsole();
 	freopen("CONIN$", "r", stdin);
 	freopen("CONOUT$", "w", stdout);
 	freopen("CONOUT$", "w", stderr);
@@ -56,6 +58,7 @@ extern (Windows) export void sayHello(HWND hwnd, HINSTANCE hinst, char* lpszCmdL
 	args ~= "https://github.com/cppcommons/d-sample/trunk";
 	dmain(args);
 	MessageBoxA(null, cast(char*) "c", cast(char*) "d", MB_OK);
+	exit(1234);
 	return;
 }
 
