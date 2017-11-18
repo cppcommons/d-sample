@@ -58,6 +58,7 @@ int dmain(string[] args)
 	foreach (arg; args)
 	{
 		writeln(`to_mb_string(arg)=`, to_mb_string(arg));
+		writeln(`to_mb_string(arg, 932)=`, to_mb_string(arg, 932));
 	}
 
 	//writeln(intl3_svn_dll.length);
