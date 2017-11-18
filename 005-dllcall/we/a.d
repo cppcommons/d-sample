@@ -21,7 +21,7 @@ extern (C) export void cmain()
 +/
 
 //void wmain(string[] args)
-extern (C) export void wmain(int argc, wchar** argv)
+extern (C) export int wmain(int argc, wchar** argv)
 {
 	char[] to_string(char* s)
 	{
@@ -203,6 +203,7 @@ extern (C) export void wmain(int argc, wchar** argv)
 	f_main(cargs.length, cargs.ptr);
 	writeln("END");
 	//exit(0);
+	return 0;
 }
 
 int run_command(string[] cmdline)
