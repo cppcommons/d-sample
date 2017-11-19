@@ -69,7 +69,11 @@ struct easy_svn_dirent
 }
 
 easy_svn_context * easy_svn_create();
+alias easy_svn_context * function()proc_easy_svn_create;
+void  easy_svn_destroy(easy_svn_context *context);
+alias void  function(easy_svn_context *context)proc_easy_svn_destroy;
 easy_svn_dirent * easy_svn_ls(easy_svn_context *context, char *url, bool recursive);
+alias easy_svn_dirent * function(easy_svn_context *context, char *url, bool recursive)proc_easy_svn_ls;
 
 
 
@@ -91,7 +95,6 @@ easy_svn_dirent * easy_svn_ls(easy_svn_context *context, char *url, bool recursi
 	//myCode::sayHello();
 	//MessageBoxW(0, L"After call...", L"DLL message:", infoBoxOptions);
 
-
 	/* Initialize the app.  Send all error messages to 'stderr'.  */
 
 
@@ -102,6 +105,7 @@ easy_svn_dirent * easy_svn_ls(easy_svn_context *context, char *url, bool recursi
 	/* Load the run-time config file into a hash */
 
 	//svn_auth_baton_t *ab;
+
 
 
 

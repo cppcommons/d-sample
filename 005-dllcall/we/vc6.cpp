@@ -78,13 +78,16 @@ typedef struct easy_svn_dirent
 } easy_svn_dirent;
 
 EXPORT_FUNCTION struct easy_svn_context *easy_svn_create();
+typedef struct easy_svn_context *(*proc_easy_svn_create)();
+EXPORT_FUNCTION void easy_svn_destroy(struct easy_svn_context *context);
+typedef void (*proc_easy_svn_destroy)(struct easy_svn_context *context);
 EXPORT_FUNCTION struct easy_svn_dirent *easy_svn_ls(easy_svn_context *context, const char *url, bool recursive);
+typedef struct easy_svn_dirent *(*proc_easy_svn_ls)(easy_svn_context *context, const char *url, bool recursive);
 } // extern "C"
 
-static dummy()
-{
-	proc_main fn = main;
-}
+static proc_easy_svn_create _proc_easy_svn_create = easy_svn_create;
+static proc_easy_svn_destroy _proc_easy_svn_destroy = easy_svn_destroy;
+static proc_easy_svn_ls _proc_easy_svn_ls = easy_svn_ls;
 
 #ifndef __HTOD__
 EXPORT_FUNCTION os_int32 vc6_add2(os_int32 a, os_int32 b)
@@ -149,13 +152,6 @@ extern "C" __declspec(dllexport) void CALLBACK sayHello(HWND, HINSTANCE, wchar_t
 typedef int (*proc_svn_cmdline_init)(const char *progname,
 									 FILE *error_stream);
 
-EXPORT_FUNCTION void easy_svn_destroy(struct easy_svn_context *context)
-{
-	if (!context)
-		return;
-	delete context;
-}
-
 EXPORT_FUNCTION struct easy_svn_context *easy_svn_create()
 {
 	/* Initialize the app.  Send all error messages to 'stderr'.  */
@@ -214,6 +210,13 @@ EXPORT_FUNCTION struct easy_svn_context *easy_svn_create()
 label_error:
 	delete context;
 	return NULL;
+}
+
+EXPORT_FUNCTION void easy_svn_destroy(struct easy_svn_context *context)
+{
+	if (!context)
+		return;
+	delete context;
 }
 
 EXPORT_FUNCTION struct easy_svn_dirent *easy_svn_ls(easy_svn_context *context, const char *url, bool recursive)

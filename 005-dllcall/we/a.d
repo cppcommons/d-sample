@@ -1,3 +1,5 @@
+import vc6;
+
 import core.sys.windows.dll : SimpleDllMain; // file:///C:\D\dmd2\src\druntime\import\core\sys\windows\dll.d
 mixin SimpleDllMain;
 
@@ -58,7 +60,7 @@ static void pause()
 
 __gshared static string[string] g_module_map;
 
-extern (Windows) export void run(HWND hwnd, HINSTANCE hinst, char* /+lpszCmdLine+/, int nCmdShow)
+extern (Windows) export void run(HWND hwnd, HINSTANCE hinst, char*  /+lpszCmdLine+/ , int nCmdShow)
 {
 	import std.stdio : writeln;
 
@@ -193,9 +195,11 @@ int dmain(string[] args)
 			import core.sys.windows.windows;
 			import core.sys.windows.winbase;
 			import std.path : dirName;
+
 			//import std.string : toStringz;
 			import std.uni : toUpper;
 			import std.utf : toUTF16z;
+
 			string basename = to_string(a_name);
 			string key = basename.toUpper;
 			string* found = key in g_module_map;
@@ -265,9 +269,6 @@ int dmain(string[] args)
 	import core.sys.windows.windows;
 	import core.sys.windows.winbase;
 
-	//HMODULE the_dll = LoadLibraryA(cast(char*) "vc6-dll.dll".ptr);
-	//writefln("the_dll=0x%08x", the_dll);
-	//proc_main f_main = cast(proc_main) GetProcAddress(the_dll, cast(char*) "main".ptr);
 	proc_main f_main = cast(proc_main) proc3;
 	writefln("f_main=0x%08x", f_main);
 	static char*[] cargs;
@@ -275,7 +276,31 @@ int dmain(string[] args)
 	cargs ~= cast(char*) "https://github.com/cppcommons/d-sample/trunk".ptr;
 	f_main(cargs.length, cargs.ptr);
 	writeln("END");
-	//exit(0);
+	/+
+easy_svn_context * easy_svn_create();
+alias easy_svn_context * function()proc_easy_svn_create;
+void  easy_svn_destroy(easy_svn_context *context);
+alias void  function(easy_svn_context *context)proc_easy_svn_destroy;
+easy_svn_dirent * easy_svn_ls(easy_svn_context *context, char *url, bool recursive);
+alias easy_svn_dirent * function(easy_svn_context *context, char *url, bool recursive)proc_easy_svn_ls;
+	+/
+	proc_easy_svn_create easy_svn_create = cast(proc_easy_svn_create) MemoryGetProcAddress(hmod,
+			cast(char*) "easy_svn_create".ptr);
+	proc_easy_svn_destroy easy_svn_destroy = cast(proc_easy_svn_destroy) MemoryGetProcAddress(hmod,
+			cast(char*) "easy_svn_destroy".ptr);
+	proc_easy_svn_ls easy_svn_ls = cast(proc_easy_svn_ls) MemoryGetProcAddress(hmod,
+			cast(char*) "easy_svn_ls".ptr);
+	easy_svn_context* context = easy_svn_create();
+	easy_svn_dirent* entries = easy_svn_ls(context,
+			cast(char*) "https://github.com/cppcommons/d-sample/trunk".ptr, false);
+	if (entries)
+	{
+		for (; (*entries).entryname !is null; entries++)
+		{
+			writeln(to_string((*entries).entryname));
+		}
+	}
+	easy_svn_destroy(context);
 	return 0;
 }
 
