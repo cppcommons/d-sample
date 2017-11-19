@@ -283,6 +283,7 @@ void  easy_svn_destroy(easy_svn_context *context);
 alias void  function(easy_svn_context *context)proc_easy_svn_destroy;
 easy_svn_dirent * easy_svn_ls(easy_svn_context *context, char *url, bool recursive);
 alias easy_svn_dirent * function(easy_svn_context *context, char *url, bool recursive)proc_easy_svn_ls;
+alias easy_svn_procs * function()proc_get_easy_svn_procs;
 	+/
 	proc_easy_svn_create easy_svn_create = cast(proc_easy_svn_create) MemoryGetProcAddress(hmod,
 			cast(char*) "easy_svn_create".ptr);
@@ -297,10 +298,40 @@ alias easy_svn_dirent * function(easy_svn_context *context, char *url, bool recu
 	{
 		for (; (*entries).entryname !is null; entries++)
 		{
-			writeln(to_string((*entries).entryname));
+			writeln(`(1) `, to_string((*entries).entryname));
 		}
 	}
 	easy_svn_destroy(context);
+	struct my_easy_svn_procs
+	{
+		proc_easy_svn_create easy_svn_create;
+		proc_easy_svn_destroy easy_svn_destroy;
+		proc_easy_svn_ls easy_svn_ls;
+	}
+	my_easy_svn_procs procs;
+	procs.easy_svn_create = easy_svn_create;
+	procs.easy_svn_destroy = easy_svn_destroy;
+	procs.easy_svn_ls = easy_svn_ls;
+	writeln("a");
+	pause();
+	context = procs.easy_svn_create();
+	writeln("b2");
+	entries = procs.easy_svn_ls(context,
+			cast(char*) "https://github.com/cppcommons/d-sample/trunk".ptr, false);
+	writeln("c");
+	pause();
+	if (entries)
+	{
+		for (; (*entries).entryname !is null; entries++)
+		{
+			writeln(to_string((*entries).entryname));
+		}
+	}
+	writeln("d");
+	pause();
+	//procs.easy_svn_destroy(context);
+	writeln("e");
+	pause();
 	return 0;
 }
 

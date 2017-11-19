@@ -89,7 +89,9 @@ static proc_easy_svn_create _proc_easy_svn_create = easy_svn_create;
 static proc_easy_svn_destroy _proc_easy_svn_destroy = easy_svn_destroy;
 static proc_easy_svn_ls _proc_easy_svn_ls = easy_svn_ls;
 
+
 #ifndef __HTOD__
+
 EXPORT_FUNCTION os_int32 vc6_add2(os_int32 a, os_int32 b)
 {
 	return a + b;
