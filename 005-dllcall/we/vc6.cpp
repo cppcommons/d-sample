@@ -5,6 +5,38 @@ typedef int (*proc_main)(int argc, const char **argv);
 EXPORT_FUNCTION int main(int argc, const char **argv);
 EXPORT_FUNCTION os_int32 vc6_add2(os_int32 a, os_int32 b);
 
+#ifndef __HTOD__
+#include "svn_client.h"
+#include "svn_cmdline.h"
+#include "svn_pools.h"
+#include "svn_config.h"
+#include "svn_fs.h"
+#include "svn_auth.h"
+#endif /* !__HTOD__ */
+
+struct easy_svn_context
+{
+#ifndef __HTOD__
+	apr_pool_t *pool;
+	svn_client_ctx_t *ctx;
+	svn_auth_baton_t *ab;
+	explicit easy_svn_context()
+	{
+		this->pool = NULL;
+		this->ctx = NULL;
+		this->ab = NULL;
+	}
+	virtual ~easy_svn_context()
+	{
+		if (this->pool)
+			svn_pool_destroy(this->pool);
+	}
+#endif /* !__HTOD__ */
+};
+
+
+EXPORT_FUNCTION easy_svn_context *easy_svn_create(const char *progname);
+
 static dummy()
 {
 	proc_main fn = main;
@@ -15,12 +47,6 @@ EXPORT_FUNCTION os_int32 vc6_add2(os_int32 a, os_int32 b)
 {
 	return a + b;
 }
-#include "svn_client.h"
-#include "svn_cmdline.h"
-#include "svn_pools.h"
-#include "svn_config.h"
-#include "svn_fs.h"
-#include "svn_auth.h"
 
 #include <windows.h>
 //#include <string>
@@ -50,24 +76,6 @@ extern "C" __declspec(dllexport) void CALLBACK sayHello(HWND, HINSTANCE, wchar_t
 #endif
 typedef int (*proc_svn_cmdline_init)(const char *progname,
 									 FILE *error_stream);
-
-struct easy_svn_context
-{
-	apr_pool_t *pool;
-	svn_client_ctx_t *ctx;
-	svn_auth_baton_t *ab;
-	explicit easy_svn_context()
-	{
-		this->pool = NULL;
-		this->ctx = NULL;
-		this->ab = NULL;
-	}
-	virtual ~easy_svn_context()
-	{
-		if (this->pool)
-			svn_pool_destroy(this->pool);
-	}
-};
 
 EXPORT_FUNCTION easy_svn_context *easy_svn_create(const char *progname)
 {
@@ -217,24 +225,6 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
 	}
 
 /* Now do the real work. */
-#if 0x0
-	printf("pre-7\n");
-	//svn_auth_baton_t *ab;
-	if ((err = svn_cmdline_create_auth_baton(&ab,
-											 1,	//opt_state.non_interactive,
-											 NULL, //opt_state.auth_username,
-											 NULL, //opt_state.auth_password,
-											 NULL, //opt_state.config_dir,
-											 1,	//opt_state.no_auth_cache,
-											 1,	//opt_state.trust_server_cert,
-											 NULL, //cfg_config,
-											 context->ctx->cancel_func,
-											 context->ctx->cancel_baton,
-											 context->pool)))
-		svn_handle_error(err, stderr, FALSE);
-
-	context->ctx->auth_baton = ab;
-#endif
 
 	printf("7\n");
 	/* Set revision to always be the HEAD revision.  It could, however,

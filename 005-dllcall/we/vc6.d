@@ -7,6 +7,14 @@ int  main(int argc, char **argv);
 os_int32  vc6_add2(os_int32 a, os_int32 b);
 
 
+struct easy_svn_context
+{
+}
+
+
+easy_svn_context * easy_svn_create(char *progname);
+
+
 
 //#include <string>
 //#include <vector>
@@ -21,7 +29,6 @@ os_int32  vc6_add2(os_int32 a, os_int32 b);
 	//args.push_back("https://github.com/cppcommons/d-sample/trunk");
 	//myCode::sayHello();
 	//MessageBoxW(0, L"After call...", L"DLL message:", infoBoxOptions);
-
 
 	/* Initialize the app.  Send all error messages to 'stderr'.  */
 
@@ -62,8 +69,6 @@ os_int32  vc6_add2(os_int32 a, os_int32 b);
 	/* Make sure the ~/.subversion run-time config files exist */
 
 /* Now do the real work. */
-	//svn_auth_baton_t *ab;
-
 
 	/* Set revision to always be the HEAD revision.  It could, however,
      be set to a specific revision number, date, or other values. */
