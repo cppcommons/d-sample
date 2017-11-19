@@ -282,6 +282,7 @@ int dmain(string[] args)
 				&OS_LoadLibrary, &OS_GetProcAddress, &OS_FreeLibrary, null);
 		//SetDllDirectoryW(null);
 		writefln("0x%08x", hmod);
+		/+
 		EASYWIN_PROC proc = MemoryGetProcAddress(hmod,
 				cast(char*) "svn_client__arbitrary_nodes_diff".ptr);
 		writefln("0x%08x", proc);
@@ -289,6 +290,7 @@ int dmain(string[] args)
 		writefln("0x%08x", proc2);
 		EASYWIN_PROC proc3 = MemoryGetProcAddress(hmod, cast(char*) "main".ptr);
 		writefln("0x%08x", proc3);
+		+/
 	}
 
 	writeln(`b`);
@@ -297,6 +299,7 @@ int dmain(string[] args)
 	import core.sys.windows.windows;
 	import core.sys.windows.winbase;
 
+	/+
 	proc_main f_main = cast(proc_main) proc3;
 	writefln("f_main=0x%08x", f_main);
 	static char*[] cargs;
@@ -304,6 +307,12 @@ int dmain(string[] args)
 	cargs ~= cast(char*) "https://github.com/cppcommons/d-sample/trunk".ptr;
 	f_main(cargs.length, cargs.ptr);
 	writeln("END");
+	+/
+
+	string url = args.length >= 2 ? args[1] : "https://github.com/cppcommons/d-sample/trunk";
+	import std.string : toStringz;
+
+	const char* urlz = toStringz(url);
 	/+
 easy_svn_context * easy_svn_create();
 alias easy_svn_context * function()proc_easy_svn_create;
@@ -320,13 +329,13 @@ alias easy_svn_procs * function()proc_get_easy_svn_procs;
 	proc_easy_svn_ls easy_svn_ls = cast(proc_easy_svn_ls) MemoryGetProcAddress(hmod,
 			cast(char*) "easy_svn_ls".ptr);
 	easy_svn_context* context = easy_svn_create();
-	easy_svn_dirent* entries = easy_svn_ls(context,
-			cast(char*) "https://github.com/cppcommons/d-sample/trunk".ptr, false);
+	easy_svn_dirent* entries = easy_svn_ls(context, cast(char*) urlz, false);
 	if (entries)
 	{
 		for (; (*entries).entryname !is null; entries++)
 		{
-			writeln(`(1) `, to_string((*entries).entryname));
+			writefln(`%s %d %d`, to_string((*entries).entryname), (*entries)
+					.entry.created_rev, (*entries).entry.time);
 		}
 	}
 	easy_svn_destroy(context);
@@ -345,15 +354,15 @@ alias easy_svn_procs * function()proc_get_easy_svn_procs;
 	pause();
 	context = procs.easy_svn_create();
 	writeln("b2");
-	entries = procs.easy_svn_ls(context,
-			cast(char*) "https://github.com/cppcommons/d-sample/trunk".ptr, false);
+	entries = procs.easy_svn_ls(context, cast(char*) urlz, false);
 	writeln("c");
 	pause();
 	if (entries)
 	{
 		for (; (*entries).entryname !is null; entries++)
 		{
-			writeln(to_string((*entries).entryname));
+			writefln(`%s %d %d`, to_string((*entries).entryname), (*entries)
+					.entry.created_rev, (*entries).entry.time);
 		}
 	}
 	writeln("d");
