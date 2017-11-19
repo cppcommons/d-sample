@@ -91,6 +91,7 @@ easy_svn_dirent * easy_svn_ls(easy_svn_context *context, char *url, bool recursi
 	//myCode::sayHello();
 	//MessageBoxW(0, L"After call...", L"DLL message:", infoBoxOptions);
 
+
 	/* Initialize the app.  Send all error messages to 'stderr'.  */
 
 
@@ -153,5 +154,6 @@ easy_svn_dirent * easy_svn_ls(easy_svn_context *context, char *url, bool recursi
 
 		/* 'val' is actually an svn_dirent_t structure; a more complex
           program would mine it for extra printable information. */
+
 
 

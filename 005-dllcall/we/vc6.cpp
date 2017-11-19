@@ -149,6 +149,12 @@ extern "C" __declspec(dllexport) void CALLBACK sayHello(HWND, HINSTANCE, wchar_t
 typedef int (*proc_svn_cmdline_init)(const char *progname,
 									 FILE *error_stream);
 
+EXPORT_FUNCTION void easy_svn_destroy(struct easy_svn_context *context)
+{
+	if (!context) return;
+	delete context;
+}
+
 EXPORT_FUNCTION struct easy_svn_context *easy_svn_create()
 {
 	/* Initialize the app.  Send all error messages to 'stderr'.  */
@@ -362,6 +368,8 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
 			printf("entiries=0x%p %s\n", entries, entries->entryname);
 		}
 	}
+
+	easy_svn_destroy(context);
 
 	printf("9\n");
 	return EXIT_SUCCESS;
