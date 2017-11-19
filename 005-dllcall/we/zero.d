@@ -1,24 +1,8 @@
+import core.sys.windows.windows;
+import core.sys.windows.winbase;
+
 import core.sys.windows.dll : SimpleDllMain; // file:///C:\D\dmd2\src\druntime\import\core\sys\windows\dll.d
-
 mixin SimpleDllMain;
-
-string to_string(char* s)
-{
-	import core.stdc.string : strlen;
-	import std.conv : to;
-
-	char[] result = s ? s[0 .. strlen(s)] : cast(char[]) null;
-	return to!string(s);
-}
-
-wstring to_wstring(wchar* s)
-{
-	import core.stdc.wchar_ : wcslen;
-	import std.conv : to;
-
-	wchar[] result = s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
-	return to!wstring(result);
-}
 
 private void exit(int code)
 {
@@ -26,9 +10,6 @@ private void exit(int code)
 
 	std.c.stdlib.exit(code);
 }
-
-import core.sys.windows.windows;
-import core.sys.windows.winbase;
 
 static void init_rundll_pg(ref string[] args)
 {
@@ -62,45 +43,24 @@ static void init_rundll_pg(ref string[] args)
 	}
 }
 
-static void init_console()
-{
-	import core.stdc.stdio : freopen, stderr, stdin, stdout;
-
-	AllocConsole();
-	//if (!AttachConsole(ATTACH_PARENT_PROCESS))
-	//	AllocConsole();
-	freopen("CONIN$", "r", stdin);
-	freopen("CONOUT$", "w", stdout);
-	freopen("CONOUT$", "w", stderr);
-}
-
 static void pause()
 {
 	import std.process : executeShell;
 	import std.stdio : stdout, write, writeln;
 
-	write(`Hit Any Key: `);
+	write(`[PAUSE] HIT ANY KEY: `);
 	stdout.flush();
 	executeShell("cmd.exe /c pause");
 	writeln();
 }
 
-extern (Windows) export void run(HWND hwnd, HINSTANCE hinst, char* lpszCmdLine, int nCmdShow)
+extern (Windows) export void run(HWND hwnd, HINSTANCE hinst, char* /+lpszCmdLine+/, int nCmdShow)
 {
 	import std.stdio : writeln;
 
-	//init_console();
 	string[] args;
 	init_rundll_pg(args);
-	writeln(args.length);
 	writeln(args);
-	foreach (arg; args)
-	{
-		writeln(arg);
-	}
-	//writeln("lpszCmdLine=", to_wstring(lpszCmdLine));
-	writeln("xxxlpszCmdLine=", to_string(lpszCmdLine));
-	//MessageBoxA(null, cast(char*) "a", cast(char*) "b", MB_OK);
 	pause();
 	return;
 }
