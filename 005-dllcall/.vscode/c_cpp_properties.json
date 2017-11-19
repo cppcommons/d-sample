@@ -26,7 +26,7 @@
 					"C:/Program Files (x86)/Windows Kits/8.1/Include/um",
 					"C:/Program Files (x86)/Windows Kits/8.1/Include/shared",
 					"C:/Program Files (x86)/Windows Kits/8.1/Include/winrt",
-					"E:/opt/svn/vc6/svn-win32-1.8.17-ap24_dev/svn-win32-1.8.17/include/*",
+					"E:/opt/svn/vc6/svn-win32-1.8.17-ap24_dev/svn-win32-1.8.17/include",
 					"E:/opt/svn/vc6/svn-win32-1.8.17-ap24_dev/svn-win32-1.8.17/include/apr",
 					"E:/opt/svn/vc6/svn-win32-1.8.17-ap24_dev/svn-win32-1.8.17/include/apr-iconv",
 					"E:/opt/svn/vc6/svn-win32-1.8.17-ap24_dev/svn-win32-1.8.17/include/apr-util",
