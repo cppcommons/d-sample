@@ -118,55 +118,83 @@ int dmain(string[] args)
 	version (Windows)
 	{
 
-		string store_path = prepare_sore_path(CSIDL_DESKTOP, "svn-win32-dll", svn_win32_dll_zip);
+		//string store_path = prepare_sore_path(CSIDL_DESKTOP, "svn-win32-dll", svn_win32_dll_zip);
+		string store_path = prepare_sore_path(CSIDL_APPDATA, "svn-win32-dll", svn_win32_dll_zip);
 		writeln(store_path);
 
+		//string[] cmdline = ["explorer.exe", store_path];
+		//run_command(cmdline);
+
+		import std.file : exists;
+
+		if (!exists(store_path))
+		{
+
+			import std.algorithm : startsWith, endsWith;
+			import std.array : join, split;
+			import std.datetime.systime : DosFileTimeToSysTime, SysTime;
+			import std.file : mkdirRecurse, read, rename, setTimes;
+			import std.stdio : stdout, writefln, writeln;
+
+			//import std.stdio : File;
+			import std.digest.crc;
+
+			// file:///C:\D\dmd2\src\phobos\std\zip.d
+			import std.zip;
+
+			auto zip_md5 = md5_string(svn_win32_dll_zip);
+			writeln(`zip_md5=`, zip_md5);
+			auto zip = new ZipArchive(cast(void[]) svn_win32_dll_zip);
+			writeln("Archive: ", "svn_win32_dll_zip");
+			writefln("%-10s  %-8s  %-24s  %s", "Length", "CRC-32", "Name", "Timestamp");
+			// iterate over all zip members
+			import std.uuid : randomUUID, UUID;
+
+			string prefix;
+			do
+			{
+				prefix = store_path ~ `.` ~ randomUUID().toString();
+			}
+			while (exists(prefix));
+			prefix = prefix.replace(`\`, `/`);
+			foreach (name, am; zip.directory)
+			{
+				import std.path : baseName;
+				import std.uni : toUpper;
+
+				string path = prefix ~ "/" ~ name;
+				//auto fname = baseName(path).toUpper;
+				// print some data about each member
+				writefln("%10s  %08x  %-24s  %s", am.expandedSize, am.crc32,
+						name, DosFileTimeToSysTime(am.time()));
+				assert(am.expandedData.length == 0);
+				// decompress the archive member
+				zip.expand(am);
+				assert(am.expandedData.length == am.expandedSize);
+				write_if_not_exist(path, am.expandedData, DosFileTimeToSysTime(am.time()));
+				//import std.path : baseName;
+
+				//string basename = baseName(path).toUpper;
+				//g_module_map[fname] = path;
+			}
+			delete zip;
+			writeln(prefix);
+			writeln(store_path);
+			//exit(0);
+			rename(prefix, store_path);
+		}
 		string[] cmdline = ["explorer.exe", store_path];
 		run_command(cmdline);
+		import std.file : dirEntries, SpanMode;
+		import std.path : baseName, dirName;
 
-		writeln(sha1_uuid_for_string("OS-1"));
-
-		import std.algorithm : startsWith, endsWith;
-		import std.array : join, split;
-		import std.datetime.systime : DosFileTimeToSysTime, SysTime;
-		import std.file : mkdirRecurse, read, setTimes;
-		import std.stdio : stdout, writefln, writeln;
-
-		//import std.stdio : File;
-		import std.digest.crc;
-
-		// file:///C:\D\dmd2\src\phobos\std\zip.d
-		import std.zip;
-
-		auto zip_md5 = md5_string(svn_win32_dll_zip);
-		writeln(`zip_md5=`, zip_md5);
-		auto zip = new ZipArchive(cast(void[]) svn_win32_dll_zip);
-		writeln("Archive: ", "svn_win32_dll_zip");
-		writefln("%-10s  %-8s  %-24s  %s", "Length", "CRC-32", "Name", "Timestamp");
-		// iterate over all zip members
-		string prefix = store_path;
-		prefix = prefix.replace(`\`, `/`);
-		foreach (name, am; zip.directory)
+		auto files = dirEntries(store_path, `*.dll`, SpanMode.breadth);
+		foreach (file; files)
 		{
-			import std.path : baseName;
-			import std.uni : toUpper;
-
-			string path = prefix ~ "/" ~ name;
-			auto fname = baseName(path).toUpper;
-			// print some data about each member
-			writefln("%10s  %08x  %-24s  %s", am.expandedSize, am.crc32, fname,
-					DosFileTimeToSysTime(am.time()));
-			assert(am.expandedData.length == 0);
-			// decompress the archive member
-			zip.expand(am);
-			assert(am.expandedData.length == am.expandedSize);
-			write_if_not_exist(path, am.expandedData, DosFileTimeToSysTime(am.time()));
-			import std.path : baseName;
-
-			//string basename = baseName(path).toUpper;
-			g_module_map[fname] = path;
+			auto key = baseName(file).toUpper;
+			g_module_map[key] = file;
 		}
-		delete zip;
+
 		//writeln(g_module_map);
 
 		/+
@@ -308,6 +336,7 @@ alias easy_svn_procs * function()proc_get_easy_svn_procs;
 		proc_easy_svn_destroy easy_svn_destroy;
 		proc_easy_svn_ls easy_svn_ls;
 	}
+
 	my_easy_svn_procs procs;
 	procs.easy_svn_create = easy_svn_create;
 	procs.easy_svn_destroy = easy_svn_destroy;
@@ -374,10 +403,10 @@ string prepare_sore_path(int id, string name, immutable(ubyte[]) bytes)
 	import std.string : replace; // file:///C:\D\dmd2\src\phobos\std\string.d
 
 	string dir1 = get_common_path(id, true);
-	writeln(`dir1=`, dir1);
+	//writeln(`dir1=`, dir1);
 	string dir2 = dir1 ~ format!`\.easy-install\%s-%s`(name, md5_string(bytes));
-	writeln(`dir2=`, dir2);
-	mkdirRecurse(dir2);
+	//writeln(`dir2=`, dir2);
+	//mkdirRecurse(dir2);
 	return dir2;
 }
 
