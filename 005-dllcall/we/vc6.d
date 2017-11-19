@@ -69,7 +69,7 @@ struct easy_svn_dirent
 }
 
 easy_svn_context * easy_svn_create();
-easy_svn_dirent * easy_svn_ls(easy_svn_context *context, char *url);
+easy_svn_dirent * easy_svn_ls(easy_svn_context *context, char *url, bool recursive);
 
 
 
@@ -107,8 +107,22 @@ easy_svn_dirent * easy_svn_ls(easy_svn_context *context, char *url);
 
 	//typedef std::vector<easy_svn_dirent> easy_snv_ls_result;
 	//std::vector<easy_snv_ls_result *> ls_results;
+	/* Set revision to always be the HEAD revision.  It could, however,
+     be set to a specific revision number, date, or other values. */
+
+	/* Main call into libsvn_client does all the work. */
+	/* Print the dir entries in the hash. */
+
+
+
+		/* 'val' is actually an svn_dirent_t structure; a more complex
+          program would mine it for extra printable information. */
 
 	//apr_pool_t *pool;
+	//svn_error_t *err;
+	//svn_opt_revision_t revision;
+	//apr_hash_t *dirents;
+	//apr_hash_index_t *hi;
 	//svn_client_ctx_t *ctx;
 	//svn_auth_baton_t *ab;
 
@@ -122,9 +136,6 @@ easy_svn_dirent * easy_svn_ls(easy_svn_context *context, char *url);
 
 
 
-		//HMODULE hmod = LoadLibraryA("vc6-dll.dll");
-		/*FARPROC*/
-		//return proc(1, argv);
 		//printf("Usage:  %s URL\n", argv[0]);
 		//return EXIT_FAILURE;
 
@@ -142,4 +153,5 @@ easy_svn_dirent * easy_svn_ls(easy_svn_context *context, char *url);
 
 		/* 'val' is actually an svn_dirent_t structure; a more complex
           program would mine it for extra printable information. */
+
 

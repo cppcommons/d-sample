@@ -78,7 +78,7 @@ typedef struct easy_svn_dirent
 } easy_svn_dirent;
 
 EXPORT_FUNCTION struct easy_svn_context *easy_svn_create();
-EXPORT_FUNCTION struct easy_svn_dirent *easy_svn_ls(easy_svn_context *context, const char *url);
+EXPORT_FUNCTION struct easy_svn_dirent *easy_svn_ls(easy_svn_context *context, const char *url, bool recursive);
 } // extern "C"
 
 static dummy()
@@ -209,24 +209,62 @@ label_error:
 	return NULL;
 }
 
-EXPORT_FUNCTION struct easy_svn_dirent *easy_svn_ls(easy_svn_context *context, const char *url)
+EXPORT_FUNCTION struct easy_svn_dirent *easy_svn_ls(easy_svn_context *context, const char *url, bool recursive)
 {
 	if (!context)
 		return NULL;
+	svn_error_t *err;
+	svn_opt_revision_t revision;
+	apr_hash_t *dirents;
+	apr_hash_index_t *hi;
 	//typedef std::vector<easy_svn_dirent> easy_snv_ls_result;
 	//std::vector<easy_snv_ls_result *> ls_results;
 	easy_snv_ls_result *result = new easy_snv_ls_result();
 	context->ls_results.push_back(result);
+	/* Set revision to always be the HEAD revision.  It could, however,
+     be set to a specific revision number, date, or other values. */
+	revision.kind = svn_opt_revision_head;
+
+	/* Main call into libsvn_client does all the work. */
+	err = svn_client_ls(&dirents,
+						url, &revision,
+						(svn_boolean_t)recursive,
+						context->ctx, context->pool);
+	if (err)
+	{
+		svn_handle_error(err, stderr, FALSE);
+		return NULL;
+	}
+	/* Print the dir entries in the hash. */
+	for (hi = apr_hash_first(context->pool, dirents); hi; hi = apr_hash_next(hi))
+	{
+		const char *entryname;
+		svn_dirent_t *val;
+
+		apr_hash_this(hi, (const void **)&entryname, NULL, (void **)&val);
+		printf("   %s %ld %s %u\n", entryname, val->created_rev, val->last_author, val->size);
+
+		easy_svn_dirent entry;
+		entry.entryname = entryname;
+		entry.entry = *val;
+		(*result).push_back(entry);
+
+		/* 'val' is actually an svn_dirent_t structure; a more complex
+          program would mine it for extra printable information. */
+	}
+	easy_svn_dirent entry;
+	entry.entryname = NULL;
+	(*result).push_back(entry);
 	return &(*result)[0];
 }
 
 EXPORT_FUNCTION int main(int argc, const char **argv)
 {
 	//apr_pool_t *pool;
-	svn_error_t *err;
-	svn_opt_revision_t revision;
-	apr_hash_t *dirents;
-	apr_hash_index_t *hi;
+	//svn_error_t *err;
+	//svn_opt_revision_t revision;
+	//apr_hash_t *dirents;
+	//apr_hash_index_t *hi;
 	//svn_client_ctx_t *ctx;
 	const char *URL;
 	//svn_auth_baton_t *ab;
@@ -263,22 +301,6 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
 
 	os_dump_heap();
 
-#if 0x0
-#ifndef VC6_DLL
-	if (argc == 2)
-	{
-		//HMODULE hmod = LoadLibraryA("vc6-dll.dll");
-		HMODULE hmod = LoadLibraryA("vc6-run.exe");
-		printf("hmod=0x%p\n", hmod);
-		/*FARPROC*/ proc_main proc = (proc_main)GetProcAddress(hmod, "main");
-		printf("proc=0x%p\n", proc);
-		//return proc(1, argv);
-		return 0;
-	}
-#else
-	printf("[IN VC6_DLL]\n");
-#endif
-#endif
 	printf("0.1\n");
 	if (argc <= 1)
 	{
@@ -301,6 +323,7 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
 	/* Now do the real work. */
 
 	printf("7\n");
+#if 0x0
 	/* Set revision to always be the HEAD revision.  It could, however,
      be set to a specific revision number, date, or other values. */
 	revision.kind = svn_opt_revision_head;
@@ -328,6 +351,16 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
 
 		/* 'val' is actually an svn_dirent_t structure; a more complex
           program would mine it for extra printable information. */
+	}
+#endif
+	easy_svn_dirent *entries = easy_svn_ls(context, URL, false);
+
+	if (entries)
+	{
+		for (; entries->entryname; entries++)
+		{
+			printf("entiries=0x%p %s\n", entries, entries->entryname);
+		}
 	}
 
 	printf("9\n");
