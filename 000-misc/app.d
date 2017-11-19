@@ -1,19 +1,32 @@
 // app.d
 
-// http://forum.dlang.org/post/c6ojg9$c8p$1@digitaldaemon.com
-char[] toString(char* s)
+string to_string(char* s)
 {
     import core.stdc.string : strlen;
+    import std.conv : to;
 
-    return s ? s[0 .. strlen(s)] : cast(char[]) null;
+    //return s ? s[0 .. strlen(s)] : cast(char[]) null;
+    char[] result = s ? s[0 .. strlen(s)] : cast(char[]) null;
+    return to!string(s);
 }
 
-// http://forum.dlang.org/post/c6ojg9$c8p$1@digitaldaemon.com
-wchar[] toString(wchar* s)
+string to_string(wchar* s)
 {
     import core.stdc.wchar_ : wcslen;
+    import std.conv : to;
 
-    return s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
+    wchar[] result = s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
+    return to!string(to!wstring(result));
+}
+
+wstring to_wstring(wchar* s)
+{
+    import core.stdc.wchar_ : wcslen;
+    import std.conv : to;
+
+    //return s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
+    wchar[] result = s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
+    return to!wstring(result);
 }
 
 version (unittest)
