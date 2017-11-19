@@ -2,26 +2,6 @@ import core.sys.windows.dll : SimpleDllMain; // file:///C:\D\dmd2\src\druntime\i
 
 mixin SimpleDllMain;
 
-string to_string(char* s)
-{
-	import core.stdc.string : strlen;
-	import std.conv : to;
-
-	//return s ? s[0 .. strlen(s)] : cast(char[]) null;
-	char[] result = s ? s[0 .. strlen(s)] : cast(char[]) null;
-	return to!string(s);
-}
-
-wstring to_wstring(wchar* s)
-{
-	import core.stdc.wchar_ : wcslen;
-	import std.conv : to;
-
-	//return s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
-	wchar[] result = s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
-	return to!wstring(result);
-}
-
 private void exit(int code)
 {
 	import std.c.stdlib;
@@ -202,29 +182,21 @@ int dmain(string[] args)
 				return to!string(s);
 			}
 
+			//return LoadLibraryA(a_name);
 			import core.sys.windows.windows;
 			import core.sys.windows.winbase;
 			import std.path : dirName;
-			import std.string : toStringz;
+			//import std.string : toStringz;
 			import std.uni : toUpper;
 			import std.utf : toUTF16z;
-
-			//writeln(`c`);
-
 			string basename = to_string(a_name);
 			string key = basename.toUpper;
-			//writeln(`c2`);
 			string* found = key in g_module_map;
-			//writeln(`c3`);
-			//if (found)
-			//	basename = (*found);
-			//writeln(`c4`);
 			writeln(`[LOAD] `, basename);
 			if (!found)
 				return LoadLibraryA(a_name);
 			string folder = dirName(*found);
 			const(wchar)* folderW = toUTF16z(folder);
-			//wstring folderW = to!wstring(folder);
 			SetDllDirectoryW(folderW);
 			HCUSTOMMODULE hmod = LoadLibraryA(toStringz(basename));
 			SetDllDirectoryW(null);
@@ -256,11 +228,20 @@ int dmain(string[] args)
 
 	version (Windows)
 	{
+		/+
+		import std.utf : toUTF16z;
+		SetDllDirectoryW(null);
+		string folder = store_path;
+		writeln(`folder=`, folder);
+		const(wchar)* folderW = toUTF16z(folder);
+		SetDllDirectoryW(folderW);
+		+/
 		auto dll_bytes = cast(ubyte[]) read( //`C:\Users\javacommons\Desktop\.easy-install\svn-win32-dll-702f3170fedfdd6e20b8f8f5f4fc25f4\libsvn_client-1.dll`
 				`vc6-dll.dll`);
 		//HMEMORYMODULE hmod = MemoryLoadLibrary(cast(void*) dll_bytes.ptr);
 		HMEMORYMODULE hmod = MemoryLoadLibraryEx(cast(void*) dll_bytes.ptr,
 				&OS_LoadLibrary, &OS_GetProcAddress, &OS_FreeLibrary, null);
+		//SetDllDirectoryW(null);
 		writefln("0x%08x", hmod);
 		EASYWIN_PROC proc = MemoryGetProcAddress(hmod,
 				cast(char*) "svn_client__arbitrary_nodes_diff".ptr);
@@ -483,3 +464,30 @@ enum {
     CSIDL_FLAG_MASK        = 0xFF00
 }
 +/
+
+string to_string(char* s)
+{
+	import core.stdc.string : strlen;
+	import std.conv : to;
+
+	char[] result = s ? s[0 .. strlen(s)] : cast(char[]) null;
+	return to!string(s);
+}
+
+string to_string(wchar* s)
+{
+	import core.stdc.wchar_ : wcslen;
+	import std.conv : to;
+
+	wchar[] result = s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
+	return to!string(to!wstring(result));
+}
+
+wstring to_wstring(wchar* s)
+{
+	import core.stdc.wchar_ : wcslen;
+	import std.conv : to;
+
+	wchar[] result = s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
+	return to!wstring(result);
+}
