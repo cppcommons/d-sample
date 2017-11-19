@@ -22,7 +22,8 @@
 		"fstream": "cpp",
 		"iosfwd": "cpp",
 		"ostream": "cpp",
-		"system_error": "cpp"
+		"system_error": "cpp",
+		"xmemory0": "cpp"
 	},
 	"window.title": "${activeEditorLong}",
 	"terminal.integrated.shell.windows": "C:\\Windows\\System32\\cmd.exe",

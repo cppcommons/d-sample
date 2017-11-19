@@ -28,8 +28,18 @@ os_int32  vc6_add2(os_int32 a, os_int32 b);
 
 	/* Initialize the FS library. */
 
+	/* Initialize and allocate the client_ctx object. */
+
+	/* Load the run-time config file into a hash */
+
+	//svn_auth_baton_t *ab;
+
+
+
 
 	//apr_pool_t *pool;
+	//svn_client_ctx_t *ctx;
+	//svn_auth_baton_t *ab;
 
 
 
@@ -51,13 +61,7 @@ os_int32  vc6_add2(os_int32 a, os_int32 b);
 
 	/* Make sure the ~/.subversion run-time config files exist */
 
-	/* All clients need to fill out a client_ctx object. */
-		/* Initialize and allocate the client_ctx object. */
-
-		/* Load the run-time config file into a hash */
-
-
-	/* Now do the real work. */
+/* Now do the real work. */
 	//svn_auth_baton_t *ab;
 
 

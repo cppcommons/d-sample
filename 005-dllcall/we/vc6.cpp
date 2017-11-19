@@ -54,6 +54,19 @@ typedef int (*proc_svn_cmdline_init)(const char *progname,
 struct easy_svn_context
 {
 	apr_pool_t *pool;
+	svn_client_ctx_t *ctx;
+	svn_auth_baton_t *ab;
+	explicit easy_svn_context()
+	{
+		this->pool = NULL;
+		this->ctx = NULL;
+		this->ab = NULL;
+	}
+	virtual ~easy_svn_context()
+	{
+		if (this->pool)
+			svn_pool_destroy(this->pool);
+	}
 };
 
 EXPORT_FUNCTION easy_svn_context *easy_svn_create(const char *progname)
@@ -76,6 +89,40 @@ EXPORT_FUNCTION easy_svn_context *easy_svn_create(const char *progname)
 		goto label_error;
 	}
 
+	/* Initialize and allocate the client_ctx object. */
+	if ((err = svn_client_create_context(&context->ctx, context->pool)))
+	{
+		svn_handle_error(err, stderr, FALSE);
+		goto label_error;
+	}
+
+	/* Load the run-time config file into a hash */
+	if ((err = svn_config_get_config(&(context->ctx->config), NULL, context->pool)))
+	{
+		svn_handle_error(err, stderr, FALSE);
+		goto label_error;
+	}
+
+	//svn_auth_baton_t *ab;
+
+	if ((err = svn_cmdline_create_auth_baton(&context->ab,
+											 1,	//opt_state.non_interactive,
+											 NULL, //opt_state.auth_username,
+											 NULL, //opt_state.auth_password,
+											 NULL, //opt_state.config_dir,
+											 1,	//opt_state.no_auth_cache,
+											 1,	//opt_state.trust_server_cert,
+											 NULL, //cfg_config,
+											 context->ctx->cancel_func,
+											 context->ctx->cancel_baton,
+											 context->pool)))
+	{
+		svn_handle_error(err, stderr, FALSE);
+		goto label_error;
+	}
+
+	context->ctx->auth_baton = context->ab;
+
 	return context;
 label_error:
 	delete context;
@@ -89,9 +136,9 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
 	svn_opt_revision_t revision;
 	apr_hash_t *dirents;
 	apr_hash_index_t *hi;
-	svn_client_ctx_t *ctx;
+	//svn_client_ctx_t *ctx;
 	const char *URL;
-	svn_auth_baton_t *ab;
+	//svn_auth_baton_t *ab;
 	proc_svn_cmdline_init func_p;
 
 	freopen("CONIN$", "r", stdin);
@@ -169,28 +216,8 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
 		return EXIT_FAILURE;
 	}
 
-	printf("4\n");
-	/* All clients need to fill out a client_ctx object. */
-	{
-		/* Initialize and allocate the client_ctx object. */
-		if ((err = svn_client_create_context(&ctx, context->pool)))
-		{
-			svn_handle_error2(err, stderr, FALSE, "minimal_client: ");
-			return EXIT_FAILURE;
-		}
-
-		/* Load the run-time config file into a hash */
-		if ((err = svn_config_get_config(&(ctx->config), NULL, context->pool)))
-		{
-			svn_handle_error2(err, stderr, FALSE, "minimal_client: ");
-			return EXIT_FAILURE;
-		}
-
-		printf("5\n");
-		printf("6\n");
-	} /* end of client_ctx setup */
-
-	/* Now do the real work. */
+/* Now do the real work. */
+#if 0x0
 	printf("pre-7\n");
 	//svn_auth_baton_t *ab;
 	if ((err = svn_cmdline_create_auth_baton(&ab,
@@ -201,12 +228,13 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
 											 1,	//opt_state.no_auth_cache,
 											 1,	//opt_state.trust_server_cert,
 											 NULL, //cfg_config,
-											 ctx->cancel_func,
-											 ctx->cancel_baton,
+											 context->ctx->cancel_func,
+											 context->ctx->cancel_baton,
 											 context->pool)))
-		svn_handle_error2(err, stderr, TRUE, "svn: ");
+		svn_handle_error(err, stderr, FALSE);
 
-	ctx->auth_baton = ab;
+	context->ctx->auth_baton = ab;
+#endif
 
 	printf("7\n");
 	/* Set revision to always be the HEAD revision.  It could, however,
@@ -217,7 +245,7 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
 	err = svn_client_ls(&dirents,
 						URL, &revision,
 						FALSE, /* no recursion */
-						ctx, context->pool);
+						context->ctx, context->pool);
 	if (err)
 	{
 		svn_handle_error2(err, stderr, FALSE, "minimal_client: ");
