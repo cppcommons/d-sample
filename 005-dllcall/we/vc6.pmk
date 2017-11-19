@@ -1,5 +1,5 @@
 -- http://d.hatena.ne.jp/ousttrue/20080430/1209583972
-project.name = "vc6-run" -- ソリューション名になる
+project.name = "vc6" -- ソリューション名になる
 --project.configs = { "Debug", "Release" } -- コンフィグの種類を定義
 project.configs = { "Release" } -- コンフィグの種類を定義
 --project.config["Debug"].bindir   = "vc6-pkg.debug" -- デバッグ実行ファイルの出力先
@@ -9,14 +9,14 @@ project.configs = { "Release" } -- コンフィグの種類を定義
 project.config["Release"].bindir = "." -- リリース実行ファイルの出力先
 project.config["Release"].libdir = "." -- リリースライブラリの出力先
 
-package.name     = "vc6-run" -- Project Name
+package.name     = "vc6" -- Project Name
 package.language = "c++"
 --package.language = "c"
-package.kind     = "exe"
+--package.kind     = "exe"
 --package.kind     = "winexe"
---package.kind     = "dll"
+package.kind     = "dll"
 --package.kind     = "lib"
-package.target   = "vc6-run" -- Exe Name
+package.target   = "vc6" -- Exe Name
 
 -- Build Flags
 
