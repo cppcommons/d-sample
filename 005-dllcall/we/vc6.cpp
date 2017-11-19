@@ -50,7 +50,17 @@ extern "C" __declspec(dllexport) void CALLBACK sayHello(HWND, HINSTANCE, wchar_t
 #endif
 typedef int (*proc_svn_cmdline_init)(const char *progname,
 									 FILE *error_stream);
-//__declspec(dllexport) int main(int argc, const char **argv)
+
+struct easy_svn_context
+{
+
+};
+
+EXPORT_FUNCTION bool easy_svn_init(const char *progname)
+{
+	return true;
+}
+
 EXPORT_FUNCTION int main(int argc, const char **argv)
 {
 	apr_pool_t *pool;

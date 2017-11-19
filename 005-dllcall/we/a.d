@@ -1,6 +1,11 @@
 import core.sys.windows.dll : SimpleDllMain; // file:///C:\D\dmd2\src\druntime\import\core\sys\windows\dll.d
-
 mixin SimpleDllMain;
+
+shared static immutable ubyte[] svn_win32_dll_zip = cast(immutable ubyte[]) import(
+		"svn-win32-1.8.17-dll.zip");
+
+import core.sys.windows.windows;
+import core.sys.windows.winbase;
 
 private void exit(int code)
 {
@@ -9,20 +14,20 @@ private void exit(int code)
 	std.c.stdlib.exit(code);
 }
 
-shared static immutable ubyte[] svn_win32_dll_zip = cast(immutable ubyte[]) import(
-		"svn-win32-1.8.17-dll.zip");
-
-//extern "C" 
-//__declspec( dllexport )
-//void CALLBACK sayHello( HWND, HINSTANCE, wchar_t const*, int )
-import core.sys.windows.windows;
-import core.sys.windows.winbase;
-
-//extern (Windows) export void sayHello(HWND hwnd, HINSTANCE hinst, wchar* lpszCmdLine, int nCmdShow)
-extern (Windows) export void sayHello(HWND hwnd, HINSTANCE hinst, char* lpszCmdLine, int nCmdShow)
+static void init_rundll_pg(ref string[] args)
 {
-	import core.stdc.stdio; //freopen
-	import std.stdio : writeln;
+	string to_string(wchar* s)
+	{
+		import core.stdc.wchar_ : wcslen;
+		import std.conv : to;
+
+		wchar[] result = s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
+		return to!string(to!wstring(result));
+	}
+
+	import core.stdc.stdio; // : freopen, stderr, stdin, stdout;
+	import core.sys.windows.windows;
+	import core.sys.windows.winbase;
 
 	AllocConsole();
 	//if (!AttachConsole(ATTACH_PARENT_PROCESS))
@@ -30,38 +35,40 @@ extern (Windows) export void sayHello(HWND hwnd, HINSTANCE hinst, char* lpszCmdL
 	freopen("CONIN$", "r", stdin);
 	freopen("CONOUT$", "w", stdout);
 	freopen("CONOUT$", "w", stderr);
-	//writeln("lpszCmdLine=", to_wstring(lpszCmdLine));
-	writeln("lpszCmdLine=", to_string(lpszCmdLine));
-	//MessageBoxA(null, cast(char*) "a", cast(char*) "b", MB_OK);
-	string[] args;
-	args ~= "dummy.exe";
-	args ~= "https://github.com/cppcommons/d-sample/trunk";
-	dmain(args);
-	MessageBoxA(null, cast(char*) "c", cast(char*) "d", MB_OK);
-	exit(1234);
-	return;
+	args.length = 0;
+	LPWSTR* szArglist;
+	int nArgs;
+	szArglist = CommandLineToArgvW(GetCommandLineW(), &nArgs);
+	for (int i = 1; i < nArgs; i++)
+	{
+		args ~= to_string(szArglist[i]);
+	}
 }
 
-extern (C) export int wmain(int argc, wchar** argv)
+static void pause()
 {
-	wchar[] to_wstring(wchar* s)
-	{
-		import core.stdc.wchar_ : wcslen;
+	import std.process : executeShell;
+	import std.stdio : stdout, write, writeln;
 
-		return s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
-	}
-
-	string[] args;
-	for (int i = 0; i < argc; i++)
-	{
-		import std.conv : to;
-
-		args ~= to!string(to_wstring(argv[i]));
-	}
-	return dmain(args);
+	write(`[PAUSE] HIT ANY KEY: `);
+	stdout.flush();
+	executeShell("cmd.exe /c pause");
+	writeln();
 }
 
 __gshared static string[string] g_module_map;
+
+extern (Windows) export void run(HWND hwnd, HINSTANCE hinst, char* /+lpszCmdLine+/, int nCmdShow)
+{
+	import std.stdio : writeln;
+
+	string[] args;
+	init_rundll_pg(args);
+	writeln(args);
+	dmain(args);
+	pause();
+	return;
+}
 
 int dmain(string[] args)
 {
@@ -237,7 +244,7 @@ int dmain(string[] args)
 		SetDllDirectoryW(folderW);
 		+/
 		auto dll_bytes = cast(ubyte[]) read( //`C:\Users\javacommons\Desktop\.easy-install\svn-win32-dll-702f3170fedfdd6e20b8f8f5f4fc25f4\libsvn_client-1.dll`
-				`vc6-dll.dll`);
+				`vc6.dll`);
 		//HMEMORYMODULE hmod = MemoryLoadLibrary(cast(void*) dll_bytes.ptr);
 		HMEMORYMODULE hmod = MemoryLoadLibraryEx(cast(void*) dll_bytes.ptr,
 				&OS_LoadLibrary, &OS_GetProcAddress, &OS_FreeLibrary, null);

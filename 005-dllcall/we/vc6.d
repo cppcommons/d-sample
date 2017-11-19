@@ -21,7 +21,10 @@ os_int32  vc6_add2(os_int32 a, os_int32 b);
 	//args.push_back("https://github.com/cppcommons/d-sample/trunk");
 	//myCode::sayHello();
 	//MessageBoxW(0, L"After call...", L"DLL message:", infoBoxOptions);
-//__declspec(dllexport) int main(int argc, const char **argv)
+
+
+
+
 
 
 
