@@ -53,17 +53,26 @@ typedef int (*proc_svn_cmdline_init)(const char *progname,
 
 struct easy_svn_context
 {
-
+	apr_pool_t *pool;
 };
 
-EXPORT_FUNCTION bool easy_svn_init(const char *progname)
+EXPORT_FUNCTION easy_svn_context *easy_svn_create(const char *progname)
 {
-	return true;
+	/* Initialize the app.  Send all error messages to 'stderr'.  */
+	if (svn_cmdline_init(progname, stderr) != EXIT_SUCCESS)
+	{
+		return NULL;
+	}
+
+	easy_svn_context *context = new easy_svn_context();
+	context->pool = svn_pool_create(NULL);
+
+	return context;
 }
 
 EXPORT_FUNCTION int main(int argc, const char **argv)
 {
-	apr_pool_t *pool;
+	//apr_pool_t *pool;
 	svn_error_t *err;
 	svn_opt_revision_t revision;
 	apr_hash_t *dirents;
@@ -132,21 +141,23 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
 
 	printf("xURL=%s\n", URL);
 
-	/* Initialize the app.  Send all error messages to 'stderr'.  */
-	if (svn_cmdline_init("minimal_client", /*stderr*/ stdout) != EXIT_SUCCESS)
+	easy_svn_context *context = easy_svn_create("minimal_client");
+	if (!context)
 	{
 		printf("0.2\n");
 		return EXIT_FAILURE;
 	}
 
+#if 0x0
 	printf("1\n");
 	/* Create top-level memory pool. Be sure to read the HACKING file to
      understand how to properly use/free subpools. */
 	pool = svn_pool_create(NULL);
+#endif
 
 	printf("2\n");
 	/* Initialize the FS library. */
-	err = svn_fs_initialize(pool);
+	err = svn_fs_initialize(context->pool);
 	if (err)
 	{
 		/* For functions deeper in the stack, we usually use the
@@ -158,7 +169,7 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
 
 	printf("3\n");
 	/* Make sure the ~/.subversion run-time config files exist */
-	err = svn_config_ensure(NULL, pool);
+	err = svn_config_ensure(NULL, context->pool);
 	if (err)
 	{
 		svn_handle_error2(err, stderr, FALSE, "minimal_client: ");
@@ -169,14 +180,14 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
 	/* All clients need to fill out a client_ctx object. */
 	{
 		/* Initialize and allocate the client_ctx object. */
-		if ((err = svn_client_create_context(&ctx, pool)))
+		if ((err = svn_client_create_context(&ctx, context->pool)))
 		{
 			svn_handle_error2(err, stderr, FALSE, "minimal_client: ");
 			return EXIT_FAILURE;
 		}
 
 		/* Load the run-time config file into a hash */
-		if ((err = svn_config_get_config(&(ctx->config), NULL, pool)))
+		if ((err = svn_config_get_config(&(ctx->config), NULL, context->pool)))
 		{
 			svn_handle_error2(err, stderr, FALSE, "minimal_client: ");
 			return EXIT_FAILURE;
@@ -187,7 +198,7 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
 		/* Set the working copy administrative directory name. */
 		if (getenv("SVN_ASP_DOT_NET_HACK"))
 		{
-			err = svn_wc_set_adm_dir("_svn", pool);
+			err = svn_wc_set_adm_dir("_svn", context->pool);
 			if (err)
 			{
 				svn_handle_error2(err, stderr, FALSE, "minimal_client: ");
@@ -227,22 +238,22 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
          example. */
 
 			svn_auth_provider_object_t *provider;
-			apr_array_header_t *providers = apr_array_make(pool, 4, sizeof(svn_auth_provider_object_t *));
+			apr_array_header_t *providers = apr_array_make(context->pool, 4, sizeof(svn_auth_provider_object_t *));
 
 			svn_auth_get_simple_prompt_provider(&provider,
 												my_simple_prompt_callback,
 												NULL, /* baton */
-												2, /* retry limit */ pool);
+												2, /* retry limit */ context->pool);
 			APR_ARRAY_PUSH(providers, svn_auth_provider_object_t *) = provider;
 
 			svn_auth_get_username_prompt_provider(&provider,
 												  my_username_prompt_callback,
 												  NULL, /* baton */
-												  2, /* retry limit */ pool);
+												  2, /* retry limit */ context->pool);
 			APR_ARRAY_PUSH(providers, svn_auth_provider_object_t *) = provider;
 
 			/* Register the auth-providers into the context's auth_baton. */
-			svn_auth_open(&ctx->auth_baton, providers, pool);
+			svn_auth_open(&ctx->auth_baton, providers, context->pool);
 		}
 #endif
 	} /* end of client_ctx setup */
@@ -260,7 +271,7 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
 											 NULL, //cfg_config,
 											 ctx->cancel_func,
 											 ctx->cancel_baton,
-											 pool)))
+											 context->pool)))
 		svn_handle_error2(err, stderr, TRUE, "svn: ");
 
 	ctx->auth_baton = ab;
@@ -274,7 +285,7 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
 	err = svn_client_ls(&dirents,
 						URL, &revision,
 						FALSE, /* no recursion */
-						ctx, pool);
+						ctx, context->pool);
 	if (err)
 	{
 		svn_handle_error2(err, stderr, FALSE, "minimal_client: ");
@@ -283,7 +294,7 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
 
 	printf("8\n");
 	/* Print the dir entries in the hash. */
-	for (hi = apr_hash_first(pool, dirents); hi; hi = apr_hash_next(hi))
+	for (hi = apr_hash_first(context->pool, dirents); hi; hi = apr_hash_next(hi))
 	{
 		const char *entryname;
 		svn_dirent_t *val;

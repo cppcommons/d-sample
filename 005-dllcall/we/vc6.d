@@ -23,8 +23,11 @@ os_int32  vc6_add2(os_int32 a, os_int32 b);
 	//MessageBoxW(0, L"After call...", L"DLL message:", infoBoxOptions);
 
 
+	/* Initialize the app.  Send all error messages to 'stderr'.  */
 
 
+
+	//apr_pool_t *pool;
 
 
 
@@ -43,7 +46,6 @@ os_int32  vc6_add2(os_int32 a, os_int32 b);
 		//return EXIT_FAILURE;
 
 
-	/* Initialize the app.  Send all error messages to 'stderr'.  */
 
 	/* Create top-level memory pool. Be sure to read the HACKING file to
      understand how to properly use/free subpools. */

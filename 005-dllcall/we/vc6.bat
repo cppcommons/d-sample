@@ -8,8 +8,10 @@ c:\dm\bin\htod -cpp -hc vc6.cpp
 if %errorlevel% neq 0 ( exit /b )
 premake --file vc6.pmk --target vs6
 msdev.com vc6.dsp /MAKE ALL /REBUILD
+if %errorlevel% neq 0 ( exit /b )
 premake --file vc6-run.pmk --target vs6
 msdev.com vc6-run.dsp /MAKE ALL /REBUILD
+if %errorlevel% neq 0 ( exit /b )
 
 ::C:\dm\bin\implib /system vc6-run-dm32.lib vc6-run.dll
 ::if %errorlevel% neq 0 ( exit /b )
