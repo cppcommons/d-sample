@@ -151,7 +151,8 @@ typedef int (*proc_svn_cmdline_init)(const char *progname,
 
 EXPORT_FUNCTION void easy_svn_destroy(struct easy_svn_context *context)
 {
-	if (!context) return;
+	if (!context)
+		return;
 	delete context;
 }
 
@@ -248,7 +249,7 @@ EXPORT_FUNCTION struct easy_svn_dirent *easy_svn_ls(easy_svn_context *context, c
 		svn_dirent_t *val;
 
 		apr_hash_this(hi, (const void **)&entryname, NULL, (void **)&val);
-		printf("   %s %ld %s %u\n", entryname, val->created_rev, val->last_author, val->size);
+		//printf("   %s %ld %s %u\n", entryname, val->created_rev, val->last_author, val->size);
 
 		easy_svn_dirent entry;
 		entry.entryname = entryname;
@@ -365,7 +366,12 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
 	{
 		for (; entries->entryname; entries++)
 		{
-			printf("entiries=0x%p %s\n", entries, entries->entryname);
+			//printf("entiries=0x%p %s\n", entries, entries->entryname);
+			printf("   %s %ld %s %u\n",
+				   entries->entryname,
+				   entries->entry.created_rev,
+				   entries->entry.last_author,
+				   entries->entry.size);
 		}
 	}
 

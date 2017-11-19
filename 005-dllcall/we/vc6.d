@@ -114,6 +114,7 @@ easy_svn_dirent * easy_svn_ls(easy_svn_context *context, char *url, bool recursi
 	/* Main call into libsvn_client does all the work. */
 	/* Print the dir entries in the hash. */
 
+		//printf("   %s %ld %s %u\n", entryname, val->created_rev, val->last_author, val->size);
 
 
 		/* 'val' is actually an svn_dirent_t structure; a more complex
@@ -155,5 +156,6 @@ easy_svn_dirent * easy_svn_ls(easy_svn_context *context, char *url, bool recursi
 		/* 'val' is actually an svn_dirent_t structure; a more complex
           program would mine it for extra printable information. */
 
+			//printf("entiries=0x%p %s\n", entries, entries->entryname);
 
 
