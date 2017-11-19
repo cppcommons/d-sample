@@ -5,19 +5,97 @@ typedef int (*proc_main)(int argc, const char **argv);
 EXPORT_FUNCTION int main(int argc, const char **argv);
 EXPORT_FUNCTION os_int32 vc6_add2(os_int32 a, os_int32 b);
 
-#ifndef __HTOD__
-//#include "svn_types.h"
+#ifdef __HTOD__
+struct easy_svn_context
+{
+};
+#endif /* __HTOD__ */
+
+#ifdef __HTOD__
+/** The various types of nodes in the Subversion filesystem. */
+typedef enum svn_node_kind_t {
+	/** absent */
+	svn_node_none,
+
+	/** regular file */
+	svn_node_file,
+
+	/** directory */
+	svn_node_dir,
+
+	/** something's here, but we don't know what */
+	svn_node_unknown,
+
+	/**
+   * symbolic link
+   * @note This value is not currently used by the public API.
+   * @since New in 1.8.
+   */
+	svn_node_symlink
+} svn_node_kind_t;
+
+typedef __int64 apr_int64_t;
+typedef apr_int64_t svn_filesize_t;
+typedef int svn_boolean_t;
+typedef long int svn_revnum_t;
+typedef apr_int64_t apr_time_t;
+
+typedef struct svn_dirent_t
+{
+	/** node kind */
+	svn_node_kind_t kind;
+
+	/** length of file text, or 0 for directories */
+	svn_filesize_t size;
+
+	/** does the node have props? */
+	svn_boolean_t has_props;
+
+	/** last rev in which this node changed */
+	svn_revnum_t created_rev;
+
+	/** time of created_rev (mod-time) */
+	apr_time_t time;
+
+	/** author of created_rev */
+	const char *last_author;
+
+	/* IMPORTANT: If you extend this struct, check svn_dirent_dup(). */
+} svn_dirent_t;
+#else
 #include "svn_client.h"
 #include "svn_cmdline.h"
 #include "svn_pools.h"
 #include "svn_config.h"
 #include "svn_fs.h"
 #include "svn_auth.h"
-#endif /* !__HTOD__ */
+#endif /* __HTOD__ */
+
+typedef struct easy_svn_dirent_t
+{
+	const char *entryname;
+	svn_dirent_t entry;
+} easy_svn_dirent_t;
+
+EXPORT_FUNCTION struct easy_svn_context *easy_svn_create();
+} // extern "C"
+
+static dummy()
+{
+	proc_main fn = main;
+}
+
+#ifndef __HTOD__
+EXPORT_FUNCTION os_int32 vc6_add2(os_int32 a, os_int32 b)
+{
+	return a + b;
+}
+
+//#include "svn_types.h"
+#include <vector>
 
 struct easy_svn_context
 {
-#ifndef __HTOD__
 	apr_pool_t *pool;
 	svn_client_ctx_t *ctx;
 	svn_auth_baton_t *ab;
@@ -32,75 +110,8 @@ struct easy_svn_context
 		if (this->pool)
 			svn_pool_destroy(this->pool);
 	}
-#endif /* !__HTOD__ */
+	std::vector<easy_svn_dirent_t> ls_result;
 };
-
-#ifdef __HTOD__
-/** The various types of nodes in the Subversion filesystem. */
-typedef enum svn_node_kind_t
-{
-  /** absent */
-  svn_node_none,
-
-  /** regular file */
-  svn_node_file,
-
-  /** directory */
-  svn_node_dir,
-
-  /** something's here, but we don't know what */
-  svn_node_unknown,
-
-  /**
-   * symbolic link
-   * @note This value is not currently used by the public API.
-   * @since New in 1.8.
-   */
-  svn_node_symlink
-} svn_node_kind_t;
-
-typedef  __int64           apr_int64_t;
-typedef apr_int64_t svn_filesize_t;
-typedef int svn_boolean_t;
-typedef long int svn_revnum_t;
-typedef apr_int64_t apr_time_t;
-
-typedef struct svn_dirent_t
-{
-  /** node kind */
-  svn_node_kind_t kind;
-
-  /** length of file text, or 0 for directories */
-  svn_filesize_t size;
-
-  /** does the node have props? */
-  svn_boolean_t has_props;
-
-  /** last rev in which this node changed */
-  svn_revnum_t created_rev;
-
-  /** time of created_rev (mod-time) */
-  apr_time_t time;
-
-  /** author of created_rev */
-  const char *last_author;
-
-  /* IMPORTANT: If you extend this struct, check svn_dirent_dup(). */
-} svn_dirent_t;
-#endif /* __HTOD__ */
-
-EXPORT_FUNCTION easy_svn_context *easy_svn_create(const char *progname);
-
-static dummy()
-{
-	proc_main fn = main;
-}
-
-#ifndef __HTOD__
-EXPORT_FUNCTION os_int32 vc6_add2(os_int32 a, os_int32 b)
-{
-	return a + b;
-}
 
 #include <windows.h>
 //#include <string>
@@ -131,10 +142,10 @@ extern "C" __declspec(dllexport) void CALLBACK sayHello(HWND, HINSTANCE, wchar_t
 typedef int (*proc_svn_cmdline_init)(const char *progname,
 									 FILE *error_stream);
 
-EXPORT_FUNCTION easy_svn_context *easy_svn_create(const char *progname)
+EXPORT_FUNCTION struct easy_svn_context *easy_svn_create()
 {
 	/* Initialize the app.  Send all error messages to 'stderr'.  */
-	if (svn_cmdline_init(progname, stderr) != EXIT_SUCCESS)
+	if (svn_cmdline_init("easy_svn", stderr) != EXIT_SUCCESS)
 	{
 		return NULL;
 	}
@@ -188,6 +199,11 @@ EXPORT_FUNCTION easy_svn_context *easy_svn_create(const char *progname)
 	return context;
 label_error:
 	delete context;
+	return NULL;
+}
+
+easy_svn_dirent_t **easy_svn_ls(easy_svn_context *context, const char *url)
+{
 	return NULL;
 }
 
@@ -262,23 +278,14 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
 
 	printf("xURL=%s\n", URL);
 
-	easy_svn_context *context = easy_svn_create("minimal_client");
+	easy_svn_context *context = easy_svn_create();
 	if (!context)
 	{
 		printf("0.2\n");
 		return EXIT_FAILURE;
 	}
 
-	printf("3\n");
-	/* Make sure the ~/.subversion run-time config files exist */
-	err = svn_config_ensure(NULL, context->pool);
-	if (err)
-	{
-		svn_handle_error2(err, stderr, FALSE, "minimal_client: ");
-		return EXIT_FAILURE;
-	}
-
-/* Now do the real work. */
+	/* Now do the real work. */
 
 	printf("7\n");
 	/* Set revision to always be the HEAD revision.  It could, however,
@@ -314,4 +321,3 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
 	return EXIT_SUCCESS;
 }
 #endif //if !defined(__HTOD__)
-} // extern "C"

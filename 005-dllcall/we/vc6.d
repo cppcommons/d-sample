@@ -6,22 +6,20 @@ alias int  function(int argc, char **argv)proc_main;
 int  main(int argc, char **argv);
 os_int32  vc6_add2(os_int32 a, os_int32 b);
 
-//#include "svn_types.h"
-
 struct easy_svn_context
 {
 }
 
 /** The various types of nodes in the Subversion filesystem. */
-  /** absent */
+	/** absent */
 
-  /** regular file */
+	/** regular file */
 
-  /** directory */
+	/** directory */
 
-  /** something's here, but we don't know what */
+	/** something's here, but we don't know what */
 
-  /**
+	/**
    * symbolic link
    * @note This value is not currently used by the public API.
    * @since New in 1.8.
@@ -41,19 +39,19 @@ alias int svn_boolean_t;
 alias int svn_revnum_t;
 alias apr_int64_t apr_time_t;
 
-  /** node kind */
+	/** node kind */
 
-  /** length of file text, or 0 for directories */
+	/** length of file text, or 0 for directories */
 
-  /** does the node have props? */
+	/** does the node have props? */
 
-  /** last rev in which this node changed */
+	/** last rev in which this node changed */
 
-  /** time of created_rev (mod-time) */
+	/** time of created_rev (mod-time) */
 
-  /** author of created_rev */
+	/** author of created_rev */
 
-  /* IMPORTANT: If you extend this struct, check svn_dirent_dup(). */
+	/* IMPORTANT: If you extend this struct, check svn_dirent_dup(). */
 struct svn_dirent_t
 {
     int kind;
@@ -64,8 +62,17 @@ struct svn_dirent_t
     char *last_author;
 }
 
-easy_svn_context * easy_svn_create(char *progname);
+struct easy_svn_dirent_t
+{
+    char *entryname;
+    svn_dirent_t entry;
+}
 
+easy_svn_context * easy_svn_create();
+
+
+
+//#include "svn_types.h"
 
 
 //#include <string>
@@ -96,6 +103,7 @@ easy_svn_context * easy_svn_create(char *progname);
 
 
 
+
 	//apr_pool_t *pool;
 	//svn_client_ctx_t *ctx;
 	//svn_auth_baton_t *ab;
@@ -118,9 +126,7 @@ easy_svn_context * easy_svn_create(char *progname);
 
 
 
-	/* Make sure the ~/.subversion run-time config files exist */
-
-/* Now do the real work. */
+	/* Now do the real work. */
 
 	/* Set revision to always be the HEAD revision.  It could, however,
      be set to a specific revision number, date, or other values. */
@@ -133,4 +139,3 @@ easy_svn_context * easy_svn_create(char *progname);
 		/* 'val' is actually an svn_dirent_t structure; a more complex
           program would mine it for extra printable information. */
 
-int  dummy();
