@@ -67,7 +67,19 @@ EXPORT_FUNCTION easy_svn_context *easy_svn_create(const char *progname)
 	easy_svn_context *context = new easy_svn_context();
 	context->pool = svn_pool_create(NULL);
 
+	svn_error_t *err;
+	/* Initialize the FS library. */
+	err = svn_fs_initialize(context->pool);
+	if (err)
+	{
+		svn_handle_error(err, stderr, FALSE);
+		goto label_error;
+	}
+
 	return context;
+label_error:
+	delete context;
+	return NULL;
 }
 
 EXPORT_FUNCTION int main(int argc, const char **argv)
@@ -148,25 +160,6 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
 		return EXIT_FAILURE;
 	}
 
-#if 0x0
-	printf("1\n");
-	/* Create top-level memory pool. Be sure to read the HACKING file to
-     understand how to properly use/free subpools. */
-	pool = svn_pool_create(NULL);
-#endif
-
-	printf("2\n");
-	/* Initialize the FS library. */
-	err = svn_fs_initialize(context->pool);
-	if (err)
-	{
-		/* For functions deeper in the stack, we usually use the
-         SVN_ERR() exception-throwing macro (see svn_error.h).  At the
-         top level, we catch & print the error with svn_handle_error2(). */
-		svn_handle_error2(err, stderr, FALSE, "minimal_client: ");
-		return EXIT_FAILURE;
-	}
-
 	printf("3\n");
 	/* Make sure the ~/.subversion run-time config files exist */
 	err = svn_config_ensure(NULL, context->pool);
@@ -194,68 +187,7 @@ EXPORT_FUNCTION int main(int argc, const char **argv)
 		}
 
 		printf("5\n");
-#ifdef WIN32
-		/* Set the working copy administrative directory name. */
-		if (getenv("SVN_ASP_DOT_NET_HACK"))
-		{
-			err = svn_wc_set_adm_dir("_svn", context->pool);
-			if (err)
-			{
-				svn_handle_error2(err, stderr, FALSE, "minimal_client: ");
-				return EXIT_FAILURE;
-			}
-		}
-#endif
-
 		printf("6\n");
-#if 0x0
-		/* Depending on what your client does, you'll want to read about
-       (and implement) the various callback function types below.  */
-
-		/* A func (& context) which receives event signals during
-       checkouts, updates, commits, etc.  */
-		/* ctx->notify_func = my_notification_func;
-       ctx->notify_baton = NULL; */
-
-		/* A func (& context) which can receive log messages */
-		/* ctx->log_msg_func = my_log_msg_receiver_func;
-       ctx->log_msg_baton = NULL; */
-
-		/* A func (& context) which checks whether the user cancelled */
-		/* ctx->cancel_func = my_cancel_checking_func;
-       ctx->cancel_baton = NULL; */
-
-		/* Make the client_ctx capable of authenticating users */
-		{
-			/* There are many different kinds of authentication back-end
-         "providers".  See svn_auth.h for a full overview.
-
-         If you want to get the auth behavior of the 'svn' program,
-         you can use svn_cmdline_setup_auth_baton, which will give
-         you the exact set of auth providers it uses.  This program
-         doesn't use it because it's only appropriate for a command
-         line program, and this is supposed to be a general purpose
-         example. */
-
-			svn_auth_provider_object_t *provider;
-			apr_array_header_t *providers = apr_array_make(context->pool, 4, sizeof(svn_auth_provider_object_t *));
-
-			svn_auth_get_simple_prompt_provider(&provider,
-												my_simple_prompt_callback,
-												NULL, /* baton */
-												2, /* retry limit */ context->pool);
-			APR_ARRAY_PUSH(providers, svn_auth_provider_object_t *) = provider;
-
-			svn_auth_get_username_prompt_provider(&provider,
-												  my_username_prompt_callback,
-												  NULL, /* baton */
-												  2, /* retry limit */ context->pool);
-			APR_ARRAY_PUSH(providers, svn_auth_provider_object_t *) = provider;
-
-			/* Register the auth-providers into the context's auth_baton. */
-			svn_auth_open(&ctx->auth_baton, providers, context->pool);
-		}
-#endif
 	} /* end of client_ctx setup */
 
 	/* Now do the real work. */

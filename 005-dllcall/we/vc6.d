@@ -26,6 +26,8 @@ os_int32  vc6_add2(os_int32 a, os_int32 b);
 	/* Initialize the app.  Send all error messages to 'stderr'.  */
 
 
+	/* Initialize the FS library. */
+
 
 	//apr_pool_t *pool;
 
@@ -47,14 +49,6 @@ os_int32  vc6_add2(os_int32 a, os_int32 b);
 
 
 
-	/* Create top-level memory pool. Be sure to read the HACKING file to
-     understand how to properly use/free subpools. */
-
-	/* Initialize the FS library. */
-		/* For functions deeper in the stack, we usually use the
-         SVN_ERR() exception-throwing macro (see svn_error.h).  At the
-         top level, we catch & print the error with svn_handle_error2(). */
-
 	/* Make sure the ~/.subversion run-time config files exist */
 
 	/* All clients need to fill out a client_ctx object. */
@@ -62,39 +56,6 @@ os_int32  vc6_add2(os_int32 a, os_int32 b);
 
 		/* Load the run-time config file into a hash */
 
-		/* Set the working copy administrative directory name. */
-
-		/* Depending on what your client does, you'll want to read about
-       (and implement) the various callback function types below.  */
-
-		/* A func (& context) which receives event signals during
-       checkouts, updates, commits, etc.  */
-		/* ctx->notify_func = my_notification_func;
-       ctx->notify_baton = NULL; */
-
-		/* A func (& context) which can receive log messages */
-		/* ctx->log_msg_func = my_log_msg_receiver_func;
-       ctx->log_msg_baton = NULL; */
-
-		/* A func (& context) which checks whether the user cancelled */
-		/* ctx->cancel_func = my_cancel_checking_func;
-       ctx->cancel_baton = NULL; */
-
-		/* Make the client_ctx capable of authenticating users */
-			/* There are many different kinds of authentication back-end
-         "providers".  See svn_auth.h for a full overview.
-
-         If you want to get the auth behavior of the 'svn' program,
-         you can use svn_cmdline_setup_auth_baton, which will give
-         you the exact set of auth providers it uses.  This program
-         doesn't use it because it's only appropriate for a command
-         line program, and this is supposed to be a general purpose
-         example. */
-
-
-
-
-			/* Register the auth-providers into the context's auth_baton. */
 
 	/* Now do the real work. */
 	//svn_auth_baton_t *ab;
