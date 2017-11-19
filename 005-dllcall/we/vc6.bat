@@ -16,9 +16,10 @@ msdev.com vc6-run.dsp /MAKE ALL /REBUILD
 
 ::exit /b
 setlocal
-::set PATH=E:\opt\svn\vc6\svn-win32-1.8.17-ap24\svn-win32-1.8.17\bin;%PATH%
-::set PATH=e:\opt\opt.m32\usr\bin;%PATH%
+set PATH=E:\opt\svn\vc6\svn-win32-1.8.17-ap24\svn-win32-1.8.17\bin;%PATH%
+::set PATH=C:\Users\javacommons\Desktop\.easy-install\svn-win32-dll-702f3170fedfdd6e20b8f8f5f4fc25f4;%PATH%
 vc6-run.exe https://github.com/cppcommons/d-sample/trunk
+echo errorlevel=%errorlevel%
 endlocal
 
 exit /b
