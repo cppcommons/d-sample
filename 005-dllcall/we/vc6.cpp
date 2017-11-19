@@ -6,6 +6,7 @@ EXPORT_FUNCTION int main(int argc, const char **argv);
 EXPORT_FUNCTION os_int32 vc6_add2(os_int32 a, os_int32 b);
 
 #ifndef __HTOD__
+//#include "svn_types.h"
 #include "svn_client.h"
 #include "svn_cmdline.h"
 #include "svn_pools.h"
@@ -34,6 +35,59 @@ struct easy_svn_context
 #endif /* !__HTOD__ */
 };
 
+#ifdef __HTOD__
+/** The various types of nodes in the Subversion filesystem. */
+typedef enum svn_node_kind_t
+{
+  /** absent */
+  svn_node_none,
+
+  /** regular file */
+  svn_node_file,
+
+  /** directory */
+  svn_node_dir,
+
+  /** something's here, but we don't know what */
+  svn_node_unknown,
+
+  /**
+   * symbolic link
+   * @note This value is not currently used by the public API.
+   * @since New in 1.8.
+   */
+  svn_node_symlink
+} svn_node_kind_t;
+
+typedef  __int64           apr_int64_t;
+typedef apr_int64_t svn_filesize_t;
+typedef int svn_boolean_t;
+typedef long int svn_revnum_t;
+typedef apr_int64_t apr_time_t;
+
+typedef struct svn_dirent_t
+{
+  /** node kind */
+  svn_node_kind_t kind;
+
+  /** length of file text, or 0 for directories */
+  svn_filesize_t size;
+
+  /** does the node have props? */
+  svn_boolean_t has_props;
+
+  /** last rev in which this node changed */
+  svn_revnum_t created_rev;
+
+  /** time of created_rev (mod-time) */
+  apr_time_t time;
+
+  /** author of created_rev */
+  const char *last_author;
+
+  /* IMPORTANT: If you extend this struct, check svn_dirent_dup(). */
+} svn_dirent_t;
+#endif /* __HTOD__ */
 
 EXPORT_FUNCTION easy_svn_context *easy_svn_create(const char *progname);
 

@@ -6,11 +6,63 @@ alias int  function(int argc, char **argv)proc_main;
 int  main(int argc, char **argv);
 os_int32  vc6_add2(os_int32 a, os_int32 b);
 
+//#include "svn_types.h"
 
 struct easy_svn_context
 {
 }
 
+/** The various types of nodes in the Subversion filesystem. */
+  /** absent */
+
+  /** regular file */
+
+  /** directory */
+
+  /** something's here, but we don't know what */
+
+  /**
+   * symbolic link
+   * @note This value is not currently used by the public API.
+   * @since New in 1.8.
+   */
+enum svn_node_kind_t
+{
+    svn_node_none,
+    svn_node_file,
+    svn_node_dir,
+    svn_node_unknown,
+    svn_node_symlink,
+}
+
+alias long apr_int64_t;
+alias apr_int64_t svn_filesize_t;
+alias int svn_boolean_t;
+alias int svn_revnum_t;
+alias apr_int64_t apr_time_t;
+
+  /** node kind */
+
+  /** length of file text, or 0 for directories */
+
+  /** does the node have props? */
+
+  /** last rev in which this node changed */
+
+  /** time of created_rev (mod-time) */
+
+  /** author of created_rev */
+
+  /* IMPORTANT: If you extend this struct, check svn_dirent_dup(). */
+struct svn_dirent_t
+{
+    int kind;
+    svn_filesize_t size;
+    svn_boolean_t has_props;
+    svn_revnum_t created_rev;
+    apr_time_t time;
+    char *last_author;
+}
 
 easy_svn_context * easy_svn_create(char *progname);
 
