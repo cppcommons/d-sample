@@ -71,13 +71,14 @@ typedef struct svn_dirent_t
 #include "svn_auth.h"
 #endif /* __HTOD__ */
 
-typedef struct easy_svn_dirent_t
+typedef struct easy_svn_dirent
 {
 	const char *entryname;
 	svn_dirent_t entry;
-} easy_svn_dirent_t;
+} easy_svn_dirent;
 
 EXPORT_FUNCTION struct easy_svn_context *easy_svn_create();
+EXPORT_FUNCTION struct easy_svn_dirent *easy_svn_ls(easy_svn_context *context, const char *url);
 } // extern "C"
 
 static dummy()
@@ -94,7 +95,7 @@ EXPORT_FUNCTION os_int32 vc6_add2(os_int32 a, os_int32 b)
 //#include "svn_types.h"
 #include <vector>
 
-typedef std::vector<easy_svn_dirent_t> easy_snv_ls_result;
+typedef std::vector<easy_svn_dirent> easy_snv_ls_result;
 
 struct easy_svn_context
 {
@@ -109,7 +110,7 @@ struct easy_svn_context
 	}
 	virtual ~easy_svn_context()
 	{
-		for (size_t i=0; i<this->ls_results.size(); i++)
+		for (size_t i = 0; i < this->ls_results.size(); i++)
 		{
 			delete this->ls_results[i];
 		}
@@ -208,9 +209,15 @@ label_error:
 	return NULL;
 }
 
-easy_svn_dirent_t **easy_svn_ls(easy_svn_context *context, const char *url)
+EXPORT_FUNCTION struct easy_svn_dirent *easy_svn_ls(easy_svn_context *context, const char *url)
 {
-	return NULL;
+	if (!context)
+		return NULL;
+	//typedef std::vector<easy_svn_dirent> easy_snv_ls_result;
+	//std::vector<easy_snv_ls_result *> ls_results;
+	easy_snv_ls_result *result = new easy_snv_ls_result();
+	context->ls_results.push_back(result);
+	return &(*result)[0];
 }
 
 EXPORT_FUNCTION int main(int argc, const char **argv)

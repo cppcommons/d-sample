@@ -62,13 +62,14 @@ struct svn_dirent_t
     char *last_author;
 }
 
-struct easy_svn_dirent_t
+struct easy_svn_dirent
 {
     char *entryname;
     svn_dirent_t entry;
 }
 
 easy_svn_context * easy_svn_create();
+easy_svn_dirent * easy_svn_ls(easy_svn_context *context, char *url);
 
 
 
@@ -104,6 +105,8 @@ easy_svn_context * easy_svn_create();
 
 
 
+	//typedef std::vector<easy_svn_dirent> easy_snv_ls_result;
+	//std::vector<easy_snv_ls_result *> ls_results;
 
 	//apr_pool_t *pool;
 	//svn_client_ctx_t *ctx;
