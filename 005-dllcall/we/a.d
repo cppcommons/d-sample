@@ -114,6 +114,13 @@ int dmain(string[] args)
 	writeln(`CSIDL_LOCAL_APPDATA=`, get_common_path(CSIDL_LOCAL_APPDATA, true));
 	writeln(`CSIDL_COMMON_APPDATA=`, get_common_path(CSIDL_COMMON_APPDATA, true));
 	writeln(`CSIDL_DESKTOP=`, get_common_path(CSIDL_DESKTOP, true));
+	/+
+	CSIDL_PROFILE=C:\Users\javacommons
+	CSIDL_APPDATA=C:\Users\javacommons\AppData\Roaming
+	CSIDL_LOCAL_APPDATA=C:\Users\javacommons\AppData\Local
+	CSIDL_COMMON_APPDATA=C:\ProgramData
+	CSIDL_DESKTOP=C:\Users\javacommons\Desktop
+	+/
 
 	version (Windows)
 	{
@@ -197,13 +204,6 @@ int dmain(string[] args)
 
 		//writeln(g_module_map);
 
-		/+
-	CSIDL_PROFILE=C:\Users\javacommons
-	CSIDL_APPDATA=C:\Users\javacommons\AppData\Roaming
-	CSIDL_LOCAL_APPDATA=C:\Users\javacommons\AppData\Local
-	CSIDL_COMMON_APPDATA=C:\ProgramData
-	CSIDL_DESKTOP=C:\Users\javacommons\Desktop
-	+/
 		import std.file : read; // file:///C:\D\dmd2\src\phobos\std\file.d
 		import easywin_loader;
 
