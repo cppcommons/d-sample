@@ -47,15 +47,25 @@ static void init_rundll_pg(ref string[] args)
 	}
 }
 
+int run_command(string[] cmdline)
+{
+	import std.process;
+	import std.stdio;
+
+	auto pipes = pipeProcess(cmdline, Redirect.stdout | Redirect.stderrToStdout);
+	foreach (c; pipes.stdout.byChunk(1))
+		stdout.rawWrite(c);
+	int rc = wait(pipes.pid);
+	return rc;
+}
+
 static void pause()
 {
-	import std.process : executeShell;
-	import std.stdio : stdout, write, writeln;
+	//import std.process : executeShell;
+	//import std.stdio : stdout, write, writeln;
 
-	write(`[PAUSE] HIT ANY KEY: `);
-	stdout.flush();
-	executeShell("cmd.exe /c pause");
-	writeln();
+	string[] cmdline = ["cmd.exe", "/c", "pause"];
+	run_command(cmdline);
 }
 
 __gshared static string[string] g_module_map;
@@ -373,6 +383,7 @@ alias easy_svn_procs * function()proc_get_easy_svn_procs;
 	return 0;
 }
 
+/+
 int run_command(string[] cmdline)
 {
 	import std.process : spawnProcess, wait;
@@ -380,6 +391,7 @@ int run_command(string[] cmdline)
 	auto pid = spawnProcess(cmdline);
 	return wait(pid);
 }
++/
 
 import std.datetime.systime : SysTime;
 
