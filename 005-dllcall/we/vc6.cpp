@@ -94,6 +94,8 @@ EXPORT_FUNCTION os_int32 vc6_add2(os_int32 a, os_int32 b)
 //#include "svn_types.h"
 #include <vector>
 
+typedef std::vector<easy_svn_dirent_t> easy_snv_ls_result;
+
 struct easy_svn_context
 {
 	apr_pool_t *pool;
@@ -107,10 +109,14 @@ struct easy_svn_context
 	}
 	virtual ~easy_svn_context()
 	{
+		for (size_t i=0; i<this->ls_results.size(); i++)
+		{
+			delete this->ls_results[i];
+		}
 		if (this->pool)
 			svn_pool_destroy(this->pool);
 	}
-	std::vector<easy_svn_dirent_t> ls_result;
+	std::vector<easy_snv_ls_result *> ls_results;
 };
 
 #include <windows.h>
