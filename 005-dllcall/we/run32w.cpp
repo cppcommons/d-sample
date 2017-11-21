@@ -65,9 +65,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 	if (use_console && AttachParentConsole())
 	{
+		#if 0x0
 		freopen("CONIN$", "r", stdin);
 		freopen("CONOUT$", "w", stdout);
 		freopen("CONOUT$", "w", stderr);
+		#endif
 	}
 	printf("lpCmdLine=%s\n", lpCmdLine);
 	char a[1024];
