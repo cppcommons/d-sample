@@ -8,7 +8,7 @@ chcp 65001
 ::edub a-run.exe run a.d easywin_loader.obj --build=release os.lib lib1.lib c:\dm\lib\stlp45dm_static.lib wininet.lib data=E:\opt\svn\vc6\svn-win32-1.8.17-ap24\svn-win32-1.8.17\bin
 edub a.dll build a.d easywin_loader.obj --build=release os.lib lib1.lib c:\dm\lib\stlp45dm_static.lib wininet.lib data=E:\opt\svn\vc6\svn-win32-1.8.17-ap24\svn-win32-1.8.17\bin def=WindowsVista
 if %errorlevel% neq 0 ( exit /b )
-::a-main.exe a b c
-::rundll32 a.dll,_run@16 "https://github.com/cppcommons/d-sample/trunk"
-rundll32 a.dll,_run@16 "https://github.com/cppcommons/d-sample/trunk/README.md"
+::cmd32 a.dll "https://github.com/cppcommons/d-sample/trunk/README.md"
+cmd32 a.dll "https://github.com/cppcommons/d-sample/trunk"
+::run32 -c a.dll "https://github.com/cppcommons/d-sample/trunk"
 echo errorlevel=%errorlevel%

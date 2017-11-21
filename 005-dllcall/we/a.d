@@ -70,13 +70,29 @@ static void pause()
 
 __gshared static string[string] g_module_map;
 
-extern (Windows) export void run(HWND hwnd, HINSTANCE hinst, char*  /+lpszCmdLine+/ , int nCmdShow)
+private static string[] build_args(int argc, wchar** argv)
 {
-	import std.stdio : writeln;
+	string[] result;
+	for (int i = 0; i < argc; i++)
+	{
+		result ~= to_string(argv[i]);
+	}
+	return result;
+}
 
-	string[] args;
-	init_rundll_pg(args);
+extern (C) export void RunMain(int argc, wchar** argv, DWORD with_console)
+{
+	import std.stdio; // : writeln;
+
+	string[] args = build_args(argc, argv);
 	writeln(args);
+
+//extern (Windows) export void run(HWND hwnd, HINSTANCE hinst, char*  /+lpszCmdLine+/ , int nCmdShow)
+//{
+//	import std.stdio : writeln;
+//	string[] args;
+//	init_rundll_pg(args);
+//	writeln(args);
 	dmain(args);
 	pause();
 	return;
