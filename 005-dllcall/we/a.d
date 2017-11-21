@@ -16,6 +16,7 @@ private void exit(int code)
 	std.c.stdlib.exit(code);
 }
 
+/+
 static void init_rundll_pg(ref string[] args)
 {
 	string to_string(wchar* s)
@@ -46,6 +47,7 @@ static void init_rundll_pg(ref string[] args)
 		args ~= to_string(szArglist[i]);
 	}
 }
++/
 
 int run_command(string[] cmdline)
 {
@@ -87,12 +89,6 @@ extern (C) export void RunMain(int argc, wchar** argv, DWORD with_console)
 	string[] args = build_args(argc, argv);
 	writeln(args);
 
-//extern (Windows) export void run(HWND hwnd, HINSTANCE hinst, char*  /+lpszCmdLine+/ , int nCmdShow)
-//{
-//	import std.stdio : writeln;
-//	string[] args;
-//	init_rundll_pg(args);
-//	writeln(args);
 	dmain(args);
 	pause();
 	return;
