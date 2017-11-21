@@ -82,8 +82,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	fprintf(stdout, "A2=%s\n", a);
 	fprintf(stderr, "A3=%s\n", a);
 	//MessageBox(NULL, "Hello Windows!", "MyFirst", MB_OK);
-	HMODULE hmod = LoadLibraryA("rdll.dll");
-	//HMODULE hmod = LoadLibraryA("np.dll");
+	//HMODULE hmod = LoadLibraryA("rdll-dm32.dll");
+	//HMODULE hmod = LoadLibraryA("rdll.dll");
+	HMODULE hmod = LoadLibraryA("np.dll");
 	if (!hmod)
 		return 1;
 	fprintf(log, "hmod=0x%p\n", hmod);

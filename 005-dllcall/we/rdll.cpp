@@ -8,9 +8,12 @@ extern "C" __declspec(dllexport) void CALLBACK sayHello(HWND, HINSTANCE, wchar_t
 {
 	::MessageBoxA(NULL, "aaa", "bbb", MB_OK);
 	AllocConsole();
+#if 0x0
 	freopen("CONIN$", "r", stdin);
 	freopen("CONOUT$", "w", stdout);
 	freopen("CONOUT$", "w", stderr);
+#endif
+	printf("sayHello(1)\n");
 
 	DWORD const infoBoxOptions = MB_ICONINFORMATION | MB_SETFOREGROUND;
 	MessageBoxW(0, L"Before call...", L"DLL message:", infoBoxOptions);
