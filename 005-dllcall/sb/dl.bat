@@ -12,13 +12,17 @@ if not exist src/svn svn co https://svn.apache.org/repos/asf/subversion/tags/1.8
 wget -nc --no-check-certificate http://download.oracle.com/berkeley-db/db-4.8.30.zip
 ::if not exist src/db-4.8.30 unzip -d src db-4.8.30.zip -x src/db-4.8.30/docs* db-4.8.30/examples* db-4.8.30/test*
 if not exist src/db-4.8.30 7z x -osrc -x!db-4.8.30/docs "-x!db-4.8.30/examples*" "-x!db-4.8.30/test*" db-4.8.30.zip
-cd /d %SCRIPT_CURRENT_DIR%\src\db-4.8.30\build_windows
-::"C:\Program Files (x86)\Microsoft Visual Studio\Common\MSDev98\Bin\msdev.com" db_dll.dsp /MAKE ALL /BUILD
-"C:\Program Files (x86)\Microsoft Visual Studio\Common\MSDev98\Bin\msdev.com" db_static.dsp /MAKE ALL /BUILD
+if not exist src/db-4.8.30/build_windows/Win32/Release/libdb48s.lib (
+  cd /d %SCRIPT_CURRENT_DIR%\src\db-4.8.30\build_windows
+  "C:\Program Files (x86)\Microsoft Visual Studio\Common\MSDev98\Bin\msdev.com" db_static.dsp /MAKE ALL /BUILD
+)
 cd /d %SCRIPT_CURRENT_DIR%
 wget -nc --no-check-certificate http://www.openssl.org/source/openssl-1.0.2l.tar.gz
 if not exist src/openssl-1.0.2l tar xvf openssl-1.0.2l.tar.gz -C src
-cd /d %SCRIPT_CURRENT_DIR%\src\openssl-1.0.2l
-perl Configure no-asm no-shared VC-WIN32
-call ms\do_nt.bat
-nmake -f ms\nt.mak init lib
+if not exist src/openssl-1.0.2l/out32/libeay32.lib (
+  cd /d %SCRIPT_CURRENT_DIR%\src\openssl-1.0.2l
+  perl Configure no-asm no-shared VC-WIN32
+  call ms\do_nt.bat
+  nmake -f ms\nt.mak init lib
+)
+cd /d %SCRIPT_CURRENT_DIR%
