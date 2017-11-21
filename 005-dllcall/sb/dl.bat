@@ -9,9 +9,15 @@ cd /d %SCRIPT_CURRENT_DIR%
 if not exist src/apr       svn export https://svn.apache.org/repos/asf/apr/apr/tags/1.6.2 src/apr
 ::if not exist src/apr       svn export https://svn.apache.org/repos/asf/apr/apr/tags/1.6.3 src/apr
 if not exist src/apr-util (
-	svn export https://svn.apache.org/repos/asf/apr/apr-util/tags/1.6.0 src/apr-util
+rem	wget -nc --no-check-certificate http://www.apache.org/dist/apr/apr-util-1.6.1-win32-src.zip
+rem	wget -nc --no-check-certificate https://archive.apache.org/dist/apr/apr-util-1.6.0-win32-src.zip
+rem	wget -nc --no-check-certificate https://archive.apache.org/dist/apr/apr-util-1.5.4-win32-src.zip
+	wget -nc --no-check-certificate https://archive.apache.org/dist/apr/apr-util-1.4.1-win32-src.zip
+	7z x -osrc apr-util-1.4.1-win32-src.zip
+	mv src/apr-util-1.4.1 src/apr-util
+rem	svn export https://svn.apache.org/repos/asf/apr/apr-util/tags/1.6.0 src/apr-util
 rem	svn export https://svn.apache.org/repos/asf/apr/apr-util/tags/1.6.1 src/apr-util
-	svn patch apr-util.patch src\apr-util
+rem	svn patch apr-util.patch src\apr-util
 )
 if not exist src/apr-iconv svn export https://svn.apache.org/repos/asf/apr/apr-iconv/tags/1.2.1 src/apr-iconv
 ::if not exist src/apr-iconv svn export https://svn.apache.org/repos/asf/apr/apr-iconv/tags/1.2.2 src/apr-iconv
@@ -54,7 +60,19 @@ cd /d %SCRIPT_CURRENT_DIR%\src\apr-iconv
 msdev.com apriconv.dsp /MAKE "apriconv - Win32 Release" /BUILD
 ::exit /b
 cd /d %SCRIPT_CURRENT_DIR%\src\apr-util
+rm -rf 0
+touch 0
+cp 0 ldap\apr_ldap_init.c
+cp 0 ldap\apr_ldap_option.c
+cp 0 ldap\apr_ldap_rebind.c
+cp 0 ldap\apr_ldap_stub.c
+cp 0 ldap\apr_ldap_url.c
+cp 0 dbd\apr_dbd_odbc.c
+msdev aprutil.dsw /MAKE "aprutil - Win32 Release"
+exit /b
 msdev aprutil.dsw /MAKE ^
+    "apriconv - Win32 Release" ^
+    "apr - Win32 Release" ^
     "gen_uri_delims - Win32 Release" ^
     "xml - Win32 Release" ^
     "aprutil - Win32 Release"
