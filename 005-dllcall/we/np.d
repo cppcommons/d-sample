@@ -115,7 +115,7 @@ extern (C) export int runClient(int argc, wchar** argv, DWORD with_console) //ex
 
 extern (C) export int RunMain(int argc, wchar** argv, DWORD with_console)
 {
-	import std.stdio : writeln;
+	import std.stdio; // : writeln;
 
 	writeln(`argc=`, argc);
 	for (int i = 0; i < argc; i++)
@@ -125,6 +125,9 @@ extern (C) export int RunMain(int argc, wchar** argv, DWORD with_console)
 	writeln(`with_console=`, with_console);
 	writeln(`with_console & 2=`, with_console & 2);
 	writeln("RunMain(DLang)");
+	write(`input: `);
+	auto line = stdin.readln();
+	writeln(line);
 	return 0;
 }
 
