@@ -192,7 +192,7 @@ int main(int /*argc*/, char ** /*argv*/)
 	//dbg("dll_name=%ls", dll_name.c_str());
 	std::wstring entry_name = L"RunMain";
 	//size_t found = dll_name.find(L",");
-	size_t found = dll_name.find(L"::");
+	size_t found = dll_name.find(L"@:");
 	if (found != std::string::npos)
 	{
 		//dbg("found=%lu", found);
@@ -247,7 +247,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//dbg("dll_name=%ls", dll_name.c_str());
 	std::wstring entry_name = L"RunMain";
 	//size_t found = dll_name.find(L",");
-	size_t found = dll_name.find(L"::");
+	size_t found = dll_name.find(L"@:");
 	if (found != std::string::npos)
 	{
 		//dbg("found=%lu", found);
