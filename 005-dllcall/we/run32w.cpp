@@ -55,12 +55,14 @@ static std::string wide_to_ansi(const std::wstring &s)
 	return wide_to_cp(s, CP_ACP);
 }
 
-#ifndef ATTACH_PARENT_PROCESS
-#define ATTACH_PARENT_PROCESS (DWORD) - 1
-#endif
+//#ifndef ATTACH_PARENT_PROCESS
+//#define ATTACH_PARENT_PROCESS (DWORD) - 1
+//#endif
 
 bool AttachParentConsole()
 {
+	return (bool)AttachConsole(ATTACH_PARENT_PROCESS);
+	#if 0x0
 	static bool attached = false;
 	if (attached)
 		return true;
@@ -73,6 +75,7 @@ bool AttachParentConsole()
 		return false;
 	attached = (bool)addr_AttachConsole(ATTACH_PARENT_PROCESS);
 	return attached;
+	#endif
 }
 
 struct ParseArgs_Info
