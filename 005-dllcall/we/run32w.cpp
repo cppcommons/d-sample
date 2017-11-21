@@ -238,8 +238,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	{
 		freopen("CONIN$", "r", stdin);
 		freopen("CONOUT$", "w", stdout);
-		freopen("CONOUT$", "w", stderr);
-		printf("[PAUSE] HIT ENTER KEY TO EXIT (EXIT CODE=%d): ", rc);
+		//freopen("CONOUT$", "w", stderr);
+		fprintf(stdout, "[PAUSE] HIT ENTER KEY TO EXIT (EXIT CODE=%d): ", rc);
 		fflush(stdout);
 		getchar();
 	}
