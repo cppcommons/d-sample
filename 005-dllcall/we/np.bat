@@ -1,4 +1,3 @@
-chcp 65001
 edub np.dll build np.d --build=release def=WindowsVista c:\dm\lib\stlp45dm_static.lib wininet.lib 
 if %errorlevel% neq 0 ( exit /b )
 start cmd32 np.dll,runServer a b c
