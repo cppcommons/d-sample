@@ -32,3 +32,6 @@ if not exist src/zlib-1.2.11/zlib.lib (
   cd /d %SCRIPT_CURRENT_DIR%\src\zlib-1.2.11
   nmake -f win32/Makefile.msc
 )
+wget -nc http://www.sqlite.org/2017/sqlite-amalgamation-3190300.zip
+if not exist src/sqlite-amalgamation-3190300 7z x -osrc sqlite-amalgamation-3190300.zip
+cp -rp src/sqlite-amalgamation-3190300 src/svn/sqlite-amalgamation
