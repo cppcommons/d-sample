@@ -16,7 +16,8 @@ static void pause(string message = null)
 	//import std.process : executeShell;
 	import std.stdio; // : stdin, stdout, write, writeln;
 
-	if (message is null) message = `PAUSE`;
+	if (message is null)
+		message = `PAUSE`;
 
 	writef(`[%s] HIT ENTER KEY: `, message);
 	stdout.flush();
@@ -33,7 +34,7 @@ private static string[] build_args(int argc, wchar** argv)
 	return result;
 }
 
-extern (C) export void runServer(int argc, wchar** argv, DWORD with_console)
+extern (C) export int runServer(int argc, wchar** argv, DWORD with_console)
 {
 	import std.stdio; // : writeln;
 
@@ -51,12 +52,12 @@ extern (C) export void runServer(int argc, wchar** argv, DWORD with_console)
 			NULL); // lpSecurityAttributes
 	if (hPipe == INVALID_HANDLE_VALUE)
 	{
-		return;
+		return 1;
 	}
 	if (!ConnectNamedPipe(hPipe, NULL))
 	{
 		CloseHandle(hPipe);
-		return;
+		return 1;
 	}
 	while (1)
 	{
@@ -72,12 +73,12 @@ extern (C) export void runServer(int argc, wchar** argv, DWORD with_console)
 	FlushFileBuffers(hPipe);
 	DisconnectNamedPipe(hPipe);
 	CloseHandle(hPipe);
-	pause();
-	writeln("EXIT...");
-	return;
+	//pause();
+	//writeln("EXIT...");
+	return 0;
 }
 
-extern (C) export void runClient(int argc, wchar** argv, DWORD with_console) //extern (Windows) export void {
+extern (C) export int runClient(int argc, wchar** argv, DWORD with_console) //extern (Windows) export void {
 {
 
 	import core.stdc.stdio; // : freopen, stderr, stdin, stdout;
@@ -86,24 +87,16 @@ extern (C) export void runClient(int argc, wchar** argv, DWORD with_console) //e
 	import core.thread;
 
 	writeln(build_args(argc, argv));
-
-	pause(`Waiting Server to Start`);
-
-	//Thread.sleep(dur!("seconds")(2));
-	//writeln("[CLIENT READY]");
-	//Thread.sleep(dur!("seconds")(2));
+	//pause(`Waiting Server to Start`);
 	HANDLE hPipe = CreateFile("\\\\.\\pipe\\mypipe", GENERIC_READ | GENERIC_WRITE,
 			0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	writeln("0");
-	//Thread.sleep(dur!("seconds")(2));
 	if (hPipe == INVALID_HANDLE_VALUE)
 	{
 		writeln("1");
-		//Thread.sleep(dur!("seconds")(2));
-		return;
+		return 1;
 	}
 	writeln("2");
-	//Thread.sleep(dur!("seconds")(2));
 	while (1)
 	{
 		char szBuff[32];
@@ -117,11 +110,9 @@ extern (C) export void runClient(int argc, wchar** argv, DWORD with_console) //e
 	CloseHandle(hPipe);
 	pause();
 	writeln("EXIT...");
-	return;
+	return 0;
 }
 
-//extern "C" __declspec(dllexport) int RunMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
-//	typedef int (*proc_RunMain)(__int32 argc, wchar_t **argv, DWORD with_console);
 extern (C) export int RunMain(int argc, wchar** argv, DWORD with_console)
 {
 	import std.stdio : writeln;

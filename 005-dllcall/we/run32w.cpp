@@ -3,6 +3,7 @@
 //#include <io.h>
 #include <string>
 #include <vector>
+#include <cstdlib>
 
 #if __cplusplus >= 201103L
 inline std::wstring cp_to_wide(const std::string &s, UINT codepage)
@@ -78,50 +79,6 @@ bool AttachParentConsole()
 #endif
 }
 
-struct ParseArgs_Info
-{
-	bool alloc_console;
-	bool no_console;
-	explicit ParseArgs_Info()
-	{
-		this->alloc_console = false;
-		this->no_console = false;
-	}
-};
-
-void ParseArgs(ParseArgs_Info &info, std::vector<wchar_t *> &args)
-{
-	//info.alloc_console = false;
-	//info.no_console = false;
-	args.clear();
-	int argc;
-	LPWSTR *argv = CommandLineToArgvW(GetCommandLineW(), &argc);
-	for (int i = 0; i < argc; i++)
-	{
-		wchar_t *arg = argv[i];
-		if (i == 0)
-		{
-			// skip "run.exe"
-			continue;
-		}
-		if (i == 1)
-		{
-			std::wstring arg_str = arg;
-			if (arg_str == L"-ac" || arg_str == L"--allocate-console")
-			{
-				info.alloc_console = true;
-				continue;
-			}
-			if (arg_str == L"-nc" || arg_str == L"--no-console")
-			{
-				info.no_console = true;
-				continue;
-			}
-		}
-		args.push_back(argv[i]);
-	}
-}
-
 static int ShowMessage(const char *format, va_list args)
 {
 	const int BUFF_LEN = 10240;
@@ -149,6 +106,72 @@ static void dbg(const char *format, ...)
 	va_end(args);
 }
 
+struct ParseArgs_Info
+{
+	bool alloc_console;
+	bool no_console;
+	__int32 wait;
+	explicit ParseArgs_Info()
+	{
+		this->alloc_console = false;
+		this->no_console = false;
+		this->wait = -1;
+	}
+};
+
+void ParseArgs(ParseArgs_Info &info, std::vector<wchar_t *> &args)
+{
+	//info.alloc_console = false;
+	//info.no_console = false;
+	args.clear();
+	int argc;
+	LPWSTR *argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+	bool opt_end = false;
+	for (int i = 0; i < argc; i++)
+	{
+		wchar_t *arg = argv[i];
+		std::wstring arg_str = arg;
+		if (i == 0)
+		{
+			// skip "run.exe"
+			continue;
+		}
+		if (!opt_end && (arg_str.size() == 0 || arg_str[0] != L'-'))
+		{
+			opt_end = true;
+		}
+		if (opt_end)
+		{
+			args.push_back(arg);
+			continue;
+		}
+		if (arg_str == L"-ac" || arg_str == L"--allocate-console")
+		{
+			info.alloc_console = true;
+			continue;
+		}
+		if (arg_str == L"-nc" || arg_str == L"--no-console")
+		{
+			info.no_console = true;
+			continue;
+		}
+		if (arg_str == L"-w" || arg_str == L"--wait")
+		{
+			if (i == (argc - 1))
+			{
+				//error("%ls require argument in milliseconds.", arg_str.c_str());
+				continue;
+			}
+			std::wstring msec = argv[i + 1];
+			std::string msec_ansi = wide_to_ansi(msec);
+			info.wait = std::atol(msec_ansi.c_str());
+			i++;
+			continue;
+		}
+		args.push_back(argv[i]);
+	}
+}
+
 typedef __int32 (*proc_RunMain)(__int32 argc, wchar_t **argv, DWORD with_console);
 
 #ifdef CONSOLE_VERSION
@@ -157,6 +180,10 @@ int main(int /*argc*/, char ** /*argv*/)
 	ParseArgs_Info info;
 	std::vector<wchar_t *> args;
 	ParseArgs(info, args);
+	if (info.wait >= 0)
+	{
+		::Sleep(info.wait);
+	}
 	if (args.size() == 0)
 	{
 		return 0;
@@ -196,17 +223,23 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	ParseArgs_Info info;
 	std::vector<wchar_t *> args;
 	ParseArgs(info, args);
+	if (info.wait >= 0)
+	{
+		::Sleep(info.wait);
+	}
+	if (args.size() == 0)
+	{
+		return 0;
+	}
 	if (info.alloc_console)
 	{
+		//dbg("AllocConsole()");
 		with_console = (bool)AllocConsole();
 	}
 	else if (!info.no_console)
 	{
 		with_console = AttachParentConsole();
-	}
-	if (args.size() == 0)
-	{
-		return 0;
+		//dbg("AttachParentConsole(): %d", with_console);
 	}
 	std::wstring dll_name = args[0];
 	//dbg("dll_name=%ls", dll_name.c_str());
@@ -233,6 +266,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		error("Entry function %ls not found in %ls", entry_name.c_str(), dll_name.c_str());
 		return 2;
 	}
+	#if 0x0
+	if (info.wait >= 0)
+	{
+		::Sleep(info.wait);
+	}
+	#endif
 	__int32 rc = addr_RunMain((__int32)args.size(), &args[0], with_console);
 	if (info.alloc_console && with_console)
 	{
