@@ -10,8 +10,8 @@ g++ -o cmd32.exe -DCONSOLE_VERSION run32w.cpp -static
 if %errorlevel% neq 0 ( exit /b )
 run32.exe -nc np bb cc > ___tmp.txt
 cat ___tmp.txt
-run32.exe np,RunMain bb cc
-run32.exe np,NotMain bb cc
-cmd32.exe np,RunMain bb cc
-run32.exe -ac np,RunMain bb cc
-run32.exe -w 2000 np,RunMain bb cc
+run32.exe np::RunMain bb cc
+run32.exe np::NotMain bb cc
+cmd32.exe np::RunMain bb cc
+run32.exe -ac np::RunMain bb cc
+run32.exe -w 2000 np::RunMain bb cc

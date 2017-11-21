@@ -191,11 +191,13 @@ int main(int /*argc*/, char ** /*argv*/)
 	std::wstring dll_name = args[0];
 	//dbg("dll_name=%ls", dll_name.c_str());
 	std::wstring entry_name = L"RunMain";
-	size_t found = dll_name.find(L",");
+	//size_t found = dll_name.find(L",");
+	size_t found = dll_name.find(L"::");
 	if (found != std::string::npos)
 	{
 		//dbg("found=%lu", found);
-		entry_name = dll_name.substr(found + 1);
+		//entry_name = dll_name.substr(found + 1);
+		entry_name = dll_name.substr(found + 2);
 		//dbg("entry_name=%ls", entry_name.c_str());
 		dll_name = dll_name.substr(0, found);
 		//dbg("dll_name=%ls", dll_name.c_str());
@@ -244,11 +246,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	std::wstring dll_name = args[0];
 	//dbg("dll_name=%ls", dll_name.c_str());
 	std::wstring entry_name = L"RunMain";
-	size_t found = dll_name.find(L",");
+	//size_t found = dll_name.find(L",");
+	size_t found = dll_name.find(L"::");
 	if (found != std::string::npos)
 	{
 		//dbg("found=%lu", found);
-		entry_name = dll_name.substr(found + 1);
+		//entry_name = dll_name.substr(found + 1);
+		entry_name = dll_name.substr(found + 2);
 		//dbg("entry_name=%ls", entry_name.c_str());
 		dll_name = dll_name.substr(0, found);
 		//dbg("dll_name=%ls", dll_name.c_str());
