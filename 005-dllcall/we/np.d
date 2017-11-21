@@ -11,29 +11,6 @@ private void exit(int code)
 	std.c.stdlib.exit(code);
 }
 
-static void init_rundll_pg(ref string[] args)
-{
-	import core.stdc.stdio; // : freopen, stderr, stdin, stdout;
-	import core.sys.windows.windows;
-	import core.sys.windows.winbase;
-
-	AllocConsole();
-	//if (!AttachConsole(ATTACH_PARENT_PROCESS))
-	//	AllocConsole();
-	freopen("CONIN$", "r", stdin);
-	freopen("CONOUT$", "w", stdout);
-	freopen("CONOUT$", "w", stderr);
-	args.length = 0;
-	LPWSTR* szArglist;
-	int nArgs;
-	szArglist = CommandLineToArgvW(GetCommandLineW(), &nArgs);
-	printf("nArgs=%d\n", nArgs);
-	for (int i = 1; i < nArgs; i++)
-	{
-		args ~= to_string(szArglist[i]);
-	}
-}
-
 static void pause()
 {
 	import std.process : executeShell;
@@ -44,17 +21,21 @@ static void pause()
 	stdin.readln();
 }
 
+private static string[] build_args(int argc, wchar** argv)
+{
+	string[] result;
+	for (int i = 0; i < argc; i++)
+	{
+		result ~= to_string(argv[i]);
+	}
+	return result;
+}
+
 extern (C) export void runServer(int argc, wchar** argv, DWORD with_console)
 {
 	import std.stdio; // : writeln;
-	//string[] args;
-	//init_rundll_pg(args);
-	//writeln(args);
 
-	for (int i = 0; i < argc; i++)
-	{
-		writeln(to_string(argv[i]));
-	}
+	writeln(build_args(argc, argv));
 
 	import std.stdio; // : writeln;
 	//writeln(args);
@@ -93,17 +74,16 @@ extern (C) export void runServer(int argc, wchar** argv, DWORD with_console)
 	return;
 }
 
-extern (C) export void runClient(int argc, wchar** argv, DWORD with_console) //extern (Windows) export void runClient(HWND hwnd, HINSTANCE hinst, char*  /+lpszCmdLine+/ ,
-//		int nCmdShow)
+extern (C) export void runClient(int argc, wchar** argv, DWORD with_console) //extern (Windows) export void {
 {
+
 	import core.stdc.stdio; // : freopen, stderr, stdin, stdout;
 	import core.stdc.string : strlen;
 	import std.stdio : writeln;
 	import core.thread;
 
-	//string[] args;
-	//init_rundll_pg(args);
-	//writeln(args);
+	writeln(build_args(argc, argv));
+
 	Thread.sleep(dur!("seconds")(2));
 	writeln("[CLIENT READY]");
 	//Thread.sleep(dur!("seconds")(2));
