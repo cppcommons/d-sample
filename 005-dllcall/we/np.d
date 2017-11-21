@@ -46,12 +46,11 @@ static void init_rundll_pg(ref string[] args)
 static void pause()
 {
 	import std.process : executeShell;
-	import std.stdio : stdout, write, writeln;
+	import std.stdio : stdin, stdout, write, writeln;
 
-	write(`[PAUSE] HIT ANY KEY: `);
+	write(`[PAUSE] HIT ENTER KEY: `);
 	stdout.flush();
-	executeShell("cmd.exe /c pause");
-	writeln();
+	stdin.readln();
 }
 
 extern (Windows) export void run(HWND hwnd, HINSTANCE hinst, char*  /+lpszCmdLine+/ , int nCmdShow)
