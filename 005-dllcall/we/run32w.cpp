@@ -48,7 +48,7 @@ bool isRedirect(DWORD nStdHandle)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	FILE *log = fopen("___log.txt", "w");
-	bool use_console = true;
+	bool use_console = false;
 	int argc;
 	LPWSTR *argv = CommandLineToArgvW(GetCommandLineW(), &argc);
 	for (int i = 0; i < argc; i++)
@@ -58,10 +58,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if (argc >= 2)
 	{
 		std::wstring arg1 = argv[1];
-		if (arg1 == L"-nc")
+		if (arg1 == L"-c" || arg1 == L"--console")
 		{
 			printf("[nc]\n");
-			use_console = false;
+			use_console = true;
 		}
 	}
 	if (use_console && AttachParentConsole())
