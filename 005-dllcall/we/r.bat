@@ -1,5 +1,6 @@
 ::cl /MD rdll.cpp rdll.def /LD /link kernel32.lib user32.lib
-cl /MD rdll.cpp /LD /link kernel32.lib user32.lib
+::cl /MD rdll.cpp /LD /link kernel32.lib user32.lib
+cl /MT rdll.cpp /LD /link kernel32.lib user32.lib
 if %errorlevel% neq 0 ( exit /b )
 c:\dm\bin\dmc /WD -ordll-dm32.dll rdll.cpp kernel32.lib user32.lib
 if %errorlevel% neq 0 ( exit /b )

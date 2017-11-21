@@ -4,6 +4,57 @@
 #include <string>
 #include <vector>
 
+#if __cplusplus >= 201103L
+inline std::wstring cp_to_wide(const std::string &s, UINT codepage)
+{
+	int in_length = (int)s.length();
+	int out_length = MultiByteToWideChar(codepage, 0, s.c_str(), in_length, 0, 0);
+	std::wstring result(out_length, L'\0');
+	if (out_length)
+		MultiByteToWideChar(codepage, 0, s.c_str(), in_length, &result[0], out_length);
+	return result;
+}
+inline std::string wide_to_cp(const std::wstring &s, UINT codepage)
+{
+	int in_length = (int)s.length();
+	int out_length = WideCharToMultiByte(codepage, 0, s.c_str(), in_length, 0, 0, 0, 0);
+	std::string result(out_length, '\0');
+	if (out_length)
+		WideCharToMultiByte(codepage, 0, s.c_str(), in_length, &result[0], out_length, 0, 0);
+	return result;
+}
+#else /* __cplusplus < 201103L */
+inline std::wstring cp_to_wide(const std::string &s, UINT codepage)
+{
+	int in_length = (int)s.length();
+	int out_length = MultiByteToWideChar(codepage, 0, s.c_str(), in_length, 0, 0);
+	std::vector<wchar_t> buffer(out_length);
+	if (out_length)
+		MultiByteToWideChar(codepage, 0, s.c_str(), in_length, &buffer[0], out_length);
+	std::wstring result(buffer.begin(), buffer.end());
+	return result;
+}
+inline std::string wide_to_cp(const std::wstring &s, UINT codepage)
+{
+	int in_length = (int)s.length();
+	int out_length = WideCharToMultiByte(codepage, 0, s.c_str(), in_length, 0, 0, 0, 0);
+	std::vector<char> buffer(out_length);
+	if (out_length)
+		WideCharToMultiByte(codepage, 0, s.c_str(), in_length, &buffer[0], out_length, 0, 0);
+	std::string result(buffer.begin(), buffer.end());
+	return result;
+}
+#endif
+
+static std::wstring ansi_to_wide(const std::string &s)
+{
+	return cp_to_wide(s, CP_ACP);
+}
+static std::string wide_to_ansi(const std::wstring &s)
+{
+	return wide_to_cp(s, CP_ACP);
+}
+
 #ifndef ATTACH_PARENT_PROCESS
 #define ATTACH_PARENT_PROCESS (DWORD) - 1
 #endif
@@ -66,7 +117,7 @@ static int RunErrorMessage(const char *format, va_list args)
 	return len;
 }
 
-static void RunError(const char *format, ...)
+static void error(const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -75,47 +126,53 @@ static void RunError(const char *format, ...)
 	exit(1);
 }
 
-void RunError()
+static void dbg(const char *format, ...)
 {
+	va_list args;
+	va_start(args, format);
+	int len = RunErrorMessage(format, args);
+	va_end(args);
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	RunError("RunError() Test: %d\n", 1234);
-	FILE *log = fopen("___log.txt", "w");
 	ParseArgs_Info info;
 	std::vector<wchar_t *> args;
 	ParseArgs(info, args);
-	if (info.use_console && AttachParentConsole())
+	if (info.use_console)
 	{
-#if 0x0
-		freopen("CONIN$", "r", stdin);
-		freopen("CONOUT$", "w", stdout);
-		freopen("CONOUT$", "w", stderr);
-#endif
+		AttachParentConsole();
 	}
-	printf("lpCmdLine=%s\n", lpCmdLine);
-	char a[1024];
-	memset(a, 0, 1024);
-	fprintf(stderr, "input: ");
-	fflush(stderr);
-	gets(a);
-	printf("a=%s\n", a);
-	fprintf(stdout, "A2=%s\n", a);
-	fprintf(stderr, "A3=%s\n", a);
-	//MessageBox(NULL, "Hello Windows!", "MyFirst", MB_OK);
-	//HMODULE hmod = LoadLibraryA("rdll-dm32.dll");
-	//HMODULE hmod = LoadLibraryA("rdll.dll");
-	HMODULE hmod = LoadLibraryA("np.dll");
+	if (args.size() == 0)
+	{
+		return 0;
+	}
+	std::wstring dll_name = args[0];
+	//dbg("dll_name=%ls", dll_name.c_str());
+	std::wstring entry_name = L"RunMain";
+	size_t found = dll_name.find(L",");
+	if (found != std::string::npos)
+	{
+		//dbg("found=%lu", found);
+		entry_name = dll_name.substr(found + 1);
+		//dbg("entry_name=%ls", entry_name.c_str());
+		dll_name = dll_name.substr(0, found);
+		//dbg("dll_name=%ls", dll_name.c_str());
+	}
+	std::string entry_name_ansi = wide_to_ansi(entry_name);
+	//dbg("entry_name_ansi=%s", entry_name_ansi.c_str());
+	HMODULE hmod = LoadLibraryW(dll_name.c_str());
 	if (!hmod)
-		return 1;
-	fprintf(log, "hmod=0x%p\n", hmod);
+	{
+		error("%ls is not valid DLL.", dll_name.c_str());
+	}
 	typedef int (*proc_RunMain)(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow);
-	proc_RunMain addr_RunMain = (proc_RunMain)GetProcAddress(hmod, "RunMain");
+	proc_RunMain addr_RunMain = (proc_RunMain)GetProcAddress(hmod, entry_name_ansi.c_str());
 	if (!addr_RunMain)
+	{
+		error("Entry function %ls not found in %ls", entry_name.c_str(), dll_name.c_str());
 		return 2;
-	fprintf(log, "addr_RunMain=0x%p\n", addr_RunMain);
-	addr_RunMain(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
-	fclose(log);
-	exit(0);
+	}
+	int rc = addr_RunMain(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
+	return rc;
 }
