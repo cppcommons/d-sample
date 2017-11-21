@@ -1,17 +1,18 @@
 setlocal
 set SCRIPT=%~0
 for /f "delims=\ tokens=*" %%z in ("%SCRIPT%") do (set SCRIPT_CURRENT_DIR=%%~dpz)
+
+set PATH=E:\opt\svn\vc6\svn-win32-1.8.17-ap24\svn-win32-1.8.17\bin;%PATH%
+
 cd /d %SCRIPT_CURRENT_DIR%
-if not exist src/apr       svn co https://svn.apache.org/repos/asf/apr/apr/tags/1.6.2 src/apr
+if not exist src/apr       svn export https://svn.apache.org/repos/asf/apr/apr/tags/1.6.2 src/apr
 if not exist src/apr-util (
-	svn co https://svn.apache.org/repos/asf/apr/apr-util/tags/1.6.0 src/apr-util
+	svn export https://svn.apache.org/repos/asf/apr/apr-util/tags/1.6.0 src/apr-util
 	svn patch apr-util.patch src\apr-util
 )
-if not exist src/apr-iconv svn co https://svn.apache.org/repos/asf/apr/apr-iconv/tags/1.2.1 src/apr-iconv
-::if not exist src/svn svn co https://svn.apache.org/repos/asf/subversion/tags/1.8.18 src/svn
+if not exist src/apr-iconv svn export https://svn.apache.org/repos/asf/apr/apr-iconv/tags/1.2.1 src/apr-iconv
 if not exist src/svn svn export https://svn.apache.org/repos/asf/subversion/tags/1.8.18 src/svn
 wget -nc --no-check-certificate http://download.oracle.com/berkeley-db/db-4.8.30.zip
-::if not exist src/db-4.8.30 unzip -d src db-4.8.30.zip -x src/db-4.8.30/docs* db-4.8.30/examples* db-4.8.30/test*
 if not exist src/db-4.8.30 7z x -osrc -x!db-4.8.30/docs "-x!db-4.8.30/examples*" "-x!db-4.8.30/test*" db-4.8.30.zip
 if not exist src/db-4.8.30/build_windows/Win32/Release/libdb48s.lib (
   cd /d %SCRIPT_CURRENT_DIR%\src\db-4.8.30\build_windows
@@ -34,5 +35,18 @@ if not exist src/zlib-1.2.11/zlib.lib (
   nmake -f win32/Makefile.msc
 )
 wget -nc http://www.sqlite.org/2017/sqlite-amalgamation-3190300.zip
-if not exist src/sqlite-amalgamation-3190300 7z x -osrc sqlite-amalgamation-3190300.zip
-cp -rp src/sqlite-amalgamation-3190300 src/svn/sqlite-amalgamation
+if not exist src/sqlite-amalgamation-3190300 (
+  7z x -osrc sqlite-amalgamation-3190300.zip
+  cp -rp src/sqlite-amalgamation-3190300 src/svn/sqlite-amalgamation
+)
+cd /d %SCRIPT_CURRENT_DIR%\src\apr
+msdev.com apr.dsp /MAKE ALL /BUILD
+exit /b
+cd /d %SCRIPT_CURRENT_DIR%\src\apr-util
+msdev aprutil.dsw /MAKE ^
+    "apriconv - Win32 Release" ^
+    "apr - Win32 Release" ^
+    "libapr - Win32 Release" ^
+    "gen_uri_delims - Win32 Release" ^
+    "xml - Win32 Release" ^
+    "aprutil - Win32 Release"
