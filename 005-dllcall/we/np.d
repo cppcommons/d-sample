@@ -71,6 +71,7 @@ extern (C) export void runServer(int argc, wchar** argv, DWORD with_console)
 	DisconnectNamedPipe(hPipe);
 	CloseHandle(hPipe);
 	pause();
+	writeln("EXIT...");
 	return;
 }
 
@@ -111,6 +112,7 @@ extern (C) export void runClient(int argc, wchar** argv, DWORD with_console) //e
 	}
 	CloseHandle(hPipe);
 	pause();
+	writeln("EXIT...");
 	return;
 }
 
