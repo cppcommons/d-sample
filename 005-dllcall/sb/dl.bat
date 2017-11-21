@@ -6,15 +6,15 @@ for /f "delims=\ tokens=*" %%z in ("%SCRIPT%") do (set SCRIPT_CURRENT_DIR=%%~dpz
 set PATH=E:\opt\svn\vc6\svn-win32-1.8.17-ap24\svn-win32-1.8.17\bin;%PATH%
 
 cd /d %SCRIPT_CURRENT_DIR%
-::if not exist src/apr       svn export https://svn.apache.org/repos/asf/apr/apr/tags/1.6.2 src/apr
-if not exist src/apr       svn export https://svn.apache.org/repos/asf/apr/apr/tags/1.6.3 src/apr
+if not exist src/apr       svn export https://svn.apache.org/repos/asf/apr/apr/tags/1.6.2 src/apr
+::if not exist src/apr       svn export https://svn.apache.org/repos/asf/apr/apr/tags/1.6.3 src/apr
 if not exist src/apr-util (
-rem	svn export https://svn.apache.org/repos/asf/apr/apr-util/tags/1.6.0 src/apr-util
-	svn export https://svn.apache.org/repos/asf/apr/apr-util/tags/1.6.1 src/apr-util
+	svn export https://svn.apache.org/repos/asf/apr/apr-util/tags/1.6.0 src/apr-util
+rem	svn export https://svn.apache.org/repos/asf/apr/apr-util/tags/1.6.1 src/apr-util
 	svn patch apr-util.patch src\apr-util
 )
-::if not exist src/apr-iconv svn export https://svn.apache.org/repos/asf/apr/apr-iconv/tags/1.2.1 src/apr-iconv
-if not exist src/apr-iconv svn export https://svn.apache.org/repos/asf/apr/apr-iconv/tags/1.2.2 src/apr-iconv
+if not exist src/apr-iconv svn export https://svn.apache.org/repos/asf/apr/apr-iconv/tags/1.2.1 src/apr-iconv
+::if not exist src/apr-iconv svn export https://svn.apache.org/repos/asf/apr/apr-iconv/tags/1.2.2 src/apr-iconv
 if not exist src/svn svn export https://svn.apache.org/repos/asf/subversion/tags/1.8.18 src/svn
 wget -nc --no-check-certificate http://download.oracle.com/berkeley-db/db-4.8.30.zip
 if not exist src/db-4.8.30 7z x -osrc -x!db-4.8.30/docs "-x!db-4.8.30/examples*" "-x!db-4.8.30/test*" db-4.8.30.zip
@@ -45,10 +45,14 @@ if not exist src/sqlite-amalgamation-3190300 (
 )
 cd /d %SCRIPT_CURRENT_DIR%\src\apr
 sed -i -e "s/^#define APR_HAVE_IPV6\([[:blank:]]*\) 1$/#define APR_HAVE_IPV6\1 0/" include/apr.hw
+cl /MD tools\gen_test_char.c /link /OUT:tools\gen_test_char.exe
+::tools\gen_test_char.exe > include\private\apr_escape_test_char.h
+tools\gen_test_char.exe > include\apr_escape_test_char.h
+::exit /b
 msdev.com apr.dsp /MAKE "apr - Win32 Release" /BUILD
 cd /d %SCRIPT_CURRENT_DIR%\src\apr-iconv
 msdev.com apriconv.dsp /MAKE "apriconv - Win32 Release" /BUILD
-exit /b
+::exit /b
 cd /d %SCRIPT_CURRENT_DIR%\src\apr-util
 msdev aprutil.dsw /MAKE ^
     "gen_uri_delims - Win32 Release" ^
