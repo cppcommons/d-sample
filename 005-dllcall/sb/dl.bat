@@ -8,7 +8,8 @@ if not exist src/apr-util (
 	svn patch apr-util.patch src\apr-util
 )
 if not exist src/apr-iconv svn co https://svn.apache.org/repos/asf/apr/apr-iconv/tags/1.2.1 src/apr-iconv
-if not exist src/svn svn co https://svn.apache.org/repos/asf/subversion/tags/1.8.18 src/svn
+::if not exist src/svn svn co https://svn.apache.org/repos/asf/subversion/tags/1.8.18 src/svn
+if not exist src/svn svn export https://svn.apache.org/repos/asf/subversion/tags/1.8.18 src/svn
 wget -nc --no-check-certificate http://download.oracle.com/berkeley-db/db-4.8.30.zip
 ::if not exist src/db-4.8.30 unzip -d src db-4.8.30.zip -x src/db-4.8.30/docs* db-4.8.30/examples* db-4.8.30/test*
 if not exist src/db-4.8.30 7z x -osrc -x!db-4.8.30/docs "-x!db-4.8.30/examples*" "-x!db-4.8.30/test*" db-4.8.30.zip
