@@ -64,29 +64,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		}
 	}
 	if (use_console && AttachParentConsole())
-	//if (!isRedirect(STD_OUTPUT_HANDLE))
 	{
-		//AttachParentConsole();
-		//if (!isRedirect(STD_INPUT_HANDLE))
-		//if (!isRedirect(STD_OUTPUT_HANDLE))
 		freopen("CONIN$", "r", stdin);
-		//if (!isRedirect(STD_OUTPUT_HANDLE))
 		freopen("CONOUT$", "w", stdout);
-		//if (!isRedirect(STD_ERROR_HANDLE))
-		//if (!isRedirect(STD_OUTPUT_HANDLE))
 		freopen("CONOUT$", "w", stderr);
 	}
-#if 0x0
-	if (!AttachParentConsole())
-		AllocConsole();
-	if (!isRedirect(stdin))
-		freopen("CONIN$", "r", stdin);
-	if (!isRedirect(stdout))
-		freopen("CONOUT$", "w", stdout);
-	if (!isRedirect(stderr))
-		freopen("CONOUT$", "w", stderr);
-//freopen("CONERR$", "w", stderr);
-#endif
 	printf("lpCmdLine=%s\n", lpCmdLine);
 	char a[1024];
 	memset(a, 0, 1024);
