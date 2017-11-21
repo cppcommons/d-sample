@@ -62,7 +62,7 @@ static std::string wide_to_ansi(const std::wstring &s)
 bool AttachParentConsole()
 {
 	return (bool)AttachConsole(ATTACH_PARENT_PROCESS);
-	#if 0x0
+#if 0x0
 	static bool attached = false;
 	if (attached)
 		return true;
@@ -75,7 +75,7 @@ bool AttachParentConsole()
 		return false;
 	attached = (bool)addr_AttachConsole(ATTACH_PARENT_PROCESS);
 	return attached;
-	#endif
+#endif
 }
 
 struct ParseArgs_Info
@@ -233,7 +233,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		error("Entry function %ls not found in %ls", entry_name.c_str(), dll_name.c_str());
 		return 2;
 	}
-	int rc = addr_RunMain(args.size(), &args[0], with_console);
+	__int32 rc = addr_RunMain((__int32)args.size(), &args[0], with_console);
+	if (info.alloc_console && with_console)
+	{
+		freopen("CONIN$", "r", stdin);
+		freopen("CONOUT$", "w", stdout);
+		freopen("CONOUT$", "w", stderr);
+		printf("[PAUSE] HIT ENTER KEY TO EXIT (EXIT CODE=%d): ", rc);
+		fflush(stdout);
+		getchar();
+	}
 	return rc;
 }
 #endif

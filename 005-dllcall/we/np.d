@@ -122,7 +122,7 @@ extern (C) export void runClient(int argc, wchar** argv, DWORD with_console) //e
 
 //extern "C" __declspec(dllexport) int RunMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 //	typedef int (*proc_RunMain)(__int32 argc, wchar_t **argv, DWORD with_console);
-extern (C) export void RunMain(int argc, wchar** argv, DWORD with_console)
+extern (C) export int RunMain(int argc, wchar** argv, DWORD with_console)
 {
 	import std.stdio : writeln;
 
@@ -134,6 +134,7 @@ extern (C) export void RunMain(int argc, wchar** argv, DWORD with_console)
 	writeln(`with_console=`, with_console);
 	writeln(`with_console & 2=`, with_console & 2);
 	writeln("RunMain(DLang)");
+	return 0;
 }
 
 string to_string(char* s)
