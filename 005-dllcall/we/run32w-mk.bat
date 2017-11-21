@@ -4,7 +4,7 @@ del run32.exe
 ::if %errorlevel% neq 0 ( exit /b )
 ::cl -MT -GX -DCONSOLE_VERSION run32w.cpp /link /out:cmd32-vc6.exe /subsystem:console shell32.lib user32.lib
 ::if %errorlevel% neq 0 ( exit /b )
-g++ -o run32.exe run32w.cpp -static
+g++ -o run32.exe run32w.cpp -static -mwindows
 if %errorlevel% neq 0 ( exit /b )
 g++ -o cmd32.exe -DCONSOLE_VERSION run32w.cpp -static
 if %errorlevel% neq 0 ( exit /b )
