@@ -4,19 +4,23 @@
 
 //extern "C" __declspec(dllexport)
 //void CALLBACK EntryPointW(HWND hwnd, HINSTANCE hinst, LPWSTR lpszCmdLine, int nCmdShow)
-extern "C" 
-__declspec( dllexport )
-void CALLBACK sayHello( HWND, HINSTANCE, wchar_t const*, int )
+extern "C" __declspec(dllexport) void CALLBACK sayHello(HWND, HINSTANCE, wchar_t const *, int)
 {
 	::MessageBoxA(NULL, "aaa", "bbb", MB_OK);
-    AllocConsole();
-    freopen( "CONIN$", "r", stdin ); 
-    freopen( "CONOUT$", "w", stdout ); 
-    freopen( "CONOUT$", "w", stderr ); 
+	AllocConsole();
+	freopen("CONIN$", "r", stdin);
+	freopen("CONOUT$", "w", stdout);
+	freopen("CONOUT$", "w", stderr);
 
-    DWORD const infoBoxOptions = MB_ICONINFORMATION | MB_SETFOREGROUND;
-    MessageBoxW( 0, L"Before call...", L"DLL message:", infoBoxOptions );
-    //myCode::sayHello();
-    MessageBoxW( 0, L"After call...", L"DLL message:", infoBoxOptions );
-	return;				   
+	DWORD const infoBoxOptions = MB_ICONINFORMATION | MB_SETFOREGROUND;
+	MessageBoxW(0, L"Before call...", L"DLL message:", infoBoxOptions);
+	//myCode::sayHello();
+	MessageBoxW(0, L"After call...", L"DLL message:", infoBoxOptions);
+	return;
+}
+
+extern "C" __declspec(dllexport) int RunMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+{
+	printf("RunMain(1)\n");
+	return 0;
 }

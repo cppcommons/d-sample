@@ -137,3 +137,11 @@ extern (Windows) export void runClient(HWND hwnd, HINSTANCE hinst, char*  /+lpsz
 	pause();
 	return;
 }
+
+//extern "C" __declspec(dllexport) int RunMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+extern (C) export void RunMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+		HWND hwnd, HINSTANCE hinst, char*  /+lpCmdLine+/ , int nCmdShow)
+{
+	import std.stdio : writeln;
+	writeln("RunMain(DLang)");
+}
