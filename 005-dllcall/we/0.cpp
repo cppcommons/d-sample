@@ -15,6 +15,10 @@ extern "C" __declspec(dllexport) __int32 RunMain(__int32 argc, wchar_t **argv, D
 	{
 		printf("argv[%d]=%ls\n", i, argv[i]);
 	}
+	printf("input: ");
+	fflush(stdout);
+	int c = getchar();
+	printf("c=%c(%d)\n", c, c);
 	return 0;
 }
 #endif //if !defined(__HTOD__)
