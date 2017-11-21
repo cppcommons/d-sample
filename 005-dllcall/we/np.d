@@ -11,12 +11,14 @@ private void exit(int code)
 	std.c.stdlib.exit(code);
 }
 
-static void pause()
+static void pause(string message = null)
 {
-	import std.process : executeShell;
-	import std.stdio : stdin, stdout, write, writeln;
+	//import std.process : executeShell;
+	import std.stdio; // : stdin, stdout, write, writeln;
 
-	write(`[PAUSE] HIT ENTER KEY: `);
+	if (message is null) message = `PAUSE`;
+
+	writef(`[%s] HIT ENTER KEY: `, message);
 	stdout.flush();
 	stdin.readln();
 }
@@ -85,8 +87,10 @@ extern (C) export void runClient(int argc, wchar** argv, DWORD with_console) //e
 
 	writeln(build_args(argc, argv));
 
-	Thread.sleep(dur!("seconds")(2));
-	writeln("[CLIENT READY]");
+	pause(`Waiting Server to Start`);
+
+	//Thread.sleep(dur!("seconds")(2));
+	//writeln("[CLIENT READY]");
 	//Thread.sleep(dur!("seconds")(2));
 	HANDLE hPipe = CreateFile("\\\\.\\pipe\\mypipe", GENERIC_READ | GENERIC_WRITE,
 			0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);

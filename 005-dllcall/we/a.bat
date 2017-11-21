@@ -9,5 +9,5 @@ edub a.dll build a.d easywin_loader.obj --build=release os.lib lib1.lib c:\dm\li
 if %errorlevel% neq 0 ( exit /b )
 ::cmd32 a.dll "https://github.com/cppcommons/d-sample/trunk/README.md"
 cmd32 a.dll "https://github.com/cppcommons/d-sample/trunk"
-::run32 -c a.dll "https://github.com/cppcommons/d-sample/trunk"
+::run32 a.dll "https://github.com/cppcommons/d-sample/trunk"
 echo errorlevel=%errorlevel%

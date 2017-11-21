@@ -80,12 +80,13 @@ bool AttachParentConsole()
 
 struct ParseArgs_Info
 {
-	bool use_console;
+	//bool use_console;
+	bool no_console;
 };
 
 void ParseArgs(ParseArgs_Info &info, std::vector<wchar_t *> &args)
 {
-	info.use_console = false;
+	info.no_console = false;
 	args.clear();
 	int argc;
 	LPWSTR *argv = CommandLineToArgvW(GetCommandLineW(), &argc);
@@ -100,9 +101,9 @@ void ParseArgs(ParseArgs_Info &info, std::vector<wchar_t *> &args)
 		if (i == 1)
 		{
 			std::wstring arg_str = arg;
-			if (arg_str == L"-c" || arg_str == L"--console")
+			if (arg_str == L"-nc" || arg_str == L"--no-console")
 			{
-				info.use_console = true;
+				info.no_console = true;
 				continue;
 			}
 		}
@@ -184,7 +185,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	ParseArgs_Info info;
 	std::vector<wchar_t *> args;
 	ParseArgs(info, args);
-	if (info.use_console)
+	if (!info.no_console)
 	{
 		with_console = AttachParentConsole();
 	}
