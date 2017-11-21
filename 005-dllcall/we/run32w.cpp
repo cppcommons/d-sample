@@ -47,6 +47,7 @@ bool isRedirect(DWORD nStdHandle)
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
+	FILE *log = fopen("___log.txt", "w");
 	bool use_console = true;
 	int argc;
 	LPWSTR *argv = CommandLineToArgvW(GetCommandLineW(), &argc);
@@ -81,16 +82,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	fprintf(stdout, "A2=%s\n", a);
 	fprintf(stderr, "A3=%s\n", a);
 	//MessageBox(NULL, "Hello Windows!", "MyFirst", MB_OK);
-	//HMODULE hmod = LoadLibraryA("rdll.dll");
-	HMODULE hmod = LoadLibraryA("np.dll");
+	HMODULE hmod = LoadLibraryA("rdll.dll");
+	//HMODULE hmod = LoadLibraryA("np.dll");
 	if (!hmod)
 		return 1;
-	printf("hmod=0x%p\n", hmod);
+	fprintf(log, "hmod=0x%p\n", hmod);
 	typedef int (*proc_RunMain)(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow);
 	proc_RunMain addr_RunMain = (proc_RunMain)GetProcAddress(hmod, "RunMain");
 	if (!addr_RunMain)
 		return 2;
-	printf("addr_RunMain=0x%p\n", addr_RunMain);
+	fprintf(log, "addr_RunMain=0x%p\n", addr_RunMain);
 	addr_RunMain(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
+	fclose(log);
 	exit(0);
 }

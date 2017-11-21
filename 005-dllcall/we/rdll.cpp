@@ -21,6 +21,9 @@ extern "C" __declspec(dllexport) void CALLBACK sayHello(HWND, HINSTANCE, wchar_t
 
 extern "C" __declspec(dllexport) int RunMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
+	freopen("CONIN$", "r", stdin);
+	freopen("CONOUT$", "w", stdout);
+	freopen("CONOUT$", "w", stderr);
 	printf("RunMain(1)\n");
 	return 0;
 }
