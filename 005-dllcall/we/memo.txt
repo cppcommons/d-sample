@@ -1,8 +1,7 @@
 #include <windows.h>
 #include <stdio.h>
-//#include <io.h>
+#include <io.h>
 #include <string>
-#include <vector>
 
 #ifndef ATTACH_PARENT_PROCESS
 #define ATTACH_PARENT_PROCESS (DWORD) - 1
@@ -20,51 +19,60 @@ bool AttachParentConsole()
 	return (bool)addr_AttachConsole(ATTACH_PARENT_PROCESS);
 }
 
-struct ParseArgs_Info
+#if 0x0
+bool isRedirect(FILE *fp)
 {
-	bool use_console;
-};
+	return !_isatty(_fileno(fp));
+}
 
-void ParseArgs(ParseArgs_Info &info, std::vector<wchar_t *> &args)
+bool isRedirect(DWORD nStdHandle)
 {
-	info.use_console = false;
-	args.clear();
-	int argc;
-	LPWSTR *argv = CommandLineToArgvW(GetCommandLineW(), &argc);
-	for (int i = 0; i < argc; i++)
+	HANDLE h = GetStdHandle(nStdHandle);
+	DWORD type = GetFileType(h);
+	switch (type)
 	{
-		wchar_t *arg = argv[i];
-		if (i == 0)
-		{
-			// skip "run.exe"
-			continue;
-		}
-		if (i == 1)
-		{
-			std::wstring arg_str = arg;
-			if (arg_str == L"-c" || arg_str == L"--console")
-			{
-				info.use_console = true;
-				continue;
-			}
-		}
-		args.push_back(argv[i]);
+	case FILE_TYPE_CHAR:
+		// it's from a character device, almost certainly the console
+		return false;
+	case FILE_TYPE_DISK:
+		// redirected from a file
+		return true;
+	case FILE_TYPE_PIPE:
+		// piped from another program, a la "echo hello | myprog"
+		return true;
+	case FILE_TYPE_UNKNOWN:
+		// this shouldn't be happening...
+		return true;
 	}
 }
+#endif
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	FILE *log = fopen("___log.txt", "w");
-	ParseArgs_Info info;
-	std::vector<wchar_t *> args;
-	ParseArgs(info, args);
-	if (info.use_console && AttachParentConsole())
+	bool use_console = false;
+	int argc;
+	LPWSTR *argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+	for (int i = 0; i < argc; i++)
 	{
-#if 0x0
+		printf("szArglist[%d]=%ls\n", i, argv[i]);
+	}
+	if (argc >= 2)
+	{
+		std::wstring arg1 = argv[1];
+		if (arg1 == L"-c" || arg1 == L"--console")
+		{
+			printf("[nc]\n");
+			use_console = true;
+		}
+	}
+	if (use_console && AttachParentConsole())
+	{
+		#if 0x0
 		freopen("CONIN$", "r", stdin);
 		freopen("CONOUT$", "w", stdout);
 		freopen("CONOUT$", "w", stderr);
-#endif
+		#endif
 	}
 	printf("lpCmdLine=%s\n", lpCmdLine);
 	char a[1024];
