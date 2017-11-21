@@ -107,7 +107,7 @@ void ParseArgs(ParseArgs_Info &info, std::vector<wchar_t *> &args)
 	}
 }
 
-static int RunErrorMessage(const char *format, va_list args)
+static int ShowMessage(const char *format, va_list args)
 {
 	const int BUFF_LEN = 10240;
 	static char v_buffer[BUFF_LEN + 1];
@@ -121,7 +121,7 @@ static void error(const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	int len = RunErrorMessage(format, args);
+	int len = ShowMessage(format, args);
 	va_end(args);
 	exit(1);
 }
@@ -130,24 +130,16 @@ static void dbg(const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	int len = RunErrorMessage(format, args);
+	int len = ShowMessage(format, args);
 	va_end(args);
 }
 
 #ifdef CONSOLE_VERSION
-//int wmain(int /*argc*/, wchar_t ** /*argv*/)
 int main(int /*argc*/, char ** /*argv*/)
 {
-	//bool with_console = false;
 	ParseArgs_Info info;
 	std::vector<wchar_t *> args;
 	ParseArgs(info, args);
-#if 0x0
-	if (info.use_console)
-	{
-		with_console = AttachParentConsole();
-	}
-#endif
 	if (args.size() == 0)
 	{
 		return 0;
