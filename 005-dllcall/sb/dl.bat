@@ -45,8 +45,8 @@ if not exist src/zlib-1.2.11/zlib.lib (
   nmake -f win32/Makefile.msc
 )
 wget -nc http://www.sqlite.org/2017/sqlite-amalgamation-3190300.zip
-if not exist src/sqlite-amalgamation-3190300 (
-  7z x -osrc sqlite-amalgamation-3190300.zip
+if not exist src/svn/sqlite-amalgamation (
+  7z x -y -osrc sqlite-amalgamation-3190300.zip
   cp -rp src/sqlite-amalgamation-3190300 src/svn/sqlite-amalgamation
 )
 cd /d %SCRIPT_CURRENT_DIR%\src\apr
@@ -69,10 +69,6 @@ cp 0 ldap\apr_ldap_stub.c
 cp 0 ldap\apr_ldap_url.c
 cp 0 dbd\apr_dbd_odbc.c
 msdev aprutil.dsw /MAKE "aprutil - Win32 Release"
-exit /b
-msdev aprutil.dsw /MAKE ^
-    "apriconv - Win32 Release" ^
-    "apr - Win32 Release" ^
-    "gen_uri_delims - Win32 Release" ^
-    "xml - Win32 Release" ^
-    "aprutil - Win32 Release"
+cd /d %SCRIPT_CURRENT_DIR%
+wget -nc http://subversion.tigris.org/files/documents/15/20739/svn-win32-libintl.zip
+if not exist src/svn-win32-libintl 7z x -osrc svn-win32-libintl.zip
