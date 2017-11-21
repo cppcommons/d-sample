@@ -2,38 +2,48 @@
 
 string to_string(char* s)
 {
-    import core.stdc.string : strlen;
-    import std.conv : to;
+	import core.stdc.string : strlen;
+	import std.conv : to;
 
-    char[] result = s ? s[0 .. strlen(s)] : cast(char[]) null;
-    return to!string(s);
+	char[] result = s ? s[0 .. strlen(s)] : cast(char[]) null;
+	return to!string(s);
 }
 
 string to_string(wchar* s)
 {
-    import core.stdc.wchar_ : wcslen;
-    import std.conv : to;
+	import core.stdc.wchar_ : wcslen;
+	import std.conv : to;
 
-    wchar[] result = s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
-    return to!string(to!wstring(result));
+	wchar[] result = s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
+	return to!string(to!wstring(result));
 }
 
 wstring to_wstring(wchar* s)
 {
-    import core.stdc.wchar_ : wcslen;
-    import std.conv : to;
+	import core.stdc.wchar_ : wcslen;
+	import std.conv : to;
 
-    wchar[] result = s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
-    return to!wstring(result);
+	wchar[] result = s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
+	return to!wstring(result);
 }
 
 string to_mb_string(in char[] s, uint codePage = 0)
 {
-    import std.windows.charset : toMBSz;
-    import std.conv : to;
+	import std.windows.charset : toMBSz;
+	import std.conv : to;
 
-    const(char)* mbsz = toMBSz(s, codePage);
-    return to!string(to_string(cast(char*) mbsz));
+	const(char)* mbsz = toMBSz(s, codePage);
+	return to_string(cast(char*) mbsz);
+}
+
+string to_mb_string(in wchar[] s, uint codePage = 0)
+{
+	import std.windows.charset : toMBSz;
+	import std.conv : to;
+
+	string utf8 = to!string(s);
+	const(char)* mbsz = toMBSz(utf8, codePage);
+	return to_string(cast(char*) mbsz);
 }
 
 version (unittest)

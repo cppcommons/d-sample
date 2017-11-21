@@ -183,5 +183,15 @@ string to_mb_string(in char[] s, uint codePage = 0)
 	import std.conv : to;
 
 	const(char)* mbsz = toMBSz(s, codePage);
-	return to!string(to_string(cast(char*) mbsz));
+	return to_string(cast(char*) mbsz);
+}
+
+string to_mb_string(in wchar[] s, uint codePage = 0)
+{
+	import std.windows.charset : toMBSz;
+	import std.conv : to;
+
+	string utf8 = to!string(s);
+	const(char)* mbsz = toMBSz(utf8, codePage);
+	return to_string(cast(char*) mbsz);
 }
