@@ -1,3 +1,4 @@
+:: https://apr.apache.org/compiling_win32.html
 setlocal
 set SCRIPT=%~0
 for /f "delims=\ tokens=*" %%z in ("%SCRIPT%") do (set SCRIPT_CURRENT_DIR=%%~dpz)
