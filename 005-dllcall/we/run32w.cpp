@@ -135,7 +135,8 @@ static void dbg(const char *format, ...)
 }
 
 #ifdef CONSOLE_VERSION
-int wmain(int /*argc*/, wchar_t ** /*argv*/)
+//int wmain(int /*argc*/, wchar_t ** /*argv*/)
+int main(int /*argc*/, char ** /*argv*/)
 {
 	//bool with_console = false;
 	ParseArgs_Info info;
