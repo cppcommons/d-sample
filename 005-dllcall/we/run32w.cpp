@@ -134,14 +134,62 @@ static void dbg(const char *format, ...)
 	va_end(args);
 }
 
+#ifdef CONSOLE_VERSION
+int wmain(int /*argc*/, wchar_t ** /*argv*/)
+{
+	//bool with_console = false;
+	ParseArgs_Info info;
+	std::vector<wchar_t *> args;
+	ParseArgs(info, args);
+#if 0x0
+	if (info.use_console)
+	{
+		with_console = AttachParentConsole();
+	}
+#endif
+	if (args.size() == 0)
+	{
+		return 0;
+	}
+	std::wstring dll_name = args[0];
+	//dbg("dll_name=%ls", dll_name.c_str());
+	std::wstring entry_name = L"RunMain";
+	size_t found = dll_name.find(L",");
+	if (found != std::string::npos)
+	{
+		//dbg("found=%lu", found);
+		entry_name = dll_name.substr(found + 1);
+		//dbg("entry_name=%ls", entry_name.c_str());
+		dll_name = dll_name.substr(0, found);
+		//dbg("dll_name=%ls", dll_name.c_str());
+	}
+	std::string entry_name_ansi = wide_to_ansi(entry_name);
+	//dbg("entry_name_ansi=%s", entry_name_ansi.c_str());
+	HMODULE hmod = LoadLibraryW(dll_name.c_str());
+	if (!hmod)
+	{
+		error("%ls is not valid DLL.", dll_name.c_str());
+	}
+	typedef int (*proc_RunMain)(__int32 argc, wchar_t **argv, DWORD with_console);
+	proc_RunMain addr_RunMain = (proc_RunMain)GetProcAddress(hmod, entry_name_ansi.c_str());
+	if (!addr_RunMain)
+	{
+		error("Entry function %ls not found in %ls", entry_name.c_str(), dll_name.c_str());
+		return 2;
+	}
+	int rc = addr_RunMain(args.size(), &args[0], /*with_console*/ 3);
+	return rc;
+}
+#else
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
+	bool with_console = false;
 	ParseArgs_Info info;
 	std::vector<wchar_t *> args;
 	ParseArgs(info, args);
 	if (info.use_console)
 	{
-		AttachParentConsole();
+		with_console = AttachParentConsole();
 	}
 	if (args.size() == 0)
 	{
@@ -166,13 +214,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	{
 		error("%ls is not valid DLL.", dll_name.c_str());
 	}
-	typedef int (*proc_RunMain)(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow);
+	typedef int (*proc_RunMain)(__int32 argc, wchar_t **argv, DWORD with_console);
 	proc_RunMain addr_RunMain = (proc_RunMain)GetProcAddress(hmod, entry_name_ansi.c_str());
 	if (!addr_RunMain)
 	{
 		error("Entry function %ls not found in %ls", entry_name.c_str(), dll_name.c_str());
 		return 2;
 	}
-	int rc = addr_RunMain(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
+	int rc = addr_RunMain(args.size(), &args[0], with_console);
 	return rc;
 }
+#endif

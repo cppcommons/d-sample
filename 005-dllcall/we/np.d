@@ -13,15 +13,6 @@ private void exit(int code)
 
 static void init_rundll_pg(ref string[] args)
 {
-	string to_string(wchar* s)
-	{
-		import core.stdc.wchar_ : wcslen;
-		import std.conv : to;
-
-		wchar[] result = s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
-		return to!string(to!wstring(result));
-	}
-
 	import core.stdc.stdio; // : freopen, stderr, stdin, stdout;
 	import core.sys.windows.windows;
 	import core.sys.windows.winbase;
@@ -53,22 +44,20 @@ static void pause()
 	stdin.readln();
 }
 
-extern (Windows) export void run(HWND hwnd, HINSTANCE hinst, char*  /+lpszCmdLine+/ , int nCmdShow)
+extern (C) export void runServer(int argc, wchar** argv, DWORD with_console)
 {
-	string to_string(char* s)
-	{
-		import core.stdc.string : strlen;
-		import std.conv : to;
+	import std.stdio; // : writeln;
+	//string[] args;
+	//init_rundll_pg(args);
+	//writeln(args);
 
-		char[] result = s ? s[0 .. strlen(s)] : cast(char[]) null;
-		return to!string(result);
+	for (int i = 0; i < argc; i++)
+	{
+		writeln(to_string(argv[i]));
 	}
 
 	import std.stdio; // : writeln;
-
-	string[] args;
-	init_rundll_pg(args);
-	writeln(args);
+	//writeln(args);
 	HANDLE hPipe = CreateNamedPipe("\\\\.\\pipe\\mypipe", //lpName
 			PIPE_ACCESS_DUPLEX, // dwOpenMode
 			PIPE_TYPE_BYTE | PIPE_WAIT, // dwPipeMode
@@ -104,8 +93,8 @@ extern (Windows) export void run(HWND hwnd, HINSTANCE hinst, char*  /+lpszCmdLin
 	return;
 }
 
-extern (Windows) export void runClient(HWND hwnd, HINSTANCE hinst, char*  /+lpszCmdLine+/ ,
-		int nCmdShow)
+extern (C) export void runClient(int argc, wchar** argv, DWORD with_console) //extern (Windows) export void runClient(HWND hwnd, HINSTANCE hinst, char*  /+lpszCmdLine+/ ,
+//		int nCmdShow)
 {
 	import core.stdc.stdio; // : freopen, stderr, stdin, stdout;
 	import core.stdc.string : strlen;
@@ -117,12 +106,19 @@ extern (Windows) export void runClient(HWND hwnd, HINSTANCE hinst, char*  /+lpsz
 	writeln(args);
 	Thread.sleep(dur!("seconds")(5));
 	writeln("[READY]");
+	Thread.sleep(dur!("seconds")(2));
 	HANDLE hPipe = CreateFile("\\\\.\\pipe\\mypipe", GENERIC_READ | GENERIC_WRITE,
 			0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	writeln("0");
+	Thread.sleep(dur!("seconds")(2));
 	if (hPipe == INVALID_HANDLE_VALUE)
 	{
+		writeln("1");
+		Thread.sleep(dur!("seconds")(2));
 		return;
 	}
+	writeln("2");
+	Thread.sleep(dur!("seconds")(2));
 	while (1)
 	{
 		char szBuff[32];
@@ -139,9 +135,53 @@ extern (Windows) export void runClient(HWND hwnd, HINSTANCE hinst, char*  /+lpsz
 }
 
 //extern "C" __declspec(dllexport) int RunMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
-extern (C) export void RunMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-		HWND hwnd, HINSTANCE hinst, char*  /+lpCmdLine+/ , int nCmdShow)
+//	typedef int (*proc_RunMain)(__int32 argc, wchar_t **argv, DWORD with_console);
+extern (C) export void RunMain(int argc, wchar** argv, DWORD with_console)
 {
 	import std.stdio : writeln;
+
+	writeln(`argc=`, argc);
+	for (int i = 0; i < argc; i++)
+	{
+		writeln(to_string(argv[i]));
+	}
+	writeln(`with_console=`, with_console);
+	writeln(`with_console & 2=`, with_console & 2);
 	writeln("RunMain(DLang)");
+}
+
+string to_string(char* s)
+{
+	import core.stdc.string : strlen;
+	import std.conv : to;
+
+	char[] result = s ? s[0 .. strlen(s)] : cast(char[]) null;
+	return to!string(s);
+}
+
+string to_string(wchar* s)
+{
+	import core.stdc.wchar_ : wcslen;
+	import std.conv : to;
+
+	wchar[] result = s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
+	return to!string(to!wstring(result));
+}
+
+wstring to_wstring(wchar* s)
+{
+	import core.stdc.wchar_ : wcslen;
+	import std.conv : to;
+
+	wchar[] result = s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
+	return to!wstring(result);
+}
+
+string to_mb_string(in char[] s, uint codePage = 0)
+{
+	import std.windows.charset : toMBSz;
+	import std.conv : to;
+
+	const(char)* mbsz = toMBSz(s, codePage);
+	return to!string(to_string(cast(char*) mbsz));
 }

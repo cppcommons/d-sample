@@ -5,7 +5,6 @@ string to_string(char* s)
     import core.stdc.string : strlen;
     import std.conv : to;
 
-    //return s ? s[0 .. strlen(s)] : cast(char[]) null;
     char[] result = s ? s[0 .. strlen(s)] : cast(char[]) null;
     return to!string(s);
 }
@@ -24,7 +23,6 @@ wstring to_wstring(wchar* s)
     import core.stdc.wchar_ : wcslen;
     import std.conv : to;
 
-    //return s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
     wchar[] result = s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
     return to!wstring(result);
 }
