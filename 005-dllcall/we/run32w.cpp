@@ -137,7 +137,7 @@ static void dbg(const char *format, ...)
 	va_end(args);
 }
 
-typedef int (*proc_RunMain)(__int32 argc, wchar_t **argv, DWORD with_console);
+typedef __int32 (*proc_RunMain)(__int32 argc, wchar_t **argv, DWORD with_console);
 
 #ifdef CONSOLE_VERSION
 int main(int /*argc*/, char ** /*argv*/)
