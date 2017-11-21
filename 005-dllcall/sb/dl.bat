@@ -26,3 +26,9 @@ if not exist src/openssl-1.0.2l/out32/libeay32.lib (
   nmake -f ms\nt.mak init lib
 )
 cd /d %SCRIPT_CURRENT_DIR%
+wget -nc --no-check-certificate -O zlib-1.2.11.zip https://github.com/madler/zlib/archive/v1.2.11.zip
+if not exist src/zlib-1.2.11 7z x -osrc zlib-1.2.11.zip
+if not exist src/zlib-1.2.11/zlib.lib (
+  cd /d %SCRIPT_CURRENT_DIR%\src\zlib-1.2.11
+  nmake -f win32/Makefile.msc
+)
