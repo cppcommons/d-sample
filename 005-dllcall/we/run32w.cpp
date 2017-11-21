@@ -10,6 +10,9 @@
 
 bool AttachParentConsole()
 {
+	static bool attached = false;
+	if (attached)
+		return true;
 	HMODULE hmod = LoadLibraryA("kernel32.dll");
 	if (!hmod)
 		return false;
@@ -17,7 +20,8 @@ bool AttachParentConsole()
 	proc_AttachConsole addr_AttachConsole = (proc_AttachConsole)GetProcAddress(hmod, "AttachConsole");
 	if (!addr_AttachConsole)
 		return false;
-	return (bool)addr_AttachConsole(ATTACH_PARENT_PROCESS);
+	attached = (bool)addr_AttachConsole(ATTACH_PARENT_PROCESS);
+	return attached;
 }
 
 struct ParseArgs_Info
@@ -52,8 +56,32 @@ void ParseArgs(ParseArgs_Info &info, std::vector<wchar_t *> &args)
 	}
 }
 
+static int RunErrorMessage(const char *format, va_list args)
+{
+	const int BUFF_LEN = 10240;
+	static char v_buffer[BUFF_LEN + 1];
+	v_buffer[BUFF_LEN] = 0;
+	int len = _vsnprintf(v_buffer, BUFF_LEN, format, args);
+	::MessageBoxA(NULL, v_buffer, "RUN", MB_OK);
+	return len;
+}
+
+static void RunError(const char *format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	int len = RunErrorMessage(format, args);
+	va_end(args);
+	exit(1);
+}
+
+void RunError()
+{
+}
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
+	RunError("RunError() Test: %d\n", 1234);
 	FILE *log = fopen("___log.txt", "w");
 	ParseArgs_Info info;
 	std::vector<wchar_t *> args;
