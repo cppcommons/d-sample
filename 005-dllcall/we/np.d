@@ -101,24 +101,24 @@ extern (C) export void runClient(int argc, wchar** argv, DWORD with_console) //e
 	import std.stdio : writeln;
 	import core.thread;
 
-	string[] args;
-	init_rundll_pg(args);
-	writeln(args);
-	Thread.sleep(dur!("seconds")(5));
-	writeln("[READY]");
+	//string[] args;
+	//init_rundll_pg(args);
+	//writeln(args);
 	Thread.sleep(dur!("seconds")(2));
+	writeln("[CLIENT READY]");
+	//Thread.sleep(dur!("seconds")(2));
 	HANDLE hPipe = CreateFile("\\\\.\\pipe\\mypipe", GENERIC_READ | GENERIC_WRITE,
 			0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	writeln("0");
-	Thread.sleep(dur!("seconds")(2));
+	//Thread.sleep(dur!("seconds")(2));
 	if (hPipe == INVALID_HANDLE_VALUE)
 	{
 		writeln("1");
-		Thread.sleep(dur!("seconds")(2));
+		//Thread.sleep(dur!("seconds")(2));
 		return;
 	}
 	writeln("2");
-	Thread.sleep(dur!("seconds")(2));
+	//Thread.sleep(dur!("seconds")(2));
 	while (1)
 	{
 		char szBuff[32];
