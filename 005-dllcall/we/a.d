@@ -16,39 +16,6 @@ private void exit(int code)
 	std.c.stdlib.exit(code);
 }
 
-/+
-static void init_rundll_pg(ref string[] args)
-{
-	string to_string(wchar* s)
-	{
-		import core.stdc.wchar_ : wcslen;
-		import std.conv : to;
-
-		wchar[] result = s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
-		return to!string(to!wstring(result));
-	}
-
-	import core.stdc.stdio; // : freopen, stderr, stdin, stdout;
-	import core.sys.windows.windows;
-	import core.sys.windows.winbase;
-
-	AllocConsole();
-	//if (!AttachConsole(ATTACH_PARENT_PROCESS))
-	//	AllocConsole();
-	freopen("CONIN$", "r", stdin);
-	freopen("CONOUT$", "w", stdout);
-	freopen("CONOUT$", "w", stderr);
-	args.length = 0;
-	LPWSTR* szArglist;
-	int nArgs;
-	szArglist = CommandLineToArgvW(GetCommandLineW(), &nArgs);
-	for (int i = 1; i < nArgs; i++)
-	{
-		args ~= to_string(szArglist[i]);
-	}
-}
-+/
-
 int run_command(string[] cmdline)
 {
 	import std.process;
@@ -63,9 +30,6 @@ int run_command(string[] cmdline)
 
 static void pause()
 {
-	//import std.process : executeShell;
-	//import std.stdio : stdout, write, writeln;
-
 	string[] cmdline = ["cmd.exe", "/c", "pause"];
 	run_command(cmdline);
 }
@@ -96,22 +60,6 @@ extern (C) export void RunMain(int argc, wchar** argv, DWORD with_console)
 
 int dmain(string[] args)
 {
-	char[] to_string(char* s)
-	{
-		import core.stdc.string : strlen;
-
-		return s ? s[0 .. strlen(s)] : cast(char[]) null;
-	}
-
-	string to_mb_string(in char[] s, uint codePage = 0)
-	{
-		import std.windows.charset : toMBSz;
-		import std.conv : to;
-
-		const(char)* mbsz = toMBSz(s, codePage);
-		return to!string(to_string(cast(char*) mbsz));
-	}
-
 	import core.thread;
 	import std.stdio;
 	import std.string;
@@ -236,7 +184,6 @@ int dmain(string[] args)
 				import core.stdc.string : strlen;
 				import std.conv : to;
 
-				//return s ? s[0 .. strlen(s)] : cast(char[]) null;
 				char[] result = s ? s[0 .. strlen(s)] : cast(char[]) null;
 				return to!string(s);
 			}
@@ -267,11 +214,13 @@ int dmain(string[] args)
 		extern (C) EASYWIN_PROC OS_GetProcAddress(HCUSTOMMODULE a_module,
 				char* a_name, void* a_userdata)
 		{
-			char[] to_string(char* s)
+			string to_string(char* s)
 			{
 				import core.stdc.string : strlen;
+				import std.conv : to;
 
-				return s ? s[0 .. strlen(s)] : cast(char[]) null;
+				char[] result = s ? s[0 .. strlen(s)] : cast(char[]) null;
+				return to!string(s);
 			}
 
 			import core.sys.windows.winbase : GetProcAddress;
@@ -509,13 +458,6 @@ private string get_common_path(int id, bool create = false)
 	// file:///C:\D\dmd2\src\phobos\std\conv.d
 	import std.conv : to;
 
-	wchar[] to_string(wchar* s)
-	{
-		import core.stdc.wchar_ : wcslen;
-
-		return s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
-	}
-
 	if (create)
 		id |= CSIDL_FLAG_CREATE;
 	wchar[MAX_PATH] buffer;
@@ -615,4 +557,23 @@ wstring to_wstring(wchar* s)
 
 	wchar[] result = s ? s[0 .. wcslen(s)] : cast(wchar[]) null;
 	return to!wstring(result);
+}
+
+string to_mb_string(in char[] s, uint codePage = 0)
+{
+	import std.windows.charset : toMBSz;
+	import std.conv : to;
+
+	const(char)* mbsz = toMBSz(s, codePage);
+	return to_string(cast(char*) mbsz);
+}
+
+string to_mb_string(in wchar[] s, uint codePage = 0)
+{
+	import std.windows.charset : toMBSz;
+	import std.conv : to;
+
+	string utf8 = to!string(s);
+	const(char)* mbsz = toMBSz(utf8, codePage);
+	return to_string(cast(char*) mbsz);
 }
