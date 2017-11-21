@@ -137,6 +137,8 @@ static void dbg(const char *format, ...)
 	va_end(args);
 }
 
+typedef int (*proc_RunMain)(__int32 argc, wchar_t **argv, DWORD with_console);
+
 #ifdef CONSOLE_VERSION
 int main(int /*argc*/, char ** /*argv*/)
 {
@@ -166,7 +168,6 @@ int main(int /*argc*/, char ** /*argv*/)
 	{
 		error("%ls is not valid DLL.", dll_name.c_str());
 	}
-	typedef int (*proc_RunMain)(__int32 argc, wchar_t **argv, DWORD with_console);
 	proc_RunMain addr_RunMain = (proc_RunMain)GetProcAddress(hmod, entry_name_ansi.c_str());
 	if (!addr_RunMain)
 	{
@@ -210,7 +211,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	{
 		error("%ls is not valid DLL.", dll_name.c_str());
 	}
-	typedef int (*proc_RunMain)(__int32 argc, wchar_t **argv, DWORD with_console);
 	proc_RunMain addr_RunMain = (proc_RunMain)GetProcAddress(hmod, entry_name_ansi.c_str());
 	if (!addr_RunMain)
 	{
