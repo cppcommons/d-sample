@@ -13,3 +13,4 @@ cat ___tmp.txt
 run32.exe np,RunMain bb cc
 run32.exe np,NotMain bb cc
 cmd32.exe np,RunMain bb cc
+run32.exe -ac np,RunMain bb cc
