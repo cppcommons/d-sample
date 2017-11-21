@@ -1,0 +1,33 @@
+Index: crypto/apr_siphash.c
+===================================================================
+--- crypto/apr_siphash.c	(revision 1800979)
++++ crypto/apr_siphash.c	(working copy)
+@@ -62,10 +62,10 @@
+     \
+     k0 = U8TO64_LE(k + 0); \
+     k1 = U8TO64_LE(k + 8); \
+-    v3 = k1 ^ (apr_uint64_t)0x7465646279746573ULL; \
+-    v2 = k0 ^ (apr_uint64_t)0x6c7967656e657261ULL; \
+-    v1 = k1 ^ (apr_uint64_t)0x646f72616e646f6dULL; \
+-    v0 = k0 ^ (apr_uint64_t)0x736f6d6570736575ULL; \
++    v3 = k1 ^ (apr_uint64_t)0x7465646279746573i64; \
++    v2 = k0 ^ (apr_uint64_t)0x6c7967656e657261i64; \
++    v1 = k1 ^ (apr_uint64_t)0x646f72616e646f6di64; \
++    v0 = k0 ^ (apr_uint64_t)0x736f6d6570736575i64; \
+     \
+     rem = (unsigned int)(n & 0x7); \
+     for (ptr = s, end = ptr + n - rem; ptr < end; ptr += 8) { \
+Index: dbd/apr_dbd_odbc.c
+===================================================================
+--- dbd/apr_dbd_odbc.c	(revision 1800979)
++++ dbd/apr_dbd_odbc.c	(working copy)
+@@ -62,6 +62,9 @@
+ #endif
+ 
+ 
++
++typedef INT32 SQLLEN;
++typedef UINT32 SQLULEN;
+ /* Driver name is "odbc" and the entry point is 'apr_dbd_odbc_driver' 
+  * unless ODBC_DRIVER_NAME is defined and it is linked with another db library which
+  * is ODBC source-compatible. e.g. DB2, Informix, TimesTen, mysql.  
