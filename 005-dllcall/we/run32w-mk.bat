@@ -9,9 +9,9 @@ if %errorlevel% neq 0 ( exit /b )
 cl -MT -EHsc -DCONSOLE_VERSION run32w.cpp /link /out:cmd32.exe /subsystem:console shell32.lib user32.lib
 if %errorlevel% neq 0 ( exit /b )
 
-g++ -o run32g.exe run32w.cpp -static -mwindows
+g++ -o run32g.exe -Os run32w.cpp -static -mwindows
 if %errorlevel% neq 0 ( exit /b )
-g++ -o cmd32g.exe -DCONSOLE_VERSION run32w.cpp -static
+g++ -o cmd32g.exe -Os -DCONSOLE_VERSION run32w.cpp -static
 if %errorlevel% neq 0 ( exit /b )
 
 run32.exe -nc np bb cc > ___tmp.txt

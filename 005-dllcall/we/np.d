@@ -125,9 +125,9 @@ extern (C) export int RunMain(int argc, wchar** argv, DWORD with_console)
 	writeln(`with_console=`, with_console);
 	writeln(`with_console & 2=`, with_console & 2);
 	writeln("RunMain(DLang)");
-	write(`input: `);
-	auto line = stdin.readln();
-	writeln(line);
+	//write(`input: `);
+	//auto line = stdin.readln();
+	//writeln(line);
 	return 0;
 }
 
