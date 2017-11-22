@@ -359,6 +359,7 @@ private int handle_exe_output(string ext, string[] args)
 		break;
 	}
 	string[] dub_opts;
+	string arch = "";
 	string main_source;
 	string[] source_files;
 	string[] source_dirs;
@@ -425,6 +426,10 @@ private int handle_exe_output(string ext, string[] args)
 				dub_opts ~= arg;
 			}
 		}
+		else if (arg.startsWith(`arch=`))
+		{
+			arch = arg_strip_prefix(arg);
+		}
 		else if (arg.startsWith(`main=`))
 		{
 			main_source = arg_strip_prefix(arg);
@@ -469,20 +474,39 @@ private int handle_exe_output(string ext, string[] args)
 	}
 	if (ext == ".dll")
 	{
-		source_files ~= "gcstub.obj";
-		source_files ~= "phobos.lib";
-		source_files ~= "snn.lib";
-		source_files ~= format!`%s.def`(g_context.fileName);
-		string def_path = format!`%s.def`(g_context.fullPath);
-		//writefln(`dub_json_path="%s"`, dub_json_path);
-		string def_text = format!`LIBRARY %s
+		switch (arch)
+		{
+		case "ms32":
+			dub_opts ~= "--arch=x86_mscoff";
+			source_files ~= "gcstub32mscoff.obj";
+			source_files ~= "phobos32mscoff.lib";
+			break;
+		case "ms64":
+			dub_opts ~= "--arch=x86_64";
+			source_files ~= "gcstub64.obj";
+			source_files ~= "phobos64.lib";
+			source_files ~= "curl.lib";
+			break;
+		case "dm32":
+			dub_opts ~= "--arch=x86";
+			source_files ~= "gcstub.obj";
+			source_files ~= "phobos.lib";
+			source_files ~= "snn.lib";
+			source_files ~= format!`%s.def`(g_context.fileName);
+			string def_path = format!`%s.def`(g_context.fullPath);
+			//writefln(`dub_json_path="%s"`, dub_json_path);
+			string def_text = format!`LIBRARY %s
 EXETYPE NT
 CODE PRELOAD DISCARDABLE
 DATA PRELOAD MULTIPLE
 `(g_context.fileName);
-		File file0 = File(def_path, "w");
-		file0.write(def_text);
-		file0.close();
+			File file0 = File(def_path, "w");
+			file0.write(def_text);
+			file0.close();
+			break;
+		default:
+			break;
+		}
 	}
 	if (main_source)
 		jsonObj["mainSourceFile"] = main_source;
