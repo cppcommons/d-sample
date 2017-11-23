@@ -116,7 +116,7 @@ int main(string[] args)
 	{
 
 	}
-	rename("___g_total.txt", file_name);
+	//rename("___g_total.txt", file_name);
 
 	/+
 {

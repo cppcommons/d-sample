@@ -29,14 +29,22 @@ int main(string[] args)
 	string json = cast(string) read("___g_total.txt");
 	SysTime v_start;
 	writeln("Reading JSON...done!");
+
+	import std.json;
+	v_start = Clock.currTime();
+	write("Parsing JSON(1)...");
+	stdout.flush();
+	JSONValue j = parseJSON(json);
+	writeln(Clock.currTime() - v_start);
+
 	v_start = Clock.currTime();
 	write("Parsing JSON...");
 	stdout.flush();
 	Json[] records = parseJsonString(json).get!(Json[]);
-	//Duration v_duration = Clock.currTime() - v_start;
 	writeln(Clock.currTime() - v_start);
-	//f.write(outrec.serializeToJsonString);
+
 	writeln(records.length);
+
 	v_start = Clock.currTime();
 	write("Sorting Records...");
 	stdout.flush();

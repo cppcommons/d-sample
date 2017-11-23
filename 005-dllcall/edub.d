@@ -482,23 +482,39 @@ private int handle_exe_output(string ext, string[] args)
 			source_files ~= arg;
 		}
 	}
-	if (ext == ".dll")
+	switch (arch)
 	{
-		switch (arch)
+	case "ms32":
+		dub_opts ~= "--arch=x86_mscoff";
+		if (ext == ".dll")
 		{
-		case "ms32":
-			dub_opts ~= "--arch=x86_mscoff";
 			source_files ~= "gcstub32mscoff.obj";
 			source_files ~= "phobos32mscoff.lib";
-			break;
-		case "ms64":
-			dub_opts ~= "--arch=x86_64";
+		}
+		break;
+	case "ms64":
+		dub_opts ~= "--arch=x86_64";
+		if (ext == ".dll")
+		{
 			source_files ~= "gcstub64.obj";
 			source_files ~= "phobos64.lib";
-			source_files ~= "curl.lib";
-			break;
-		case "dm32":
-			dub_opts ~= "--arch=x86";
+			//source_files ~= "curl.lib";
+		}
+		break;
+	/+
+	case "ms64_no_curl":
+		dub_opts ~= "--arch=x86_64";
+		if (ext == ".dll")
+		{
+			source_files ~= "gcstub64.obj";
+			source_files ~= "phobos64.lib";
+		}
+		break;
+	+/
+	case "dm32":
+		dub_opts ~= "--arch=x86";
+		if (ext == ".dll")
+		{
 			source_files ~= "gcstub.obj";
 			source_files ~= "phobos.lib";
 			source_files ~= "snn.lib";
@@ -513,10 +529,10 @@ DATA PRELOAD MULTIPLE
 			File file0 = File(def_path, "w");
 			file0.write(def_text);
 			file0.close();
-			break;
-		default:
-			break;
 		}
+		break;
+	default:
+		break;
 	}
 	if (main_source)
 		jsonObj["mainSourceFile"] = main_source;

@@ -28,14 +28,9 @@ private void exit(int code)
 int main(string[] args)
 {
 	//sleepForWeeks(10);
-	sleepUntil(DateTime(2020, 1, 1, 20, 15, 32));
-	exit(0);
-	/+
-	SysTime v_clock = Clock.currTime();
-	writeln(ql_systime_to_string(v_clock));
-	exit(0);
-	+/
-	//File f = File("___g_total.txt", "r");
+	//sleepUntil(DateTime(2020, 1, 1, 20, 15, 32));
+	//exit(0);
+
 	writeln("Reading JSON...");
 	string json = cast(string) read("___j_like_over_50.txt");
 	SysTime v_start;
