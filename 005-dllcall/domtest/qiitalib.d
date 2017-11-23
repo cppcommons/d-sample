@@ -53,32 +53,29 @@ public void sleepUntil(DateTime targetTime)
 
 public void sleepUntil(SysTime targetTime)
 {
-	//SysTime startTime = Clock.currTime();
-	//SysTime targetTime = startTime + dur!`seconds`(secs);
-
-	int max_width = 0;
+	int maxWidth = 0;
 	for (;;)
 	{
 		SysTime currTime = Clock.currTime();
 		if (currTime >= targetTime)
 			break;
 		Duration leftTime = targetTime - currTime;
-		leftTime = dur!`msecs`(leftTime.total!`msecs`); // ミリ秒以下を切り捨て
+		leftTime = dur!`msecs`(leftTime.total!`msecs`); // 残り時間表示用にミリ秒以下を切り捨て
 		string displayStr = format!`Sleeping: %s left.`(leftTime);
-		if (displayStr.length > max_width)
-			max_width = displayStr.length;
-		displayStr.reserve(max_width);
-		while (displayStr.length < max_width)
+		if (displayStr.length > maxWidth)
+			maxWidth = displayStr.length;
+		displayStr.reserve(maxWidth);
+		while (displayStr.length < maxWidth)
 			displayStr ~= ` `;
-		writef("%s\r", displayStr);
-		stdout.flush();
+		stderr.writef("%s\r", displayStr);
+		stderr.flush();
 		Thread.sleep(dur!(`msecs`)(500));
 	}
-	for (int i = 0; i < max_width; i++)
+	for (int i = 0; i < maxWidth; i++)
 		write(` `);
-	write("\r");
-	write("Sleeping: end.\n");
-	stdout.flush();
+	stderr.write("\r");
+	stderr.write("Sleeping: end.\n");
+	stderr.flush();
 }
 
 class C_QiitaApiHttp
