@@ -39,7 +39,15 @@ int main(string[] args)
 
 	File f = File("qranking.github.io/index.html", "wb");
 	f.writeln("<html>");
-	f.writeln(`	<head><meta charset="UTF-8" /><title>Ranking Test</title></head>`);
+	f.writeln(`	<head><!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-110075493-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-110075493-1');
+</script><meta charset="UTF-8" /><title>Ranking Test</title></head>`);
 	f.writeln("	<body>");
 	f.writeln(`<h1>対象記事件数: 222,355件 (2011/09/16～2017/05/24)</h1>`);
 	f.writeln(`<p><i><img width="16" height="16" src="thumb-up-120px.png" /></i>が同じ値の場合は投稿日時の新しいものが上位としています。</p>`);
