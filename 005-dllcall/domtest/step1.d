@@ -15,7 +15,6 @@ import std.stdio;
 import std.string;
 import std.variant;
 
-
 private __gshared Database g_db;
 shared static this()
 {
@@ -78,8 +77,9 @@ int main(string[] args)
 			(*rec).remove(`private`);
 			(*rec).remove(`reactions_count`);
 			(*rec)[`user`].remove(`description`);
-			outrec[`_`] = format!`%08d:%s[%s]`(count,
-					(*rec)[`created_at`].get!string, (*rec)[`title`].get!string);
+			outrec[`_`] = format!`%08d(likes=%d):%s[%s]`(count,
+					(*rec)[`likes_count`].get!long, (*rec)[`created_at`].get!string,
+					(*rec)[`title`].get!string);
 			outrec[`created_at`] = (*rec)[`created_at`];
 			outrec[`title`] = (*rec)[`title`];
 			foreach (key, value; (*rec).byKeyValue)

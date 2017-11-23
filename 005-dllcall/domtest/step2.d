@@ -41,9 +41,18 @@ int main(string[] args)
 	write("Sorting Records...");
 	stdout.flush();
 	Json*[] reverse_array;
+	long liked_count = 0;
 	foreach (ref rec; records)
 	{
+		if (rec[`likes_count`].get!long < 50)
+			continue;
 		reverse_array ~= &rec;
+		/+
+		if (rec[`likes_count`].get!long >= 50)
+		{
+			liked_count++;
+		}
+		+/
 	}
 	//reverse(reverse_array);
 	bool myComp(Json* x, Json* y)
@@ -54,13 +63,38 @@ int main(string[] args)
 		}
 		return (*x)[`created_at`].get!string > (*y)[`created_at`].get!string;
 	}
+
 	sort!myComp(reverse_array);
 	writeln(Clock.currTime() - v_start);
-	for (int i=0; i<min(reverse_array.length, 20); i++)
+	for (int i = 0; i < min(reverse_array.length, 20); i++)
 	{
-		Json *rec = reverse_array[i];
+		Json* rec = reverse_array[i];
 		writeln((*rec).serializeToJsonString);
 	}
+	writeln(reverse_array.length);
+
+	Json jsonObj = Json.emptyArray;
+	foreach (rec; reverse_array)
+	{
+		jsonObj.appendArrayElement(*rec);
+	}
+
+	assert(jsonObj.type == Json.Type.Array);
+	Json[] elems = jsonObj.get!(Json[]);
+	File f = File("___j_like_over_50.txt", "w");
+	f.write("[");
+	long count = 0;
+	foreach (ref elem; elems)
+	{
+		if (count > 0)
+			f.write(",\n ");
+		count++;
+		f.write(elem.serializeToJsonString);
+	}
+	f.write("]");
+	f.write("\n");
+	f.close();
+
 	exit(0);
 
 	return 0;
