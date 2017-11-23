@@ -368,6 +368,8 @@ private int handle_exe_output(string ext, string[] args)
 	string[] libs;
 	string[] defines;
 	string[] debug_defines;
+	string[] cflags;
+	string[] lflags;
 	string[] run_args;
 	struct _PackageSpec
 	{
@@ -437,6 +439,14 @@ private int handle_exe_output(string ext, string[] args)
 		else if (arg.startsWith(`source=`) || arg.startsWith(`src=`))
 		{
 			source_dirs ~= normalize_path(arg_strip_prefix(arg));
+		}
+		else if (arg.startsWith(`cflag=`))
+		{
+			cflags ~= arg_strip_prefix(arg);
+		}
+		else if (arg.startsWith(`lflag=`))
+		{
+			lflags ~= arg_strip_prefix(arg);
 		}
 		else if (arg.startsWith(`data=`))
 		{
@@ -525,6 +535,22 @@ DATA PRELOAD MULTIPLE
 	if (debug_defines)
 		jsonObj["debugVersions"] = debug_defines;
 	int sub_config_count = 0;
+	if (cflags.length > 0)
+	{
+		jsonObj["dflags"] = parseJSON("[]");
+		foreach (cflag; cflags)
+		{
+			jsonObj["dflags"].array ~= JSONValue(cflag);
+		}
+	}
+	if (lflags.length > 0)
+	{
+		jsonObj["lflags"] = parseJSON("[]");
+		foreach (lflag; lflags)
+		{
+			jsonObj["lflags"].array ~= JSONValue(lflag);
+		}
+	}
 	if (packages.length > 0)
 	{
 		//string[string] dependencies_init;
