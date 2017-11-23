@@ -618,6 +618,7 @@ int main(string[] args)
 	{
 	case ".exe":
 	case ".dll":
+	case ".lib":
 		return handle_exe_output(g_context.extension.toLower, args[2 .. $]);
 	case ".json":
 		break;
