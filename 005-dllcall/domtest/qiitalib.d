@@ -39,10 +39,22 @@ public string ql_systime_to_string(SysTime t)
 	return t_of_sec.toISOExtString() ~ `+09:00`;
 }
 
-public void sleep_seconds(long secs)
+public void sleepForSeconds(long secs)
 {
 	SysTime startTime = Clock.currTime();
 	SysTime targetTime = startTime + dur!`seconds`(secs);
+	sleepUntil(targetTime);
+}
+
+public void sleepUntil(DateTime targetTime)
+{
+	sleepUntil(SysTime(targetTime));
+}
+
+public void sleepUntil(SysTime targetTime)
+{
+	//SysTime startTime = Clock.currTime();
+	//SysTime targetTime = startTime + dur!`seconds`(secs);
 
 	int max_width = 0;
 	for (;;)
@@ -52,19 +64,20 @@ public void sleep_seconds(long secs)
 			break;
 		Duration leftTime = targetTime - currTime;
 		leftTime = dur!`msecs`(leftTime.total!`msecs`); // ミリ秒以下を切り捨て
-		string displayStr = format!`Sleeping: %s`(leftTime);
+		string displayStr = format!`Sleeping: %s left.`(leftTime);
 		if (displayStr.length > max_width)
 			max_width = displayStr.length;
+		displayStr.reserve(max_width);
 		while (displayStr.length < max_width)
 			displayStr ~= ` `;
 		writef("%s\r", displayStr);
 		stdout.flush();
-		Thread.sleep(dur!("msecs")(500));
+		Thread.sleep(dur!(`msecs`)(500));
 	}
 	for (int i = 0; i < max_width; i++)
 		write(` `);
 	write("\r");
-	write("Finished Sleeping!\n");
+	write("Sleeping: end.\n");
 	stdout.flush();
 }
 
@@ -145,7 +158,7 @@ class C_QiitaApiServie
 					Duration diff2 = diff + dur!`seconds`(60);
 					writeln(diff2);
 					writeln(`Sleeping for: `, diff2);
-					sleep_seconds(diff2.total!`seconds`);
+					sleepForSeconds(diff2.total!`seconds`);
 					continue _loop_a;
 				}
 				write("\a");
@@ -164,7 +177,7 @@ class C_QiitaApiServie
 				//writeln(cast(string) this.http.data);
 				//Duration diff1 = dur!`seconds`(10);
 				//writeln(`Sleeping for: `, diff1);
-				//sleep_seconds(diff1.total!`seconds`);
+				//sleepForSeconds(diff1.total!`seconds`);
 				//exit(1);
 				//continue _loop_a;
 				return -1;
@@ -209,7 +222,7 @@ class C_QiitaApiServie
 				writeln(diff.total!"msecs");
 				writeln(`Sleeping for: `, diff2);
 				//Thread.sleep(diff2);
-				sleep_seconds(diff2.total!`seconds`);
+				sleepForSeconds(diff2.total!`seconds`);
 				continue _loop_a;
 			}
 			+/

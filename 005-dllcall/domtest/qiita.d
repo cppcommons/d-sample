@@ -45,37 +45,6 @@ private void exit(int code)
 }
 
 /+
-private void sleep_seconds(long secs)
-{
-	SysTime startTime = Clock.currTime();
-	SysTime targetTime = startTime + dur!`seconds`(secs);
-
-	int max_width = 0;
-	for (;;)
-	{
-		SysTime currTime = Clock.currTime();
-		if (currTime >= targetTime)
-			break;
-		Duration leftTime = targetTime - currTime;
-		leftTime = dur!`msecs`(leftTime.total!`msecs`); // ミリ秒以下を切り捨て
-		string displayStr = format!`Sleeping: %s`(leftTime);
-		if (displayStr.length > max_width)
-			max_width = displayStr.length;
-		while (displayStr.length < max_width)
-			displayStr ~= ` `;
-		writef("%s\r", displayStr);
-		stdout.flush();
-		Thread.sleep(dur!("msecs")(500));
-	}
-	for (int i = 0; i < max_width; i++)
-		write(` `);
-	write("\r");
-	write("Finished Sleeping!\n");
-	stdout.flush();
-}
-+/
-
-/+
 Variant getJsonObjectProp(ref Json jsonObj, string prop_name)
 {
 	Variant result;
@@ -183,7 +152,7 @@ bool handle_one_day(SysTime v_date)
 		{
 			writeln(`total_count=`, total_count);
 			writeln(`exiting!`);
-			Thread.sleep(dur!`seconds`(3));
+			sleepForSeconds(3);
 			//writeln(cast(string)qhttp1.http.data);
 			//exit(1);
 			return false;
@@ -305,7 +274,7 @@ bool handle_one_day_2(SysTime v_date)
 			if (http.http.statusLine.code == 403)
 			{
 				writeln(cast(string) http.http.data);
-				sleep_seconds(10);
+				sleepForSeconds(10);
 			}
 			continue;
 		}
