@@ -43,7 +43,7 @@ int main(string[] args)
 	f.writeln("	<body>");
 	f.writeln(`<h1>対象記事件数: 222,355件 (2011/09/16～2017/05/24)</h1>`);
 	f.writeln(
-			`<p><i>いいね</i>が同じ値の場合は投稿日時の新しいものが上位としています。</p>`);
+			`<p><i><img width="16" height="16" src="thumb-up-120px.png" /></i>が同じ値の場合は投稿日時の新しいものが上位としています。</p>`);
 	for (int i = 0; i < min(records.length, 20); i++)
 	{
 		Json* rec = &records[i];
@@ -55,7 +55,8 @@ int main(string[] args)
 <tr>
 <td rowspan="3">%d位</td>
 <td colspan="3">
-<a href="%s" target="_blank">%s</a> <kbd><i></i>%d</kbd> (+106)
+<a href="%s" target="_blank">%s</a>
+<i><img alt="いいね" width="16" height="16" src="thumb-up-120px.png" /></i>%d
 </td>
 </tr>
 <tr>
