@@ -78,6 +78,13 @@ public void sleepUntil(DateTime targetTime)
 
 public void sleepUntil(SysTime targetTime)
 {
+	string systimeToString(SysTime t)
+	{
+		SysTime t_of_sec = SysTime(DateTime(t.year, t.month, t.day, t.hour, t.minute, t.second));
+		return t_of_sec.toISOExtString().replace(`T`, ` `).replace(`-`, `/`);
+	}
+
+	string targetTimeStr = systimeToString(targetTime);
 	int maxWidth = 0;
 	for (;;)
 	{
@@ -86,7 +93,7 @@ public void sleepUntil(SysTime targetTime)
 			break;
 		Duration leftTime = targetTime - currTime;
 		leftTime = dur!`msecs`(leftTime.total!`msecs`); // 残り時間表示用にミリ秒以下を切り捨て
-		string displayStr = format!`Sleeping: %s left.`(leftTime);
+		string displayStr = format!`Sleeping: until %s (%s left).`(targetTimeStr, leftTime);
 		if (displayStr.length > maxWidth)
 			maxWidth = displayStr.length;
 		displayStr.reserve(maxWidth);
