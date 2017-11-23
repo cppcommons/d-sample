@@ -42,40 +42,43 @@ int main(string[] args)
 	f.writeln(`	<head><meta charset="UTF-8" /><title>Ranking Test</title></head>`);
 	f.writeln("	<body>");
 	f.writeln(`<h1>対象記事件数: 222,355件 (2011/09/16～2017/05/24)</h1>`);
-	f.writeln(
-			`<p><i><img width="16" height="16" src="thumb-up-120px.png" /></i>が同じ値の場合は投稿日時の新しいものが上位としています。</p>`);
+	f.writeln(`<p><i><img width="16" height="16" src="thumb-up-120px.png" /></i>が同じ値の場合は投稿日時の新しいものが上位としています。</p>`);
 	for (int i = 0; i < min(records.length, 20); i++)
 	{
 		Json* rec = &records[i];
 		writeln((*rec).serializeToJsonString);
 		writeln((*rec)[`title`].get!string);
 		writeln((*rec)[`likes_count`].get!long);
-		f.write(std.xml.encode((*rec)[`title`].get!string));
+		Json[] tags = (*rec)[`tags`].get!(Json[]);
+		string tags_html = ``;
+		foreach(ref tag; tags)
+		{
+			tags_html ~= `<b>[` ~ tag[`name`].get!string ~ `]</b> `;
+		}
+		//f.write(std.xml.encode((*rec)[`title`].get!string));
 		f.writeln(format!`<table border="1">
 <tr>
-<td rowspan="3">%d位</td>
-<td colspan="3">
-<a href="%s" target="_blank">%s</a>
-<i><img alt="いいね" width="16" height="16" src="thumb-up-120px.png" /></i>%d
-</td>
+	<td rowspan="3">%d位</td>
+	<td colspan="3">
+		<a href="%s" target="_blank">%s</a>
+		<i><img alt="いいね" width="16" height="16" src="thumb-up-120px.png" /></i>%d
+	</td>
 </tr>
 <tr>
-<td>投稿日</td>
-<td>投稿者</td>
-<td>タグ</td>
+	<td>投稿日時</td>
+	<td>投稿者</td>
+	<td>タグ</td>
 </tr>
 <tr>
-<td>%s</td>
-<td>@<a href="http://qiita.com/koher">koher<br><img width="80" height="80" src="%s"></a>
-</td>
-<td>
-<b>[Kotlin]</b> <b>[Java]</b> <b>[Android]</b>
-</td>
+	<td>%s</td>
+	<td>@<a href="http://qiita.com/koher">koher<br><img width="80" height="80" src="%s"></a>
+	</td>
+	<td>%s</td>
 </tr>
 </table>`(i + 1,
 				(*rec)[`url`].get!string, std.xml.encode((*rec)[`title`].get!string),
-				(*rec)[`likes_count`].get!long, (*rec)[`created_at`].get!string,
-				(*rec)[`user`][`profile_image_url`].get!string));
+				(*rec)[`likes_count`].get!long, (*rec)[`created_at`].get!string.replace(`T`,
+				` `).replace(`+09:00`, ``), (*rec)[`user`][`profile_image_url`].get!string, tags_html));
 		f.writeln("<br />");
 	}
 	f.writeln("	</body>");
