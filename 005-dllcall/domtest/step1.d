@@ -38,7 +38,9 @@ int main(string[] args)
 {
 	auto count0 = g_db.execute("SELECT count(*) FROM qiita_posts").oneValue!long;
 	writefln(`count0=%d`, count0);
+	//exit(0);
 
+	string max_check_time = ``;
 	File f = File("___g_total.txt", "w");
 	f.write("[");
 	long count = 0;
@@ -63,6 +65,8 @@ int main(string[] args)
 		sort!myComp(reverse_array);
 		loop_b: foreach (ref rec; reverse_array)
 		{
+			if ((*rec)[`check_time`].get!string > max_check_time)
+				max_check_time = (*rec)[`check_time`].get!string;
 			//if (count >= 100)
 			//	break loop_a;
 			if (count > 0)
@@ -78,8 +82,8 @@ int main(string[] args)
 			(*rec).remove(`reactions_count`);
 			(*rec)[`user`].remove(`description`);
 			outrec[`_`] = format!`%08d(likes=%d):%s[%s]`(count,
-					(*rec)[`likes_count`].get!long, (*rec)[`created_at`].get!string,
-					(*rec)[`title`].get!string);
+					(*rec)[`likes_count`].get!long,
+					(*rec)[`created_at`].get!string, (*rec)[`title`].get!string);
 			outrec[`created_at`] = (*rec)[`created_at`];
 			outrec[`title`] = (*rec)[`title`];
 			foreach (key, value; (*rec).byKeyValue)
@@ -102,6 +106,17 @@ int main(string[] args)
 	f.write("]");
 	f.write("\n");
 	f.close();
+	max_check_time = max_check_time.replace(`T`, `-`).replace(`:`, ``).replace(`+0900`, ``);
+	string file_name = format!`___j_total_%s.json`(max_check_time);
+	try
+	{
+		remove(file_name);
+	}
+	catch (Exception ex)
+	{
+
+	}
+	rename("___g_total.txt", file_name);
 
 	/+
 {
