@@ -4,6 +4,7 @@ dub.json
 *.dll
 *.exe.json
 *.dll.json
+*.lib.json
 *.dll.def
 *.exe.cbp
 *.dll.cbp
