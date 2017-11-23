@@ -43,15 +43,24 @@ int main(string[] args)
 	f.writeln("	<body>");
 	f.writeln(`<h1>対象記事件数: 222,355件 (2011/09/16～2017/05/24)</h1>`);
 	f.writeln(`<p><i><img width="16" height="16" src="thumb-up-120px.png" /></i>が同じ値の場合は投稿日時の新しいものが上位としています。</p>`);
-	for (int i = 0; i < min(records.length, 20); i++)
+	for (int i = 0; i < min(records.length, 100); i++)
 	{
 		Json* rec = &records[i];
 		writeln((*rec).serializeToJsonString);
 		writeln((*rec)[`title`].get!string);
 		writeln((*rec)[`likes_count`].get!long);
+		string user_id = (*rec)[`user`][`id`].get!string;
+		//string user_org = (*rec)[`user`][`organization`].get!string;
+		Json user_org_node = (*rec)[`user`][`organization`];
+		string user_org = "";
+		if (user_org_node.type == Json.Type.String)
+			user_org = user_org_node.get!string;
+		if (user_id == "Qiita") user_org = ``;
+		if (user_id == "javacommons") user_org = ``;
+		if (!user_org.empty) user_org = `<br />(` ~ user_org ~ ` 所属)`;
 		Json[] tags = (*rec)[`tags`].get!(Json[]);
 		string tags_html = ``;
-		foreach(ref tag; tags)
+		foreach (ref tag; tags)
 		{
 			tags_html ~= `<b>[` ~ tag[`name`].get!string ~ `]</b> `;
 		}
@@ -60,7 +69,7 @@ int main(string[] args)
 <tr>
 	<td rowspan="3">%d位</td>
 	<td colspan="3">
-		<a href="%s" target="_blank">%s</a>
+		<a target="_blank" href="%s">%s</a>
 		<i><img alt="いいね" width="16" height="16" src="thumb-up-120px.png" /></i>%d
 	</td>
 </tr>
@@ -70,15 +79,23 @@ int main(string[] args)
 	<td>タグ</td>
 </tr>
 <tr>
-	<td>%s</td>
-	<td>@<a href="http://qiita.com/koher">koher<br><img width="80" height="80" src="%s"></a>
+	<td>%s<!--投稿日時--></td>
+	<td>
+		@<a target="_blank" href="http://qiita.com/%s">%s</a>%s<br><img width="80" height="80" src="%s">
 	</td>
-	<td>%s</td>
+	<td>%s<!--タグ--></td>
 </tr>
-</table>`(i + 1,
-				(*rec)[`url`].get!string, std.xml.encode((*rec)[`title`].get!string),
-				(*rec)[`likes_count`].get!long, (*rec)[`created_at`].get!string.replace(`T`,
-				` `).replace(`+09:00`, ``), (*rec)[`user`][`profile_image_url`].get!string, tags_html));
+</table>`(i + 1, //
+				(*rec)[`url`].get!string, //
+				std.xml.encode((*rec)[`title`].get!string), //
+				(*rec)[`likes_count`].get!long, //
+				(*rec)[`created_at`].get!string.replace(`T`, ` `)
+				.replace(`+09:00`, ``), //
+				user_id, //
+				user_id, //
+				user_org, //
+				(*rec)[`user`][`profile_image_url`].get!string, //
+				tags_html));
 		f.writeln("<br />");
 	}
 	f.writeln("	</body>");
