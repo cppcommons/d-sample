@@ -48,23 +48,7 @@ int main(string[] args)
 
 	File f = File(format!"qranking.github.io/top-%d.html"(max_count), "wb");
 	f.writeln("<html>");
-	f.writeln(`	<head><!-- Global site tag (gtag.js) - Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-110075493-1"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'UA-110075493-1');
-</script>
-<!-- Google AdSense -->
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<script>
-  (adsbygoogle = window.adsbygoogle || []).push({
-    google_ad_client: "ca-pub-6168511236629369",
-    enable_page_level_ads: true
-  });
-</script>
-<meta charset="UTF-8" /><title>Qiita Ranking</title></head>`);
+	f.writefln(`	<head>%s<meta charset="UTF-8" /><title>Qiita Ranking</title></head>`, ql_html_head_insert);
 	f.writeln("	<body>");
 	f.writeln(`<style type="text/css"> 
 kbd{
