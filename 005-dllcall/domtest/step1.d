@@ -1,49 +1,20 @@
-//import arsd.dom;
-import vibe.data.json;
-
 import dateparser;
-
-//import jsonizer;
-
-//import core.sync.barrier;
-import core.sync.rwmutex;
-import core.sync.semaphore;
-import core.thread;
+import d2sqlite3, std.typecons : Nullable;
+import vibe.data.json;
 import core.time;
 import std.algorithm;
-import std.algorithm.mutation;
 import std.algorithm.sorting;
-import std.algorithm.setops;
 import std.array;
 import std.conv;
 import std.datetime;
 import std.datetime.systime;
 import std.file;
 import std.format;
-
-//import std.json;
-import std.net.curl;
 import std.path;
-import std.process;
-import std.regex;
 import std.stdio;
 import std.string;
 import std.variant;
 
-import d2sqlite3;
-import std.typecons : Nullable;
-
-struct QPost
-{
-	string uuid;
-	long favCount;
-	string title;
-	string href;
-	string header;
-	string description;
-	string tags;
-	//string postDate;
-}
 
 private __gshared Database g_db;
 shared static this()
@@ -64,359 +35,11 @@ private void exit(int code)
 	std.c.stdlib.exit(code);
 }
 
-private void sleep_seconds(long secs)
-{
-	SysTime startTime = Clock.currTime();
-	SysTime targetTime = startTime + dur!`seconds`(secs);
-
-	int max_width = 0;
-	for (;;)
-	{
-		SysTime currTime = Clock.currTime();
-		if (currTime >= targetTime)
-			break;
-		Duration leftTime = targetTime - currTime;
-		string displayStr = format!`Sleeping: %s`(leftTime);
-		if (displayStr.length > max_width)
-			max_width = displayStr.length;
-		while (displayStr.length < max_width)
-			displayStr ~= ` `;
-		writef("%s\r", displayStr);
-		stdout.flush();
-		Thread.sleep(dur!("msecs")(500));
-	}
-	for (int i = 0; i < max_width; i++)
-		write(` `);
-	write("\r");
-	write("Finished Sleeping!\n");
-	stdout.flush();
-}
-
-class C_QiitaApiHttp
-{
-	//int code;
-	HTTP.StatusLine statusLine;
-	string[string] headers;
-	ubyte[] data;
-	int get(string url)
-	{
-		//this.code = 0;
-		this.headers.clear();
-		this.data.length = 0;
-		auto http = HTTP(url);
-		http.addRequestHeader(`Authorization`, `Bearer 06ade23e3803334f43a0671f2a7c5087305578bd`);
-		http.onReceiveStatusLine = (in HTTP.StatusLine statusLine) {
-			this.statusLine = statusLine;
-		};
-		http.onReceiveHeader = (in char[] key, in char[] value) {
-			this.headers[key] = to!string(value);
-		};
-		http.onReceive = (ubyte[] bytes) {
-			this.data ~= bytes;
-			return bytes.length;
-		};
-		//this.code = http.perform(No.throwOnError);
-		//return this.code;
-		return http.perform(No.throwOnError);
-	}
-}
-
-class C_QiitaApiServie
-{
-	C_QiitaApiHttp http;
-	//JSONValue jsonValue;
-	Json jsonValue;
-	//long rateRemaining;
-	//SysTime rateResetTime;
-	this()
-	{
-		this.http = new C_QiitaApiHttp();
-	}
-
-	~this()
-	{
-		delete this.http;
-	}
-
-	int get(string url)
-	{
-		_loop_a: for (;;)
-		{
-			this.jsonValue = null;
-			int rc = this.http.get(url);
-			if (rc != 0)
-				return rc;
-			writefln("this.http.statusLine.code=%d", this.http.statusLine.code);
-			if (this.http.statusLine.code == 403)
-			{
-				string data = cast(string) this.http.data;
-				if (data.canFind(`"rate_limit_exceeded"`))
-				{
-					long rateRemaining;
-					SysTime rateResetTime;
-					//this.rateRemaining = -1;
-					if ("rate-remaining" in this.http.headers)
-						rateRemaining = to!long(this.http.headers["rate-remaining"]);
-					long v_rate_reset = 0;
-					if ("rate-reset" in this.http.headers)
-						v_rate_reset = to!long(this.http.headers["rate-reset"]);
-					rateResetTime = SysTime(unixTimeToStdTime(v_rate_reset));
-					writeln(`rate_limit_exceeded error!(4)`);
-					SysTime currentTime = Clock.currTime();
-					writeln(currentTime);
-					Duration diff = rateResetTime - currentTime;
-					writeln(diff);
-					Duration diff2 = diff + dur!`seconds`(60);
-					writeln(diff2);
-					writeln(`Sleeping for: `, diff2);
-					sleep_seconds(diff2.total!`seconds`);
-					continue _loop_a;
-				}
-				write("\a");
-				return -1;
-			}
-			if (this.http.statusLine.code != 200)
-			{
-				write("\a");
-				return -1;
-			}
-			if (this.http.headers["content-type"] != "application/json"
-					&& this.http.headers["content-type"] != "application/json; charset=utf-8")
-			{
-				writeln(`not application/json`);
-				writeln(this.http.headers);
-				//writeln(cast(string) this.http.data);
-				//Duration diff1 = dur!`seconds`(10);
-				//writeln(`Sleeping for: `, diff1);
-				//sleep_seconds(diff1.total!`seconds`);
-				//exit(1);
-				//continue _loop_a;
-				return -1;
-			}
-			/+
-			this.rateRemaining = -1;
-			if ("rate-remaining" in this.http.headers)
-				this.rateRemaining = to!long(this.http.headers["rate-remaining"]);
-			long v_rate_reset = 0;
-			if ("rate-reset" in this.http.headers)
-				v_rate_reset = to!long(this.http.headers["rate-reset"]);
-			this.rateResetTime = SysTime(unixTimeToStdTime(v_rate_reset));
-			+/
-			try
-			{
-				this.jsonValue = parseJsonString(cast(string) this.http.data);
-			}
-			catch (JSONException ex)
-			{
-				write("\a");
-				writeln(ex);
-				return -1;
-			}
-			/+
-			Variant v_type = getJsonObjectProp(this.jsonValue, `type`);
-			if (v_type == `rate_limit_exceeded`)
-			{
-				writeln(`rate_limit_exceeded error!(3)`);
-				//long v_rate_reset = to!long(this.http.headers["rate-reset"]);
-				//writeln(v_rate_reset);
-				//writeln(SysTime(unixTimeToStdTime(v_rate_reset)));
-				SysTime currentTime = Clock.currTime();
-				writeln(currentTime);
-				//SysTime v_reset_time = SysTime(unixTimeToStdTime(v_rate_reset));
-				//auto diff = v_reset_time - currentTime;
-				Duration diff = this.rateResetTime - currentTime;
-				writeln(diff);
-				Duration diff2 = diff + dur!`seconds`(60);
-				writeln(diff2);
-				writeln(diff.total!"minutes");
-				writeln(diff.total!"seconds");
-				writeln(diff.total!"msecs");
-				writeln(`Sleeping for: `, diff2);
-				//Thread.sleep(diff2);
-				sleep_seconds(diff2.total!`seconds`);
-				continue _loop_a;
-			}
-			+/
-			break _loop_a;
-		}
-		return 0;
-	}
-}
-
-Variant getJsonObjectProp(ref Json jsonObj, string prop_name)
-{
-	Variant result;
-	if (jsonObj.type != Json.Type.Object)
-		return result;
-	foreach (key, value; jsonObj.byKeyValue)
-	{
-		//writefln("%s: %s", key, value);
-		if (key == prop_name)
-			result = value.to!string;
-	}
-	return result;
-}
-
-bool handle_one_day(SysTime v_date)
-{
-	const int per_page = 100;
-	string v_period = format!`%04d-%02d-%02d`(v_date.year, v_date.month, v_date.day);
-
-	/+
-	g_db.run(`
-	CREATE TABLE IF NOT EXISTS qiita_posts (
-		post_date	text primary key,
-		total_count	integer not null,
-		json		text
-	)`);
-	+/
-	auto count = g_db.execute(format!"SELECT count(*) FROM qiita_posts WHERE post_date == '%s'"(v_period))
-		.oneValue!long;
-	//writefln(`count=%d`, count);
-	if (count)
-	{
-		Row row = g_db.execute(format!"SELECT *, rowid rid FROM qiita_posts WHERE post_date == '%s'"(v_period))
-			.front();
-		auto total_count2 = row["total_count"].as!long;
-		auto json2 = row["json"].as!string;
-		Json jsonValue = parseJsonString(cast(string) json2);
-		if (jsonValue.type != Json.Type.Array)
-		{
-			exit(1);
-		}
-		if (jsonValue.length != total_count2)
-		{
-			//exit(1);
-		}
-		//writeln(json2);
-		//writefln(`[%s: complete (%d)]`, v_period, total_count2);
-		return true;
-	}
-
-	Json newJsonValue = Json.emptyArray;
-
-	writefln(`[%s: page=1]`, v_period);
-	auto qhttp1 = new C_QiitaApiServie();
-	string url1 = format!`http://qiita.com/api/v2/items?query=created%%3A%s&per_page=%d&page=1`(
-			v_period, per_page);
-	int rc1 = qhttp1.get(url1);
-	//writeln(rc1);
-	//stdout.flush();
-	if (rc1 != 0)
-		return false;
-	//writeln(qhttp1.http.headers);
-	//stdout.flush();
-	long total_count = to!long(qhttp1.http.headers[`total-count`]);
-	//writeln(`total_count=`, total_count);
-	//stdout.flush();
-
-	foreach (val1; qhttp1.jsonValue[])
-	{
-		val1.remove(`body`);
-		val1.remove(`rendered_body`);
-		newJsonValue.appendArrayElement(val1);
-	}
-
-	long page_count = (total_count + per_page - 1) / per_page;
-	//writeln(`page_count=`, page_count);
-
-	for (int page_no = 2; page_no <= page_count; page_no++)
-	{
-		writefln(`[%s: page=%d]`, v_period, page_no);
-		auto qhttp2 = new C_QiitaApiServie();
-		string url2 = format!`http://qiita.com/api/v2/items?query=created%%3A%s&per_page=%d&page=%d`(v_period,
-				per_page, page_no);
-		int rc2 = qhttp2.get(url2);
-		//writeln(rc2);
-		if (rc2 != 0)
-			return false;
-		foreach (val2; qhttp2.jsonValue[])
-		{
-			val2.remove(`body`);
-			val2.remove(`rendered_body`);
-			newJsonValue.appendArrayElement(val2);
-		}
-	}
-	writeln(`newJsonValue.array.length=`, newJsonValue.array.length);
-	//writefln(`qhttp1.rateRemaining=%d`, qhttp1.rateRemaining);
-
-	version (none)
-		if (newJsonValue.array.length != total_count)
-		{
-			writeln(`total_count=`, total_count);
-			writeln(`exiting!`);
-			Thread.sleep(dur!`seconds`(3));
-			//writeln(cast(string)qhttp1.http.data);
-			//exit(1);
-			return false;
-		}
-
-	//string json = newJsonValue.serializeToJsonString();
-	string json = newJsonValue.toPrettyString();
-
-	//writeln(json);
-	Statement statement = g_db.prepare(
-			"INSERT INTO qiita_posts (post_date, total_count, json) VALUES (:post_date, :total_count, :json)");
-
-	// Bind values one by one (by parameter name or index)
-	statement.bind(":post_date", v_period);
-	statement.bind(":total_count", total_count);
-	statement.bind(":json", json);
-	statement.execute();
-	statement.reset(); // Need to reset the statement after execution.
-	version (none)
-	{
-		auto rowid = g_db.execute("SELECT last_insert_rowid()").oneValue!long;
-		writeln("rowid=", rowid);
-	}
-	version (none)
-	{
-		ResultRange results = g_db.execute(
-				format!"SELECT *, rowid rid FROM qiita_posts WHERE post_date == '%s'"(v_period));
-		foreach (Row row; results)
-		{
-			auto json2 = row["json"].as!string;
-			writeln(json2);
-			exit(0);
-		}
-	}
-
-	return true;
-}
-
-bool handle_one_day_2(SysTime v_date)
-{
-	return true;
-}
-
 int main(string[] args)
 {
 	auto count0 = g_db.execute("SELECT count(*) FROM qiita_posts").oneValue!long;
 	writefln(`count0=%d`, count0);
-	//exit(0);
 
-	/+
-	const SysTime v_first_date = SysTime(DateTime(2011, 9, 16));
-	//const SysTime v_first_date = SysTime(DateTime(2016, 9, 16));
-	SysTime v_curr_time = Clock.currTime();
-	SysTime v_curr_date = SysTime(DateTime(v_curr_time.year, v_curr_time.month, v_curr_time.day));
-
-	SysTime v_date = v_first_date;
-	a: for (;;)
-	{
-		//bool jmp = true;
-		//if (jmp)
-		//	break;
-		//writeln(v_date);
-		string v_str = format!`%04d-%02d-%02d`(v_date.year, v_date.month, v_date.day);
-		//writeln(v_str);
-		if (!handle_one_day(v_date))
-			handle_one_day_2(v_date);
-		if (v_date == v_curr_date)
-			break a;
-		v_date += dur!`days`(1);
-	}
-	+/
 	File f = File("___g_total.txt", "w");
 	f.write("[");
 	long count = 0;
@@ -441,8 +64,8 @@ int main(string[] args)
 		sort!myComp(reverse_array);
 		loop_b: foreach (ref rec; reverse_array)
 		{
-			if (count >= 100)
-				break loop_a;
+			//if (count >= 100)
+			//	break loop_a;
 			if (count > 0)
 				f.write(",\n ");
 			count++;
@@ -477,6 +100,7 @@ int main(string[] args)
 	}
 	//f.write("\n");
 	f.write("]");
+	f.write("\n");
 	f.close();
 
 	/+
