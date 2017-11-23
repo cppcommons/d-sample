@@ -1,3 +1,5 @@
+import qiitalib;
+
 import dateparser;
 import vibe.data.json, vibe.data.serialization;
 import core.time;
@@ -23,24 +25,13 @@ private void exit(int code)
 	std.c.stdlib.exit(code);
 }
 
-string ql_systime_to_string(SysTime t)
-{
-	SysTime t_of_sec = SysTime(DateTime(t.year, t.month, t.day, t.hour, t.minute, t.second));
-	return t_of_sec.toISOExtString() ~ `+09:00`;
-}
-
 int main(string[] args)
 {
+	/+
 	SysTime v_clock = Clock.currTime();
 	writeln(ql_systime_to_string(v_clock));
-	/+
-	SysTime v_clock_2 = SysTime(DateTime(v_clock.year, /*cast(int)*/ v_clock.month,
-			v_clock.day, v_clock.hour, v_clock.minute, v_clock.second));
-	string v_clock_str = v_clock_2.toISOExtString();
-	writeln(v_clock_str);
-	+/
 	exit(0);
-
+	+/
 	//File f = File("___g_total.txt", "r");
 	writeln("Reading JSON...");
 	string json = cast(string) read("___j_like_over_50.txt");

@@ -1,12 +1,7 @@
-module qiita_lib;
-import arsd.dom;
+module qiitalib;
+//import arsd.dom;
 import vibe.data.json;
-
 import dateparser;
-
-//import jsonizer;
-
-//import core.sync.barrier;
 import core.sync.rwmutex;
 import core.sync.semaphore;
 import core.thread;
@@ -31,38 +26,17 @@ import std.stdio;
 import std.string;
 import std.variant;
 
-import d2sqlite3;
-import std.typecons : Nullable;
-
-struct QPost
-{
-	string uuid;
-	long favCount;
-	string title;
-	string href;
-	string header;
-	string description;
-	string tags;
-	//string postDate;
-}
-
-public __gshared Database g_db;
-shared static this()
-{
-	g_db = Database("___g_db.db3");
-	g_db.run(`
-	CREATE TABLE IF NOT EXISTS qiita_posts (
-		post_date	text primary key,
-		total_count	integer not null,
-		json		text
-	)`);
-}
-
 private void exit(int code)
 {
 	import std.c.stdlib;
 
 	std.c.stdlib.exit(code);
+}
+
+public string ql_systime_to_string(SysTime t)
+{
+	SysTime t_of_sec = SysTime(DateTime(t.year, t.month, t.day, t.hour, t.minute, t.second));
+	return t_of_sec.toISOExtString() ~ `+09:00`;
 }
 
 private void sleep_seconds(long secs)

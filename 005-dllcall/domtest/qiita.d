@@ -1,9 +1,11 @@
+import qiitalib;
+import qiitadb;
+
 import arsd.dom;
 import vibe.data.json;
 
 import dateparser;
 
-import qiitalib;
 
 //import jsonizer;
 
@@ -139,10 +141,12 @@ bool handle_one_day(SysTime v_date)
 	//writeln(`total_count=`, total_count);
 	//stdout.flush();
 
+	string check_time = ql_systime_to_string(Clock.currTime());
 	foreach (val1; qhttp1.jsonValue[])
 	{
 		val1.remove(`body`);
 		val1.remove(`rendered_body`);
+		val1[`check_time`] = check_time;
 		newJsonValue.appendArrayElement(val1);
 	}
 
@@ -159,10 +163,12 @@ bool handle_one_day(SysTime v_date)
 		//writeln(rc2);
 		if (rc2 != 0)
 			return false;
+		check_time = ql_systime_to_string(Clock.currTime());
 		foreach (val2; qhttp2.jsonValue[])
 		{
 			val2.remove(`body`);
 			val2.remove(`rendered_body`);
+			val2[`check_time`] = check_time;
 			newJsonValue.appendArrayElement(val2);
 		}
 	}
@@ -235,6 +241,7 @@ bool handle_one_day_2(SysTime v_date)
 		string description;
 		string tags;
 	}
+
 	QPost[] posts;
 	for (int i = 0; i < int.max; i++)
 	{
@@ -301,6 +308,8 @@ bool handle_one_day_2(SysTime v_date)
 		}
 		//writefln(`http.http.statusLine.code=%d`, http.http.statusLine.code);
 		//writeln(cast(string) http.http.data);
+		string check_time = ql_systime_to_string(Clock.currTime());
+		http.jsonValue[`check_time`] = check_time;
 		newJsonValue.appendArrayElement(http.jsonValue);
 	}
 	string json = newJsonValue.toPrettyString();
