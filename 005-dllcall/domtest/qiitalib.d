@@ -39,9 +39,29 @@ public string ql_systime_to_string(SysTime t)
 	return t_of_sec.toISOExtString() ~ `+09:00`;
 }
 
-public void sleepForSeconds(long secs)
+public void sleepForWeeks(long n)
 {
-	sleepFor(dur!`seconds`(secs));
+	sleepFor(dur!`weeks`(n));
+}
+
+public void sleepForDays(long n)
+{
+	sleepFor(dur!`days`(n));
+}
+
+public void sleepForHours(long n)
+{
+	sleepFor(dur!`hours`(n));
+}
+
+public void sleepForMinutes(long n)
+{
+	sleepFor(dur!`minutes`(n));
+}
+
+public void sleepForSeconds(long n)
+{
+	sleepFor(dur!`seconds`(n));
 }
 
 public void sleepFor(Duration duration)
