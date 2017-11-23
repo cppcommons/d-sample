@@ -39,7 +39,7 @@ public string ql_systime_to_string(SysTime t)
 	return t_of_sec.toISOExtString() ~ `+09:00`;
 }
 
-private void sleep_seconds(long secs)
+public void sleep_seconds(long secs)
 {
 	SysTime startTime = Clock.currTime();
 	SysTime targetTime = startTime + dur!`seconds`(secs);
@@ -51,6 +51,7 @@ private void sleep_seconds(long secs)
 		if (currTime >= targetTime)
 			break;
 		Duration leftTime = targetTime - currTime;
+		leftTime = dur!`msecs`(leftTime.total!`msecs`); // ミリ秒以下を切り捨て
 		string displayStr = format!`Sleeping: %s`(leftTime);
 		if (displayStr.length > max_width)
 			max_width = displayStr.length;

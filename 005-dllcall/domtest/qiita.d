@@ -44,6 +44,7 @@ private void exit(int code)
 	std.c.stdlib.exit(code);
 }
 
+/+
 private void sleep_seconds(long secs)
 {
 	SysTime startTime = Clock.currTime();
@@ -56,6 +57,7 @@ private void sleep_seconds(long secs)
 		if (currTime >= targetTime)
 			break;
 		Duration leftTime = targetTime - currTime;
+		leftTime = dur!`msecs`(leftTime.total!`msecs`); // ミリ秒以下を切り捨て
 		string displayStr = format!`Sleeping: %s`(leftTime);
 		if (displayStr.length > max_width)
 			max_width = displayStr.length;
@@ -71,6 +73,7 @@ private void sleep_seconds(long secs)
 	write("Finished Sleeping!\n");
 	stdout.flush();
 }
++/
 
 /+
 Variant getJsonObjectProp(ref Json jsonObj, string prop_name)
