@@ -41,8 +41,13 @@ public string ql_systime_to_string(SysTime t)
 
 public void sleepForSeconds(long secs)
 {
+	sleepFor(dur!`seconds`(secs));
+}
+
+public void sleepFor(Duration duration)
+{
 	SysTime startTime = Clock.currTime();
-	SysTime targetTime = startTime + dur!`seconds`(secs);
+	SysTime targetTime = startTime + duration;
 	sleepUntil(targetTime);
 }
 
