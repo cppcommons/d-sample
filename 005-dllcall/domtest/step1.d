@@ -143,8 +143,8 @@ int main(string[] args)
 			string tags_string = "";
 			foreach (tag; outrec[`tags`].get!(Json[]))
 			{
-				//if (!tags_string.empty)
-				//	tags_string ~= " ";
+				if (!tags_string.empty)
+					tags_string ~= ":";
 				tags_string ~= `<` ~ tag[`name`].get!string ~ `>`;
 			}
 			statement.bind(`:id`, outrec[`id`].get!string);
