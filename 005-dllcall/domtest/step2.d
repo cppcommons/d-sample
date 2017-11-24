@@ -35,7 +35,7 @@ int main(string[] args)
 {
 	doIt("___j_like_over_50_2.txt", "SELECT json FROM qiita WHERE likes_count >= 50 ORDER BY likes_count desc");
 	doIt("___j_like_over_50_Ruby.txt",
-	 `SELECT json FROM qiita WHERE tags like "%[Ruby]%" AND likes_count >= 50 ORDER BY likes_count desc`);
+	 `SELECT json FROM qiita WHERE tags like "%<Ruby>%" AND likes_count >= 50 ORDER BY likes_count desc`);
 	exit(0);
 	return 0;
 }
