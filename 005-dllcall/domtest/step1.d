@@ -70,6 +70,7 @@ int main(string[] args)
 		}
 
 		sort!myComp(reverse_array);
+		db1.begin();
 		loop_b: foreach (ref rec; reverse_array)
 		{
 			if ((*rec)[`check_time`].get!string > max_check_time)
@@ -82,7 +83,7 @@ int main(string[] args)
 			Json outrec = parseJsonString(`{}`);
 			//writeln(rec.toPrettyString);
 			writefln("%08d %s: %s %s", count, post_date, (*rec)[`created_at`], (*rec)[`title`]);
-			writeln(dateparser.parse((*rec)[`created_at`].get!string));
+			//writeln(dateparser.parse((*rec)[`created_at`].get!string));
 			(*rec).remove(`coediting`);
 			(*rec).remove(`group`);
 			(*rec).remove(`private`);
@@ -151,6 +152,7 @@ int main(string[] args)
 			statement.execute();
 			statement.reset(); // Need to reset the statement after execution.
 		}
+		db1.commit();
 	}
 	f.write("]");
 	f.write("\n");
