@@ -28,6 +28,13 @@ int main(string[] args)
 {
 	auto count0 = g_db.execute("SELECT count(*) FROM qiita_posts").oneValue!long;
 	writefln(`count0=%d`, count0);
+	try
+	{
+		std.file.remove(`___db1.db3`);
+	}
+	catch (Exception ex)
+	{
+	}
 	Database db1 = ql_get_db_1(`___db1.db3`);
 	db1.execute("DELETE FROM qiita");
 	//exit(0);
@@ -136,9 +143,9 @@ int main(string[] args)
 			string tags_string = "";
 			foreach (tag; outrec[`tags`].get!(Json[]))
 			{
-				if (!tags_string.empty)
-					tags_string ~= " ";
-				tags_string ~= `[` ~ tag[`name`].get!string ~ `]`;
+				//if (!tags_string.empty)
+				//	tags_string ~= " ";
+				tags_string ~= `<` ~ tag[`name`].get!string ~ `>`;
 			}
 			statement.bind(`:id`, outrec[`id`].get!string);
 			statement.bind(`:user_id`, outrec[`user`][`id`].get!string);

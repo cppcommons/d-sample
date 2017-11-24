@@ -25,15 +25,27 @@ private void exit(int code)
 	std.c.stdlib.exit(code);
 }
 
+__gshared static Database db1;
+shared static this()
+{
+	/*Database*/ db1 = ql_get_db_1(`___db1.db3`);
+}
+
 int main(string[] args)
 {
-	Database db1 = ql_get_db_1(`___db1.db3`);
-	long count1 = 0;
-	File f = File("___j_like_over_50.txt", "w");
+	doIt("___j_like_over_50_2.txt", "SELECT json FROM qiita WHERE likes_count >= 50 ORDER BY likes_count desc");
+	doIt("___j_like_over_50_Ruby.txt",
+	 `SELECT json FROM qiita WHERE tags like "%[Ruby]%" AND likes_count >= 50 ORDER BY likes_count desc`);
+	exit(0);
+	return 0;
+}
+
+void doIt(string fileName, string sql)
+{
+	File f = File(fileName, "w");
 	f.write("[");
 	long count = 0;
-	ResultRange results = db1.execute(
-			"SELECT json FROM qiita WHERE likes_count >= 50 ORDER BY likes_count desc");
+	ResultRange results = db1.execute(sql);
 	foreach (Row row; results)
 	{
 		if (count > 0)
@@ -45,6 +57,4 @@ int main(string[] args)
 	f.write("]");
 	f.write("\n");
 	f.close();
-	exit(0);
-	return 0;
 }
