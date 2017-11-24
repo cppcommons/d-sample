@@ -28,24 +28,28 @@ private void exit(int code)
 __gshared static Database db1;
 shared static this()
 {
-	/*Database*/ db1 = ql_get_db_1(`___db1.db3`);
+	/*Database*/
+	db1 = ql_get_db_1(`___db1.db3`);
 }
 
 int main(string[] args)
 {
-	doIt("___j_like_over_50_2.txt", "SELECT json FROM qiita WHERE likes_count >= 50 ORDER BY likes_count desc");
+	doIt("___j_like_over_50_2.txt",
+			"SELECT json FROM qiita WHERE likes_count >= 50 ORDER BY likes_count desc");
 	doIt("___j_like_over_50_Ruby.txt",
-	 `SELECT json FROM qiita WHERE tags like "%<Ruby>%" AND likes_count >= 50 ORDER BY likes_count desc`);
+			`SELECT json FROM qiita WHERE tags like "%<Ruby>%" AND likes_count >= 50 ORDER BY likes_count desc`);
 	exit(0);
 	return 0;
 }
 
-void doIt(string fileName, string sql)
+bool doIt(string fileName, string sql)
 {
+	ResultRange results = db1.execute(sql);
+	if (results.empty)
+		return false;
 	File f = File(fileName, "w");
 	f.write("[");
 	long count = 0;
-	ResultRange results = db1.execute(sql);
 	foreach (Row row; results)
 	{
 		if (count > 0)
@@ -57,4 +61,5 @@ void doIt(string fileName, string sql)
 	f.write("]");
 	f.write("\n");
 	f.close();
+	return true;
 }
