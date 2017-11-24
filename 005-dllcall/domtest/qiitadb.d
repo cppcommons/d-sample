@@ -14,3 +14,31 @@ shared static this()
 		json		text not null
 	)`);
 }
+
+public Database ql_get_db_1(string fileName)
+{
+	Database db = Database(fileName);
+	db.run(`
+	CREATE TABLE IF NOT EXISTS qiita (
+		id			text primary key,
+		user_id		text not null,
+		created_at	text not null,
+		updated_at	text not null,
+		likes_count	integer not null,
+		title		text not null,
+		tags		text not null,
+		check_time	text not null,
+		json		text not null
+	)`);
+	try
+	{
+		db.run(`CREATE INDEX idx_qiita_user_id on qiita (user_id)`);
+		db.run(`CREATE INDEX idx_qiita_created_at on qiita (created_at)`);
+		db.run(`CREATE INDEX idx_qiita_updated_at on qiita (updated_at)`);
+		db.run(`CREATE INDEX idx_qiita_likes_count on qiita (likes_count)`);
+	}
+	catch (Exception ex)
+	{
+	}
+	return db;
+}

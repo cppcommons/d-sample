@@ -1,3 +1,5 @@
+import qiitadb;
+
 import dateparser;
 import d2sqlite3, std.typecons : Nullable;
 import vibe.data.json;
@@ -15,18 +17,6 @@ import std.stdio;
 import std.string;
 import std.variant;
 
-private __gshared Database g_db;
-shared static this()
-{
-	g_db = Database("___g_db.db3");
-	g_db.run(`
-	CREATE TABLE IF NOT EXISTS qiita_posts (
-		post_date	text primary key,
-		total_count	integer not null,
-		json		text
-	)`);
-}
-
 private void exit(int code)
 {
 	import std.c.stdlib;
@@ -38,7 +28,24 @@ int main(string[] args)
 {
 	auto count0 = g_db.execute("SELECT count(*) FROM qiita_posts").oneValue!long;
 	writefln(`count0=%d`, count0);
+	Database db1 = ql_get_db_1(`___db1.db3`);
+	db1.execute("DELETE FROM qiita");
 	//exit(0);
+
+	/+
+	db.run(`
+	CREATE TABLE IF NOT EXISTS qiita (
+		id			text primary key,
+		user_id		text not null,
+		created_at	text not null,
+		updated_at	text not null,
+		likes_count	integer not null,
+		title		text not null,
+		tags		text not null,
+		check_time	text not null,
+		json		text not null
+	)`);
+	+/
 
 	string max_check_time = ``;
 	File f = File("___g_total.txt", "w");
@@ -81,6 +88,14 @@ int main(string[] args)
 			(*rec).remove(`private`);
 			(*rec).remove(`reactions_count`);
 			(*rec)[`user`].remove(`description`);
+			(*rec)[`user`].remove(`twitter_screen_name`);
+			(*rec)[`user`].remove(`github_login_name`);
+			(*rec)[`user`].remove(`website_url`);
+			(*rec)[`user`].remove(`linkedin_id`);
+			(*rec)[`user`].remove(`followees_count`);
+			(*rec)[`user`].remove(`followers_count`);
+			(*rec)[`user`].remove(`facebook_id`);
+			(*rec)[`user`].remove(`location`);
 			outrec[`_`] = format!`%08d(likes=%d):%s[%s]`(count,
 					(*rec)[`likes_count`].get!long,
 					(*rec)[`created_at`].get!string, (*rec)[`title`].get!string);
@@ -94,15 +109,49 @@ int main(string[] args)
 					continue;
 				outrec[key] = value;
 			}
-			//writeln((*rec).serializeToJsonString);
-			//f.write("\n");
-			//f.write((*rec).serializeToJsonString);
-			//f.write("\n");
 			f.write(outrec.serializeToJsonString);
+			outrec.remove(`_`);
+			Statement statement = db1.prepare(`INSERT INTO qiita (
+	id,
+	user_id,
+	created_at,
+	updated_at,
+	likes_count,
+	title,
+	tags,
+	check_time,
+	json
+) VALUES (
+	:id,
+	:user_id,
+	:created_at,
+	:updated_at,
+	:likes_count,
+	:title,
+	:tags,
+	:check_time,
+	:json
+)`);
+			string tags_string = "";
+			foreach (tag; outrec[`tags`].get!(Json[]))
+			{
+				if (!tags_string.empty)
+					tags_string ~= " ";
+				tags_string ~= `[` ~ tag[`name`].get!string ~ `]`;
+			}
+			statement.bind(`:id`, outrec[`id`].get!string);
+			statement.bind(`:user_id`, outrec[`user`][`id`].get!string);
+			statement.bind(`:created_at`, outrec[`created_at`].get!string);
+			statement.bind(`:updated_at`, outrec[`updated_at`].get!string);
+			statement.bind(`:likes_count`, outrec[`likes_count`].get!long);
+			statement.bind(`:title`, outrec[`title`].get!string);
+			statement.bind(`:tags`, tags_string);
+			statement.bind(`:check_time`, outrec[`check_time`].get!string);
+			statement.bind(`:json`, outrec.serializeToJsonString);
+			statement.execute();
+			statement.reset(); // Need to reset the statement after execution.
 		}
-		//writeln(json[0 .. 40]);
 	}
-	//f.write("\n");
 	f.write("]");
 	f.write("\n");
 	f.close();
