@@ -43,32 +43,18 @@ int main(string[] args)
 	writeln(records.length);
 
 	//long max_count = 5000;
-	//long max_count = 1000;
-	long max_count = 100;
+	long max_count = 1000;
+	//long max_count = 100;
+	//long max_count = 2;
 
 	File f = File(format!"qranking.github.io/top-%d.html"(max_count), "wb");
 	f.writeln("<html>");
-	f.writefln(`	<head>%s<meta charset="UTF-8" /><title>Qiita Ranking</title></head>`, ql_html_head_insert);
+	f.writefln(`	<head>%s
+		<meta charset="UTF-8" />
+		<title>Qiita Ranking</title>
+		<link rel="stylesheet" type="text/css" href="qranking.css">
+	</head>`, ql_html_head_insert);
 	f.writeln("	<body>");
-	f.writeln(`<style type="text/css"> 
-kbd{
-	padding:2px 4px;
-	font-size:90%;
-	color:#fff;
-	background-color:#333;
-	border-radius:3px;
-	box-shadow:inset 0 -1px 0 rgba(0,0,0,.25)
-}
-kbd kbd{
-	padding:0;
-	font-size:100%;
-	font-weight:700;
-	box-shadow:none
-}
-.headerContainer{
-	background:#458ac5
-}
-</style>`);
 	f.writeln(`<div class="headerContainer">`);
 	f.writeln(format!`<h1>Qiitaいいね数ランキング (%d位まで)</h1>`(max_count));
 	f.writeln(`<h2>対象記事件数: 222,355件 (2011/09/16～2017/11/23)</h2>`);
@@ -77,11 +63,14 @@ kbd kbd{
 	f.writeln(`<p><i><img width="16" height="16" src="thumb-up-120px.png" /></i>が同じ値の場合は投稿日時の新しいものが上位としています。</p>`);
 	for (int i = 0; i < min(records.length, max_count); i++)
 	{
+		writeln(i+1, "/", min(records.length, max_count));
 		Json* rec = &records[i];
-		writeln((*rec).serializeToJsonString);
-		writeln((*rec)[`title`].get!string);
-		writeln((*rec)[`likes_count`].get!long);
+		//writeln((*rec).serializeToJsonString);
+		//writeln((*rec)[`title`].get!string);
+		//writeln((*rec)[`likes_count`].get!long);
 		string user_id = (*rec)[`user`][`id`].get!string;
+		long user_permanent_id = (*rec)[`user`][`permanent_id`].get!long;
+		create_user_page(user_id, user_permanent_id, records);
 		//string user_org = (*rec)[`user`][`organization`].get!string;
 		long user_item_count = (*rec)[`user`][`items_count`].get!long;
 		Json user_org_node = (*rec)[`user`][`organization`];
@@ -117,7 +106,94 @@ kbd kbd{
 <tr>
 	<td>%s<!--投稿日時--></td>
 	<td>
-		@<a target="_blank" href="http://qiita.com/%s">%s</a>(%d件の記事)%s<br><img width="80" height="80" src="%s">
+		@<a href="user/%s.html">%s</a>(%d件の記事)%s<br><img width="80" height="80" src="%s">
+	</td>
+	<td>%s<!--タグ--></td>
+</tr>
+</table>`(i + 1, //
+				(*rec)[`likes_count`].get!long, //
+				(*rec)[`url`].get!string, //
+				std.xml.encode((*rec)[`title`].get!string), //
+				(*rec)[`created_at`].get!string.replace(`T`, ` `).replace(`+09:00`,
+				``), //
+				user_permanent_id, //
+				user_id, //
+				user_item_count, //
+				user_org, //
+				(*rec)[`user`][`profile_image_url`].get!string, //
+				tags_html));
+		f.writeln("<br />");
+	}
+	f.writeln("	</body>");
+	f.writeln("</html>");
+	f.close();
+	exit(0);
+	return 0;
+}
+
+void create_user_page(string target_user_id, long user_permanent_id, ref Json[] records)
+{
+	string file_name = format!"qranking.github.io/user/%d.html"(user_permanent_id);
+	if (exists(file_name))
+		return;
+	File f = File(file_name, "wb");
+	f.writeln("<html>");
+	f.writefln(`	<head>%s
+		<meta charset="UTF-8" />
+		<title>Qiita Ranking (%s)</title>
+		<link rel="stylesheet" type="text/css" href="../qranking.css">
+	</head>`, ql_html_head_insert, target_user_id);
+	f.writeln("	<body>");
+	f.writeln(`<div class="headerContainer">`);
+	f.writeln(format!`<h1>Qiitaいいね数ランキング (%s さんの投稿分)</h1>`(
+			target_user_id));
+	f.writeln(`</div><!--class="headerContainer"-->`);
+	f.writeln(`<p><i><img width="16" height="16" src="../thumb-up-120px.png" /></i>が同じ値の場合は投稿日時の新しいものが上位としています。</p>`);
+	for (int i = 0; i < records.length; i++)
+	{
+		Json* rec = &records[i];
+		//writeln((*rec).serializeToJsonString);
+		//writeln((*rec)[`title`].get!string);
+		//writeln((*rec)[`likes_count`].get!long);
+		string user_id = (*rec)[`user`][`id`].get!string;
+		if (user_id != target_user_id)
+			continue;
+		//string user_org = (*rec)[`user`][`organization`].get!string;
+		long user_item_count = (*rec)[`user`][`items_count`].get!long;
+		Json user_org_node = (*rec)[`user`][`organization`];
+		string user_org = "";
+		if (user_org_node.type == Json.Type.String)
+			user_org = user_org_node.get!string;
+		if (user_id == "Qiita")
+			user_org = ``;
+		if (user_id == "javacommons")
+			user_org = ``;
+		if (!user_org.empty)
+			user_org = `<br />(` ~ user_org ~ ` 所属)`;
+		Json[] tags = (*rec)[`tags`].get!(Json[]);
+		string tags_html = ``;
+		foreach (ref tag; tags)
+		{
+			tags_html ~= `<b>[` ~ tag[`name`].get!string ~ `]</b> `;
+		}
+		//f.write(std.xml.encode((*rec)[`title`].get!string));
+		f.writeln(format!`<table border="1">
+<tr>
+	<td rowspan="3">%d位</td>
+	<td colspan="3">
+		<kbd><i><img alt="いいね" width="16" height="16" src="../thumb-up-120px.png" /></i>%d</kbd>
+		<a target="_blank" href="%s">%s</a>
+	</td>
+</tr>
+<tr>
+	<td><center>投稿日時</center></td>
+	<td><center>投稿者</center></td>
+	<td><center>タグ</center></td>
+</tr>
+<tr>
+	<td>%s<!--投稿日時--></td>
+	<td>
+		@%s(<a target="_blank" href="http://qiita.com/%s">Qiita内の%d件の記事</a>)%s<br><img width="80" height="80" src="%s">
 	</td>
 	<td>%s<!--タグ--></td>
 </tr>
@@ -138,6 +214,4 @@ kbd kbd{
 	f.writeln("	</body>");
 	f.writeln("</html>");
 	f.close();
-	exit(0);
-	return 0;
 }
