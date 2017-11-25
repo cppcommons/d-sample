@@ -124,7 +124,7 @@ bool handle_one_day(SysTime v_date)
 	string check_time = ql_systime_to_string(Clock.currTime());
 	foreach (val1; qhttp1.jsonValue[])
 	{
-		val1.remove(`body`);
+		//val1.remove(`body`);
 		//val1.remove(`rendered_body`);
 		val1[`check_time`] = check_time;
 		val1[`start_time`] = g_start_time;
@@ -147,7 +147,7 @@ bool handle_one_day(SysTime v_date)
 		check_time = ql_systime_to_string(Clock.currTime());
 		foreach (val2; qhttp2.jsonValue[])
 		{
-			val2.remove(`body`);
+			//val2.remove(`body`);
 			//val2.remove(`rendered_body`);
 			val2[`check_time`] = check_time;
 			val2[`start_time`] = g_start_time;
@@ -293,7 +293,7 @@ bool handle_one_day_2(SysTime v_date)
 		string check_time = ql_systime_to_string(Clock.currTime());
 		http.jsonValue[`check_time`] = check_time;
 		http.jsonValue[`start_time`] = g_start_time;
-		http.jsonValue.remove(`body`);
+		//http.jsonValue.remove(`body`);
 		newJsonValue.appendArrayElement(http.jsonValue);
 	}
 	string json = newJsonValue.toPrettyString();

@@ -85,7 +85,7 @@ public void sleepUntil(SysTime targetTime)
 	}
 
 	string targetTimeStr = systimeToString(targetTime);
-	ulong maxWidth = 0;
+	size_t maxWidth = 0;
 	for (;;)
 	{
 		SysTime currTime = Clock.currTime();

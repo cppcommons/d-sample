@@ -100,10 +100,10 @@ int main(string[] args)
 			tags_html ~= `<b>[` ~ tag[`name`].get!string ~ `]</b> `;
 		}
 		//f.write(std.xml.encode((*rec)[`title`].get!string));
-		f.writeln(format!`<table border="1">
+		f.writeln(format!`<table border="1" style="height:150px;">
 <tr>
 	<td rowspan="3">%d位</td>
-	<td colspan="3">
+	<td colspan="4">
 		<kbd><i><img alt="いいね" width="16" height="16" src="thumb-up-120px.png" /></i>%d</kbd>
 		<a target="_blank" href="%s">%s</a>
 	</td>
@@ -112,6 +112,7 @@ int main(string[] args)
 	<td style="width:200px;"><center>投稿日時</center></td>
 	<td style="width:200px;"><center>投稿者</center></td>
 	<td style="width:300px;"><center>タグ</center></td>
+	<td style="width:500px;"><center>本文</center></td>
 </tr>
 <tr>
 	<td style="width:200px;">
@@ -124,6 +125,9 @@ int main(string[] args)
 		</center>
 	</td>
 	<td style="width:300px;">%s<!--タグ--></td>
+	<td style="width:500px;">
+		<!--本文--><div style="height:150px;overflow-x:hidden;overflow-y:scroll;">%s</div>
+	</td>
 </tr>
 </table>`(i + 1, //
 				(*rec)[`likes_count`].get!long, //
@@ -136,7 +140,9 @@ int main(string[] args)
 				user_item_count, //
 				user_org, //
 				(*rec)[`user`][`profile_image_url`].get!string, //
-				tags_html));
+				tags_html,
+				std.xml.encode((*rec)[`body`].get!string).replace("\n", `<br />`) //
+));
 		f.writeln("<br />");
 	}
 	f.writeln("	</body>");
