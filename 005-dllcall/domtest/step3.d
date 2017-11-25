@@ -39,17 +39,16 @@ int main(string[] args)
 	//sleepForWeeks(10);
 	//sleepUntil(DateTime(2020, 1, 1, 20, 15, 32));
 	//exit(0);
-
-	writeln("Reading JSON...");
-	string json = cast(string) read("___j_like_over_50.txt");
-	SysTime v_start;
-	writeln("Reading JSON...done!");
-	v_start = Clock.currTime();
-	write("Parsing JSON...");
-	stdout.flush();
-	Json[] records = parseJsonString(json).get!(Json[]);
-	writeln(Clock.currTime() - v_start);
-	writeln(records.length);
+	ResultRange results = db1.execute(
+			`SELECT json FROM qiita WHERE likes_count >= 50 ORDER BY likes_count desc, created_at desc`);
+	//if (results.empty)
+	//	return false;
+	Json[] records;
+	foreach (Row row; results)
+	{
+		string json = row["json"].as!string;
+		records ~= parseJsonString(json);
+	}
 
 	//long max_count = 5000;
 	long max_count = 1000;
@@ -79,17 +78,19 @@ int main(string[] args)
 		//writeln((*rec)[`likes_count`].get!long);
 		string user_id = (*rec)[`user`][`id`].get!string;
 		long user_permanent_id = (*rec)[`user`][`permanent_id`].get!long;
-		create_user_page(user_id, user_permanent_id /+, records+/);
-		//string user_org = (*rec)[`user`][`organization`].get!string;
+		create_user_page(user_id, user_permanent_id /+, records+/ );
 		long user_item_count = (*rec)[`user`][`items_count`].get!long;
 		Json user_org_node = (*rec)[`user`][`organization`];
-		string user_org = "";
-		if (user_org_node.type == Json.Type.String)
-			user_org = user_org_node.get!string;
+		string user_org = (*rec)[`user`][`organization`].get!string;
+		//string user_org = "";
+		//if (user_org_node.type == Json.Type.String)
+		//	user_org = user_org_node.get!string;
+		/+
 		if (user_id == "Qiita")
 			user_org = ``;
 		if (user_id == "javacommons")
 			user_org = ``;
+		+/
 		if (!user_org.empty)
 			user_org = `<br />(` ~ user_org ~ ` 所属)`;
 		Json[] tags = (*rec)[`tags`].get!(Json[]);
@@ -140,10 +141,11 @@ int main(string[] args)
 	return 0;
 }
 
-void create_user_page(string target_user_id, long user_permanent_id /+, ref Json[] records0+/)
+void create_user_page(string target_user_id, long user_permanent_id /+, ref Json[] records0+/ )
 {
 	ResultRange results = db1.execute(
-		format!`SELECT json FROM qiita WHERE user_id="%s" ORDER BY likes_count desc, created_at desc`(target_user_id));
+			format!`SELECT json FROM qiita WHERE user_id="%s" ORDER BY likes_count desc, created_at desc`(
+			target_user_id));
 	//if (results.empty)
 	//	return false;
 	Json[] records;
@@ -177,16 +179,18 @@ void create_user_page(string target_user_id, long user_permanent_id /+, ref Json
 		string user_id = (*rec)[`user`][`id`].get!string;
 		if (user_id != target_user_id)
 			continue;
-		//string user_org = (*rec)[`user`][`organization`].get!string;
 		long user_item_count = (*rec)[`user`][`items_count`].get!long;
-		Json user_org_node = (*rec)[`user`][`organization`];
-		string user_org = "";
-		if (user_org_node.type == Json.Type.String)
-			user_org = user_org_node.get!string;
+		string user_org = (*rec)[`user`][`organization`].get!string;
+		//Json user_org_node = (*rec)[`user`][`organization`];
+		//string user_org = "";
+		//if (user_org_node.type == Json.Type.String)
+		//	user_org = user_org_node.get!string;
+		/+
 		if (user_id == "Qiita")
 			user_org = ``;
 		if (user_id == "javacommons")
 			user_org = ``;
+		+/
 		if (!user_org.empty)
 			user_org = `<br />(` ~ user_org ~ ` 所属)`;
 		Json[] tags = (*rec)[`tags`].get!(Json[]);
@@ -198,7 +202,7 @@ void create_user_page(string target_user_id, long user_permanent_id /+, ref Json
 		//f.write(std.xml.encode((*rec)[`title`].get!string));
 		f.writeln(format!`<table border="1">
 <tr>
-	<td rowspan="3">%d位</td>
+	<td rowspan="3"><center>%sさんの<br />%d位</center></td>
 	<td colspan="3">
 		<kbd><i><img alt="いいね" width="16" height="16" src="../thumb-up-120px.png" /></i>%d</kbd>
 		<a target="_blank" href="%s">%s</a>
@@ -216,7 +220,8 @@ void create_user_page(string target_user_id, long user_permanent_id /+, ref Json
 	</td>
 	<td>%s<!--タグ--></td>
 </tr>
-</table>`(i + 1, //
+</table>`(user_id, //
+				i + 1, //
 				(*rec)[`likes_count`].get!long, //
 				(*rec)[`url`].get!string, //
 				std.xml.encode((*rec)[`title`].get!string), //

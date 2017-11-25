@@ -60,6 +60,12 @@ Variant getJsonObjectProp(ref Json jsonObj, string prop_name)
 }
 +/
 
+string g_start_time;
+shared static this()
+{
+	g_start_time = ql_systime_to_string(Clock.currTime());
+}
+
 bool handle_one_day(SysTime v_date)
 {
 	const int per_page = 100;
@@ -117,8 +123,9 @@ bool handle_one_day(SysTime v_date)
 	foreach (val1; qhttp1.jsonValue[])
 	{
 		val1.remove(`body`);
-		val1.remove(`rendered_body`);
+		//val1.remove(`rendered_body`);
 		val1[`check_time`] = check_time;
+		val1[`start_time`] = g_start_time;
 		newJsonValue.appendArrayElement(val1);
 	}
 
@@ -139,8 +146,9 @@ bool handle_one_day(SysTime v_date)
 		foreach (val2; qhttp2.jsonValue[])
 		{
 			val2.remove(`body`);
-			val2.remove(`rendered_body`);
+			//val2.remove(`rendered_body`);
 			val2[`check_time`] = check_time;
+			val2[`start_time`] = g_start_time;
 			newJsonValue.appendArrayElement(val2);
 		}
 	}
@@ -282,6 +290,8 @@ bool handle_one_day_2(SysTime v_date)
 		//writeln(cast(string) http.http.data);
 		string check_time = ql_systime_to_string(Clock.currTime());
 		http.jsonValue[`check_time`] = check_time;
+		http.jsonValue[`start_time`] = g_start_time;
+		http.jsonValue.remove(`body`);
 		newJsonValue.appendArrayElement(http.jsonValue);
 	}
 	string json = newJsonValue.toPrettyString();

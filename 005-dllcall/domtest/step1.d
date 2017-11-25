@@ -91,6 +91,15 @@ int main(string[] args)
 			//writeln(rec.toPrettyString);
 			writefln("%08d %s: %s %s", count, post_date, (*rec)[`created_at`], (*rec)[`title`]);
 			//writeln(dateparser.parse((*rec)[`created_at`].get!string));
+			string user_id = (*rec)[`user`][`id`].get!string;
+			if (user_id == `Qiita` || user_id == `javacommons`)
+			{
+				(*rec)[`user`][`organization`] = "";
+			}
+			else if ((*rec)[`user`][`organization`].type != Json.Type.String)
+			{
+				(*rec)[`user`][`organization`] = "";
+			}
 			(*rec).remove(`coediting`);
 			(*rec).remove(`group`);
 			(*rec).remove(`private`);
@@ -107,14 +116,14 @@ int main(string[] args)
 			outrec[`_`] = format!`%08d(likes=%d):%s[%s]`(count,
 					(*rec)[`likes_count`].get!long,
 					(*rec)[`created_at`].get!string, (*rec)[`title`].get!string);
-			outrec[`created_at`] = (*rec)[`created_at`];
-			outrec[`title`] = (*rec)[`title`];
+			//outrec[`created_at`] = (*rec)[`created_at`];
+			//outrec[`title`] = (*rec)[`title`];
 			foreach (key, value; (*rec).byKeyValue)
 			{
-				if (key == `created_at`)
-					continue;
-				if (key == `title`)
-					continue;
+				//if (key == `created_at`)
+				//	continue;
+				//if (key == `title`)
+				//	continue;
 				outrec[key] = value;
 			}
 			f.write(outrec.serializeToJsonString);
