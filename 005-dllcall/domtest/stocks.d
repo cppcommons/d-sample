@@ -171,46 +171,60 @@ bool handle_one_day_2(SysTime v_date)
 	return true;
 }
 
-void handle_range(string period, ref long[] range_array)
+Element[] get_result(string period, ref long[] range_array)
 {
 	long start = range_array[0];
 	long end = range_array[range_array.length - 1];
-	string url = format!`https://qiita.com/search?sort=created&q=created%%3D%s+stocks%%3A>%%3D%d+stocks%%3A<%%3D%d`(
-			period, start, end);
-	//writeln("url=", url);
-	string html = cast(string) get(url);
-	auto document = new Document();
-	document.parseGarbage(html);
-	Element[] elems = document.getElementsByClassName(`searchResult`);
-	if (start == end && elems.length > 0)
+	size_t page = 1;
+	Element[] result;
+	for (;;)
 	{
-		writefln("[%d-%d]=%d", start, end, elems.length);
+		string url = format!`https://qiita.com/search?page=%d&sort=created&q=created%%3D%s+stocks%%3A>%%3D%d+stocks%%3A<%%3D%d`(page, period, start, end);
+		string html = cast(string) get(url);
+		auto document = new Document();
+		document.parseGarbage(html);
+		Element[] elems = document.getElementsByClassName(`searchResult`);
+		result ~= elems;
+		if (start != end) break;
+		if (elems.length < 10) break;
+		page++;
+	}
+	return result;
+}
+
+void handle_range(string period, ref long[] range_array)
+{
+	if (range_array.length == 0)
+		return;
+	Element[] elems = get_result(period, range_array);
+	if (range_array.length == 1)
+	{
+		if (elems.length == 0)
+			return;
+		writefln("%s[stocks-%d]=%d", period, range_array[0], elems.length);
+		version(none)
 		foreach (ref elem; elems)
 		{
 			string uuid = elem.getAttribute(`data-uuid`);
 			string title = elem.requireSelector(`.searchResult_itemTitle`).innerText;
 			string href = elem.getElementsByClassName(`searchResult_itemTitle`)[0].requireSelector("a")
 				.getAttribute("href");
-			writefln(`  %d-stocks: [%s] %s (https://qiita.com%s)`, start, uuid, title, href);
+			writefln(`  %d-stocks: [%s] %s (https://qiita.com%s)`, range_array[0], uuid, title, href);
 		}
+		return;
 	}
 	if (elems.length == 0)
-		return;
-	if (range_array.length <= 1)
 		return;
 	size_t half = range_array.length / 2;
 	long[] array1 = range_array[0 .. half];
 	long[] array2 = range_array[half .. $];
-	//writeln(array1.length);
-	//writeln(array2.length);
 	handle_range(period, array1);
 	handle_range(period, array2);
 }
 
-int main(string[] args)
+void handle_one_day(string period)
 {
-	string period = `2017-01-01`;
-	size_t range_size = 8192;
+	size_t range_size = 8192 * 2;
 	long[] range_array;
 	range_array.length = range_size;
 	for (size_t i = 0; i < range_array.length; i++)
@@ -218,6 +232,28 @@ int main(string[] args)
 		range_array[i] = i + 1;
 	}
 	handle_range(period, range_array);
+}
+
+int main(string[] args)
+{
+	//handle_one_day(`2017-01-01`);
+	const SysTime v_first_date = SysTime(DateTime(2011, 9, 16));
+	SysTime v_curr_time = Clock.currTime();
+	SysTime v_curr_date = SysTime(DateTime(v_curr_time.year, v_curr_time.month, v_curr_time.day));
+	SysTime v_date = v_first_date;
+	long count = 0;
+	a: for (;;)
+	{
+		//writeln(v_date);
+		string v_str = format!`%04d-%02d-%02d`(v_date.year, v_date.month, v_date.day);
+		writeln(v_str);
+		handle_one_day(v_str);
+		count++;
+		if (v_date == v_curr_date)
+			break a;
+		v_date += dur!`days`(1);
+	}
+	writefln(`%d days handled!`, count);
 	exit(0);
 	return 0;
 }
