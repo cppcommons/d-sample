@@ -109,16 +109,21 @@ int main(string[] args)
 	</td>
 </tr>
 <tr>
-	<td><center>投稿日時</center></td>
-	<td><center>投稿者</center></td>
-	<td><center>タグ</center></td>
+	<td style="width:200px;"><center>投稿日時</center></td>
+	<td style="width:200px;"><center>投稿者</center></td>
+	<td style="width:300px;"><center>タグ</center></td>
 </tr>
 <tr>
-	<td>%s<!--投稿日時--></td>
-	<td>
-		@<a href="user/%s.html">%s</a>(%d件の記事)%s<br><img width="80" height="80" src="%s">
+	<td style="width:200px;">
+		<!--投稿日時--><center>%s</center>
 	</td>
-	<td>%s<!--タグ--></td>
+	<td style="width:200px;">
+		<!--投稿者-->
+		<center>
+			@<a href="user/%s.html">%s</a>(%d件の記事)%s<br><img width="80" height="80" src="%s">
+		</center>
+	</td>
+	<td style="width:300px;">%s<!--タグ--></td>
 </tr>
 </table>`(i + 1, //
 				(*rec)[`likes_count`].get!long, //
@@ -209,16 +214,18 @@ void create_user_page(string target_user_id, long user_permanent_id /+, ref Json
 	</td>
 </tr>
 <tr>
-	<td><center>投稿日時</center></td>
-	<td><center>投稿者</center></td>
-	<td><center>タグ</center></td>
+	<td style="width:200px;"><center>投稿日時</center></td>
+	<td style="width:200px;"><center>投稿者</center></td>
+	<td style="width:300px;"><center>タグ</center></td>
 </tr>
 <tr>
-	<td>%s<!--投稿日時--></td>
-	<td>
+	<td style="width:200px;">
+		<!--投稿日時--><center>%s</center>
+	</td>
+	<td style="width:200px;">
 		@%s<!--(<a target="_blank" href="http://qiita.com/%s">Qiita内の%d件の記事</a>)-->%s<br><img width="80" height="80" src="%s">
 	</td>
-	<td>%s<!--タグ--></td>
+	<td style="width:300px;">%s<!--タグ--></td>
 </tr>
 </table>`(user_id, //
 				i + 1, //
