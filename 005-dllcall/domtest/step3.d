@@ -51,8 +51,8 @@ int main(string[] args)
 	}
 
 	//long max_count = 5000;
-	long max_count = 1000;
-	//long max_count = 100;
+	//long max_count = 1000;
+	long max_count = 100;
 	//long max_count = 2;
 
 	File f = File(format!"qranking.github.io/top-%d.html"(max_count), "wb");
@@ -109,13 +109,13 @@ int main(string[] args)
 	</td>
 </tr>
 <tr>
-	<td style="width:200px;"><center>投稿日時</center></td>
+	<td style="width:100px;"><center>投稿日時</center></td>
 	<td style="width:200px;"><center>投稿者</center></td>
-	<td style="width:300px;"><center>タグ</center></td>
-	<td style="width:500px;"><center>本文</center></td>
+	<td style="width:150px;"><center>タグ</center></td>
+	<td style="width:350px;"><center>本文</center></td>
 </tr>
 <tr>
-	<td style="width:200px;">
+	<td style="width:100px;">
 		<!--投稿日時--><center>%s</center>
 	</td>
 	<td style="width:200px;">
@@ -124,16 +124,20 @@ int main(string[] args)
 			@<a href="user/%s.html">%s</a>(%d件の記事)%s<br><img width="80" height="80" src="%s">
 		</center>
 	</td>
-	<td style="width:300px;">%s<!--タグ--></td>
-	<td style="width:500px;">
-		<!--本文--><div style="height:150px;overflow-x:hidden;overflow-y:scroll;">%s</div>
+	<td style="width:150px;">
+		<!--タグ-->
+		<center>%s</center>
+	</td>
+	<td style="width:350px;">
+		<!--本文-->
+		<div style="width:350px;height:150px;overflow-x:hidden;overflow-y:scroll;">%s</div>
 	</td>
 </tr>
 </table>`(i + 1, //
 				(*rec)[`likes_count`].get!long, //
 				(*rec)[`url`].get!string, //
 				std.xml.encode((*rec)[`title`].get!string), //
-				(*rec)[`created_at`].get!string.replace(`T`, ` `).replace(`+09:00`,
+				(*rec)[`created_at`].get!string.replace(`T`, `<br />`).replace(`+09:00`,
 				``), //
 				user_permanent_id, //
 				user_id, //
@@ -141,8 +145,9 @@ int main(string[] args)
 				user_org, //
 				(*rec)[`user`][`profile_image_url`].get!string, //
 				tags_html,
-				std.xml.encode((*rec)[`body`].get!string).replace("\n", `<br />`) //
-));
+				//std.xml.encode((*rec)[`body`].get!string).replace("\n", `<br />`) //
+				(*rec)[`rendered_body`].get!string //
+		));
 		f.writeln("<br />");
 	}
 	f.writeln("	</body>");
@@ -180,16 +185,19 @@ void create_user_page(string target_user_id, long user_permanent_id /+, ref Json
 	f.writeln(format!`<h1>Qiitaいいね数ランキング (%s さんの投稿分)</h1>`(
 			target_user_id));
 	f.writeln(`</div><!--class="headerContainer"-->`);
+	f.writeln(`<p><a href="#" onclick="javascript:window.history.back(-1);return false;">[戻る]</a></p>`);
 	f.writeln(`<p><i><img width="16" height="16" src="../thumb-up-120px.png" /></i>が同じ値の場合は投稿日時の新しいものが上位としています。</p>`);
-	for (int i = 0; i < records.length; i++)
+	f.writeln(`<p><i><img width="16" height="16" src="../thumb-up-120px.png" /></i>がついていない記事は表示していません。</p>`);
+	for (int i = 0; i < min(100, records.length); i++)
 	{
 		Json* rec = &records[i];
+		if ((*rec)[`likes_count`].get!long == 0) break;
 		//writeln((*rec).serializeToJsonString);
 		//writeln((*rec)[`title`].get!string);
 		//writeln((*rec)[`likes_count`].get!long);
 		string user_id = (*rec)[`user`][`id`].get!string;
-		if (user_id != target_user_id)
-			continue;
+		//if (user_id != target_user_id)
+		//	continue;
 		long user_item_count = (*rec)[`user`][`items_count`].get!long;
 		string user_org = (*rec)[`user`][`organization`].get!string;
 		//Json user_org_node = (*rec)[`user`][`organization`];
@@ -220,18 +228,26 @@ void create_user_page(string target_user_id, long user_permanent_id /+, ref Json
 	</td>
 </tr>
 <tr>
-	<td style="width:200px;"><center>投稿日時</center></td>
+	<td style="width:100px;"><center>投稿日時</center></td>
 	<td style="width:200px;"><center>投稿者</center></td>
-	<td style="width:300px;"><center>タグ</center></td>
+	<td style="width:150px;"><center>タグ</center></td>
+	<td style="width:350px;"><center>本文</center></td>
 </tr>
 <tr>
-	<td style="width:200px;">
+	<td style="width:100px;">
 		<!--投稿日時--><center>%s</center>
 	</td>
 	<td style="width:200px;">
-		@%s<!--(<a target="_blank" href="http://qiita.com/%s">Qiita内の%d件の記事</a>)-->%s<br><img width="80" height="80" src="%s">
+		@%s%s<br><img width="80" height="80" src="%s">
 	</td>
-	<td style="width:300px;">%s<!--タグ--></td>
+	<td style="width:150px;">
+		<!--タグ-->
+		<center>%s</center>
+	</td>
+	<td style="width:350px;">
+		<!--本文-->
+		<div style="width:350px;height:150px;overflow-x:hidden;overflow-y:scroll;">%s</div>
+	</td>
 </tr>
 </table>`(user_id, //
 				i + 1, //
@@ -241,11 +257,11 @@ void create_user_page(string target_user_id, long user_permanent_id /+, ref Json
 				(*rec)[`created_at`].get!string.replace(`T`, ` `)
 				.replace(`+09:00`, ``), //
 				user_id, //
-				user_id, //
-				user_item_count, //
 				user_org, //
 				(*rec)[`user`][`profile_image_url`].get!string, //
-				tags_html));
+				tags_html,
+				(*rec)[`rendered_body`].get!string //
+		));
 		f.writeln("<br />");
 	}
 	f.writeln("	</body>");
