@@ -84,6 +84,7 @@ bool handle_one_day(SysTime v_date)
 	//writefln(`count=%d`, count);
 	if (count)
 	{
+		/+
 		Row row = g_db.execute(format!"SELECT *, rowid rid FROM qiita_posts WHERE post_date == '%s'"(v_period))
 			.front();
 		auto total_count2 = row["total_count"].as!long;
@@ -99,6 +100,7 @@ bool handle_one_day(SysTime v_date)
 		}
 		//writeln(json2);
 		//writefln(`[%s: complete (%d)]`, v_period, total_count2);
+		+/
 		return true;
 	}
 
@@ -307,29 +309,27 @@ bool handle_one_day_2(SysTime v_date)
 
 int main(string[] args)
 {
-	//write("\a");
-	//stdout.flush();
-	//exit(0);
 	const SysTime v_first_date = SysTime(DateTime(2011, 9, 16));
 	//const SysTime v_first_date = SysTime(DateTime(2016, 9, 16));
 	SysTime v_curr_time = Clock.currTime();
 	SysTime v_curr_date = SysTime(DateTime(v_curr_time.year, v_curr_time.month, v_curr_time.day));
 
 	SysTime v_date = v_first_date;
+	long count = 0;
 	a: for (;;)
 	{
-		//bool jmp = true;
-		//if (jmp)
-		//	break;
 		//writeln(v_date);
 		string v_str = format!`%04d-%02d-%02d`(v_date.year, v_date.month, v_date.day);
 		//writeln(v_str);
 		if (!handle_one_day(v_date))
 			handle_one_day_2(v_date);
+		count++;
 		if (v_date == v_curr_date)
 			break a;
 		v_date += dur!`days`(1);
 	}
+	writefln(`%d days handled!`, count);
+	/+
 	long count = 0;
 	ResultRange results = g_db.execute("SELECT *, rowid rid FROM qiita_posts ORDER BY post_date");
 	foreach (Row row; results)
@@ -359,6 +359,7 @@ int main(string[] args)
 		}
 		//writeln(json[0 .. 40]);
 	}
+	+/
 
 	/+
 {
@@ -401,104 +402,5 @@ int main(string[] args)
 ^CTerminate batch job (Y/N)? y+/
 
 	exit(0);
-
-	/+
-	_loop_a: for (int i = 0; i < 2000; i++)
-	{
-		auto qhttp = new C_QiitaApiServie();
-		int rc = qhttp.get("http://qiita.com/api/v2/items?query=created%3A2016-12-01&per_page=10");
-		writeln(rc);
-		stdout.flush();
-		if (rc != 0)
-			break _loop_a;
-		writefln(`i=%d`, i);
-		stdout.flush();
-		writeln(qhttp.http.headers);
-		stdout.flush();
-		writeln(`qhttp.rateRemaining=`, qhttp.rateRemaining);
-		writeln(`qhttp.rateResetTime=`, qhttp.rateResetTime);
-	}
-
-	exit(0);
-	+/
-
-	/+
-	writeln("start!スタート!");
-	// Open a database in memory.
-	//auto db = Database(":memory:");
-	auto db = Database("___test.db3");
-
-	// Create a table
-	db.run("DROP TABLE IF EXISTS person;
-        CREATE TABLE person (
-          id    INTEGER PRIMARY KEY,
-          name  TEXT NOT NULL,
-          score FLOAT
-        )");
-
-	// Prepare an INSERT statement
-	Statement statement = db.prepare("INSERT INTO person (name, score)
-     VALUES (:name, :score)");
-
-	// Bind values one by one (by parameter name or index)
-	statement.bind(":name", "John");
-	statement.bind(2, 77.5);
-	statement.execute();
-	statement.reset(); // Need to reset the statement after execution.
-	auto rowid = db.execute("SELECT last_insert_rowid()").oneValue!long;
-	writeln("rowid=", rowid);
-	Statement statement2 = db.prepare("SELECT name FROM person WHERE rowid == :rowid");
-	statement2.bind(":rowid", rowid);
-	auto name1 = statement2.execute().oneValue!string;
-	writeln("name1=", name1);
-
-	// Bind muliple values at the same time
-	statement.bindAll("John", null);
-	statement.execute();
-	statement.reset();
-	auto rowid2 = db.execute("SELECT last_insert_rowid()").oneValue!long;
-	writeln("rowid=", rowid2);
-
-	// Bind, execute and reset in one call
-	statement.inject("Clara", 88.1);
-	auto rowid3 = db.execute("SELECT last_insert_rowid()").oneValue!long;
-	writeln("rowid=", rowid3);
-
-	// Count the changes
-	assert(db.totalChanges == 3);
-
-	// Count the Johns in the table.
-	auto count = db.execute("SELECT count(*) FROM person WHERE name == 'John'").oneValue!long;
-	assert(count == 2);
-
-	// Read the data from the table lazily
-	ResultRange results = db.execute("SELECT *, rowid rid FROM person");
-	foreach (Row row; results)
-	{
-		// Retrieve "id", which is the column at index 0, and contains an int,
-		// e.g. using the peek function (best performance).
-		auto id = row.peek!long(0);
-
-		// Retrieve "name", e.g. using opIndex(string), which returns a ColumnData.
-		auto name = row["name"].as!string;
-		writeln(name);
-
-		auto rowidx = row["rid"].as!ulong;
-		writeln(rowidx);
-		// Retrieve "score", which is at index 2, e.g. using the peek function,
-		// using a Nullable type
-		//auto score = row.peek!(Nullable!double)(2);
-		auto score = row["score"].as!(Nullable!double);
-		//score2.nullify();
-		if (!score.isNull)
-		{
-			writeln(score);
-		}
-		else
-		{
-			writeln("<NULL>");
-		}
-	}
-	+/
 	return 0;
 }
