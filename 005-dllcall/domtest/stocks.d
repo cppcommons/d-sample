@@ -202,14 +202,17 @@ void handle_range(string period, ref long[] range_array)
 		if (elems.length == 0)
 			return;
 		writefln("%s[stocks-%d]=%d", period, range_array[0], elems.length);
-		version(none)
+		//version(none)
 		foreach (ref elem; elems)
 		{
 			string uuid = elem.getAttribute(`data-uuid`);
 			string title = elem.requireSelector(`.searchResult_itemTitle`).innerText;
 			string href = elem.getElementsByClassName(`searchResult_itemTitle`)[0].requireSelector("a")
 				.getAttribute("href");
-			writefln(`  %d-stocks: [%s] %s (https://qiita.com%s)`, range_array[0], uuid, title, href);
+			//writefln(`  %s[%d-stocks]: [%s] %s (https://qiita.com%s)`,
+			//	period, range_array[0], uuid, title, href);
+			writefln(`  %s[%d-stocks]: %s`,
+				period, range_array[0], title);
 		}
 		return;
 	}
