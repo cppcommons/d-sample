@@ -183,12 +183,22 @@ void handle_range(string period, ref long[] range_array)
 	document.parseGarbage(html);
 	Element[] elems = document.getElementsByClassName(`searchResult`);
 	if (start == end && elems.length > 0)
+	{
 		writefln("[%d-%d]=%d", start, end, elems.length);
+		foreach (ref elem; elems)
+		{
+			string uuid = elem.getAttribute(`data-uuid`);
+			string title = elem.requireSelector(`.searchResult_itemTitle`).innerText;
+			string href = elem.getElementsByClassName(`searchResult_itemTitle`)[0].requireSelector("a")
+				.getAttribute("href");
+			writefln(`  %d-stocks: [%s] %s (https://qiita.com%s)`, start, uuid, title, href);
+		}
+	}
 	if (elems.length == 0)
 		return;
 	if (range_array.length <= 1)
 		return;
-	long half = range_array.length / 2;
+	size_t half = range_array.length / 2;
 	long[] array1 = range_array[0 .. half];
 	long[] array2 = range_array[half .. $];
 	//writeln(array1.length);
@@ -200,10 +210,10 @@ void handle_range(string period, ref long[] range_array)
 int main(string[] args)
 {
 	string period = `2017-01-01`;
-	long range_size = 8192;
+	size_t range_size = 8192;
 	long[] range_array;
 	range_array.length = range_size;
-	for (long i = 0; i < range_array.length; i++)
+	for (size_t i = 0; i < range_array.length; i++)
 	{
 		range_array[i] = i + 1;
 	}
