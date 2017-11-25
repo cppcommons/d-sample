@@ -94,11 +94,19 @@ int main(string[] args)
 			if (count > 0)
 				f.write(",\n ");
 			count++;
+			//string rendered_text = (*rec)[`rendered_body`].get!string;
+			/+
 			auto document = new Document();
 			document.parseGarbage((*rec)[`rendered_body`].get!string);
 			string rendered_text = document.root.innerText;
 			if (rendered_text is null)
 				rendered_text = ``;
+			+/
+			/+
+			string[] lines = splitLines(rendered_text);
+			lines = lines[0..min(20, lines.length)];
+			rendered_text = lines.join("\n");
+			+/
 			Json outrec = parseJsonString(`{}`);
 			//writeln(rec.toPrettyString);
 			writefln("%08d %s: %s %s", count, post_date, (*rec)[`created_at`], (*rec)[`title`]);
@@ -112,7 +120,7 @@ int main(string[] args)
 			{
 				(*rec)[`user`][`organization`] = "";
 			}
-			(*rec).remove(`rendered_body`);
+			//(*rec).remove(`rendered_body`);
 			(*rec).remove(`coediting`);
 			(*rec).remove(`group`);
 			(*rec).remove(`private`);
@@ -151,7 +159,6 @@ int main(string[] args)
 	tags,
 	check_time,
 	post_date,
-	rendered_text,
 	json
 ) VALUES (
 	:id,
@@ -163,7 +170,6 @@ int main(string[] args)
 	:tags,
 	:check_time,
 	:post_date,
-	:rendered_text,
 	:json
 )`);
 			string tags_string = "";
@@ -182,7 +188,7 @@ int main(string[] args)
 			statement.bind(`:tags`, tags_string);
 			statement.bind(`:check_time`, outrec[`check_time`].get!string);
 			statement.bind(`:post_date`, post_date);
-			statement.bind(`:rendered_text`, rendered_text);
+			//statement.bind(`:rendered_text`, rendered_text);
 			statement.bind(`:json`, outrec.serializeToJsonString);
 			statement.execute();
 			statement.reset(); // Need to reset the statement after execution.
@@ -192,6 +198,15 @@ int main(string[] args)
 	f.write("]");
 	f.write("\n");
 	f.close();
+	writeln(`idx_qiita_user_id`);
+		db1.run(`CREATE INDEX IF NOT EXISTS idx_qiita_user_id on qiita (user_id)`);
+	writeln(`idx_qiita_created_at`);
+		db1.run(`CREATE INDEX IF NOT EXISTS idx_qiita_created_at on qiita (created_at)`);
+	writeln(`idx_qiita_updated_at`);
+		db1.run(`CREATE INDEX IF NOT EXISTS idx_qiita_updated_at on qiita (updated_at)`);
+	writeln(`idx_qiita_likes_count`);
+		db1.run(`CREATE INDEX IF NOT EXISTS idx_qiita_likes_count on qiita (likes_count)`);
+	/+
 	max_check_time = max_check_time.replace(`T`, `-`).replace(`:`, ``).replace(`+0900`, ``);
 	string file_name = format!`___j_total_%s.json`(max_check_time);
 	try
@@ -203,7 +218,7 @@ int main(string[] args)
 
 	}
 	//rename("___g_total.txt", file_name);
-
+	+/
 	/+
 {
         "reactions_count": 0,
