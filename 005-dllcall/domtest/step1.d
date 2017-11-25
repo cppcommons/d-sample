@@ -1,4 +1,7 @@
+import qiitalib;
 import qiitadb;
+
+import arsd.dom;
 
 import dateparser;
 import d2sqlite3, std.typecons : Nullable;
@@ -28,6 +31,7 @@ int main(string[] args)
 {
 	auto count0 = g_db.execute("SELECT count(*) FROM qiita_posts").oneValue!long;
 	writefln(`count0=%d`, count0);
+	/+
 	try
 	{
 		std.file.remove(`___db1.db3`);
@@ -35,8 +39,10 @@ int main(string[] args)
 	catch (Exception ex)
 	{
 	}
+	+/
 	Database db1 = ql_get_db_1(`___db1.db3`);
 	db1.execute("DELETE FROM qiita");
+	db1.execute("VACUUM");
 	//exit(0);
 
 	/+
@@ -61,9 +67,10 @@ int main(string[] args)
 	ResultRange results = g_db.execute("SELECT *, rowid rid FROM qiita_posts ORDER BY post_date");
 	loop_a: foreach (Row row; results)
 	{
-		auto post_date = row["post_date"].as!string;
+		string post_date = row["post_date"].as!string;
 		writeln(post_date);
-		auto json = row["json"].as!string;
+		string json = row["json"].as!string;
+		//string rendered_body = row["rendered_body"].as!string;
 		Json jsonValue = parseJsonString(json);
 		Json*[] reverse_array;
 		foreach (ref rec; jsonValue[])
@@ -87,6 +94,11 @@ int main(string[] args)
 			if (count > 0)
 				f.write(",\n ");
 			count++;
+			auto document = new Document();
+			document.parseGarbage((*rec)[`rendered_body`].get!string);
+			string rendered_text = document.root.innerText;
+			if (rendered_text is null)
+				rendered_text = ``;
 			Json outrec = parseJsonString(`{}`);
 			//writeln(rec.toPrettyString);
 			writefln("%08d %s: %s %s", count, post_date, (*rec)[`created_at`], (*rec)[`title`]);
@@ -100,6 +112,7 @@ int main(string[] args)
 			{
 				(*rec)[`user`][`organization`] = "";
 			}
+			(*rec).remove(`rendered_body`);
 			(*rec).remove(`coediting`);
 			(*rec).remove(`group`);
 			(*rec).remove(`private`);
@@ -137,6 +150,8 @@ int main(string[] args)
 	title,
 	tags,
 	check_time,
+	post_date,
+	rendered_text,
 	json
 ) VALUES (
 	:id,
@@ -147,6 +162,8 @@ int main(string[] args)
 	:title,
 	:tags,
 	:check_time,
+	:post_date,
+	:rendered_text,
 	:json
 )`);
 			string tags_string = "";
@@ -164,6 +181,8 @@ int main(string[] args)
 			statement.bind(`:title`, outrec[`title`].get!string);
 			statement.bind(`:tags`, tags_string);
 			statement.bind(`:check_time`, outrec[`check_time`].get!string);
+			statement.bind(`:post_date`, post_date);
+			statement.bind(`:rendered_text`, rendered_text);
 			statement.bind(`:json`, outrec.serializeToJsonString);
 			statement.execute();
 			statement.reset(); // Need to reset the statement after execution.

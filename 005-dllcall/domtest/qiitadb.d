@@ -18,17 +18,20 @@ shared static this()
 public Database ql_get_db_1(string fileName)
 {
 	Database db = Database(fileName);
+	// pragma auto_vacuum = full;
 	db.run(`
 	CREATE TABLE IF NOT EXISTS qiita (
-		id			text primary key,
-		user_id		text not null,
-		created_at	text not null,
-		updated_at	text not null,
-		likes_count	integer not null,
-		title		text not null,
-		tags		text not null,
-		check_time	text not null,
-		json		text not null
+		id				text primary key,
+		user_id			text not null,
+		created_at		text not null,
+		updated_at		text not null,
+		likes_count		integer not null,
+		title			text not null,
+		tags			text not null,
+		check_time		text not null,
+		post_date		text not null,
+		rendered_text	text not null,
+		json			text not null
 	)`);
 	try
 	{
