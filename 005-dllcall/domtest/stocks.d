@@ -171,34 +171,43 @@ bool handle_one_day_2(SysTime v_date)
 	return true;
 }
 
-void handle_range(long start, long end)
+void handle_range(string period, ref long[] range_array)
 {
-	string url = format!`https://qiita.com/search?sort=created&q=stocks%%3A>%%3D%d+stocks%%3A<%%3D%d`(
-			start, end);
-	writeln("url=", url);
+	long start = range_array[0];
+	long end = range_array[range_array.length - 1];
+	string url = format!`https://qiita.com/search?sort=created&q=created%%3D%s+stocks%%3A>%%3D%d+stocks%%3A<%%3D%d`(
+			period, start, end);
+	//writeln("url=", url);
 	string html = cast(string) get(url);
 	auto document = new Document();
 	document.parseGarbage(html);
 	Element[] elems = document.getElementsByClassName(`searchResult`);
-	writefln("[%d-%d]=%d", start, end, elems.length);
+	if (start == end && elems.length > 0)
+		writefln("[%d-%d]=%d", start, end, elems.length);
+	if (elems.length == 0)
+		return;
+	if (range_array.length <= 1)
+		return;
+	long half = range_array.length / 2;
+	long[] array1 = range_array[0 .. half];
+	long[] array2 = range_array[half .. $];
+	//writeln(array1.length);
+	//writeln(array2.length);
+	handle_range(period, array1);
+	handle_range(period, array2);
 }
 
 int main(string[] args)
 {
-	long range_size = 100;
-	long range_end_max = 7000;
-	long range_end = range_end_max;
-	for (;;)
+	string period = `2017-01-01`;
+	long range_size = 8192;
+	long[] range_array;
+	range_array.length = range_size;
+	for (long i = 0; i < range_array.length; i++)
 	{
-		long range_start = range_end - (range_size - 1);
-		if (range_start <= 0)
-			range_start = 1;
-		writefln("%d - %d", range_start, range_end);
-		handle_range(range_start, range_end);
-		range_end -= range_size;
-		if (range_end <= 0)
-			break;
+		range_array[i] = i + 1;
 	}
+	handle_range(period, range_array);
 	exit(0);
 	return 0;
 }
