@@ -1,4 +1,6 @@
 import qiitalib;
+import qiitadb;
+import d2sqlite3, std.typecons : Nullable;
 
 import dateparser;
 import vibe.data.json, vibe.data.serialization;
@@ -23,6 +25,13 @@ private void exit(int code)
 	import std.c.stdlib;
 
 	std.c.stdlib.exit(code);
+}
+
+__gshared static Database db1;
+shared static this()
+{
+	/*Database*/
+	db1 = ql_get_db_1(`___db1.db3`);
 }
 
 int main(string[] args)
@@ -63,14 +72,14 @@ int main(string[] args)
 	f.writeln(`<p><i><img width="16" height="16" src="thumb-up-120px.png" /></i>が同じ値の場合は投稿日時の新しいものが上位としています。</p>`);
 	for (int i = 0; i < min(records.length, max_count); i++)
 	{
-		writeln(i+1, "/", min(records.length, max_count));
+		writeln(i + 1, "/", min(records.length, max_count));
 		Json* rec = &records[i];
 		//writeln((*rec).serializeToJsonString);
 		//writeln((*rec)[`title`].get!string);
 		//writeln((*rec)[`likes_count`].get!long);
 		string user_id = (*rec)[`user`][`id`].get!string;
 		long user_permanent_id = (*rec)[`user`][`permanent_id`].get!long;
-		create_user_page(user_id, user_permanent_id, records);
+		create_user_page(user_id, user_permanent_id /+, records+/);
 		//string user_org = (*rec)[`user`][`organization`].get!string;
 		long user_item_count = (*rec)[`user`][`items_count`].get!long;
 		Json user_org_node = (*rec)[`user`][`organization`];
@@ -131,8 +140,18 @@ int main(string[] args)
 	return 0;
 }
 
-void create_user_page(string target_user_id, long user_permanent_id, ref Json[] records)
+void create_user_page(string target_user_id, long user_permanent_id /+, ref Json[] records0+/)
 {
+	ResultRange results = db1.execute(
+		format!`SELECT json FROM qiita WHERE user_id="%s" ORDER BY likes_count desc, created_at desc`(target_user_id));
+	//if (results.empty)
+	//	return false;
+	Json[] records;
+	foreach (Row row; results)
+	{
+		string json = row["json"].as!string;
+		records ~= parseJsonString(json);
+	}
 	string file_name = format!"qranking.github.io/user/%d.html"(user_permanent_id);
 	if (exists(file_name))
 		return;
@@ -193,7 +212,7 @@ void create_user_page(string target_user_id, long user_permanent_id, ref Json[] 
 <tr>
 	<td>%s<!--投稿日時--></td>
 	<td>
-		@%s(<a target="_blank" href="http://qiita.com/%s">Qiita内の%d件の記事</a>)%s<br><img width="80" height="80" src="%s">
+		@%s<!--(<a target="_blank" href="http://qiita.com/%s">Qiita内の%d件の記事</a>)-->%s<br><img width="80" height="80" src="%s">
 	</td>
 	<td>%s<!--タグ--></td>
 </tr>
