@@ -9,7 +9,7 @@ extern "C" {
 //#include <string>
 //#include <vector>
 
-extern "C" __declspec(dllexport) __int32 RunMain(__int32 argc, wchar_t **argv, DWORD with_console)
+extern "C" __declspec(dllexport) DWORD RunMain(size_t argc, wchar_t **argv, DWORD with_console)
 {
 	for (int i=0; i<argc; i++)
 	{
