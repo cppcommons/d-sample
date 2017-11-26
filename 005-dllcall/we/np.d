@@ -34,7 +34,7 @@ private static string[] build_args(int argc, wchar** argv)
 	return result;
 }
 
-extern (C) export int runServer(int argc, wchar** argv, DWORD with_console)
+extern (C) export DWORD runServer(size_t argc, wchar** argv, DWORD with_console)
 {
 	import std.stdio; // : writeln;
 
@@ -78,7 +78,7 @@ extern (C) export int runServer(int argc, wchar** argv, DWORD with_console)
 	return 0;
 }
 
-extern (C) export int runClient(int argc, wchar** argv, DWORD with_console) //extern (Windows) export void {
+extern (C) export DWORD runClient(size_t argc, wchar** argv, DWORD with_console) //extern (Windows) export void {
 {
 
 	import core.stdc.stdio; // : freopen, stderr, stdin, stdout;
@@ -113,7 +113,7 @@ extern (C) export int runClient(int argc, wchar** argv, DWORD with_console) //ex
 	return 0;
 }
 
-extern (C) export int RunMain(int argc, wchar** argv, DWORD with_console)
+extern (C) export DWORD RunMain(size_t argc, wchar** argv, DWORD with_console)
 {
 	import std.stdio; // : writeln;
 
