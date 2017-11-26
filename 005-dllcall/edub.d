@@ -425,6 +425,8 @@ private int handle_exe_output(string ext, string[] args)
 				if (m2.startsWith(`:`))
 					m2 = m2[1 .. $];
 				m2 = m2.strip;
+				if (m2 == `#`)
+					m2 = ``;
 				spec._version = m2.empty ? "~master" : m2.replace(uuid, `:`);
 				if (m3.startsWith(`:`))
 					m3 = m3[1 .. $];
