@@ -172,7 +172,7 @@ void ParseArgs(ParseArgs_Info &info, std::vector<wchar_t *> &args)
 	}
 }
 
-typedef __int32 (*proc_RunMain)(__int32 argc, wchar_t **argv, DWORD with_console);
+typedef DWORD (*proc_RunMain)(size_t argc, wchar_t **argv, DWORD with_console);
 
 #ifdef CONSOLE_VERSION
 int main(int /*argc*/, char ** /*argv*/)
@@ -276,7 +276,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		::Sleep(info.wait);
 	}
 	#endif
-	__int32 rc = addr_RunMain((__int32)args.size(), &args[0], with_console);
+	DWORD rc = addr_RunMain((size_t)args.size(), &args[0], with_console);
 	if (info.alloc_console && with_console)
 	{
 		freopen("CONIN$", "r", stdin);
