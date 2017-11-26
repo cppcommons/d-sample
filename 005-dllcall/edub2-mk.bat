@@ -27,7 +27,7 @@ libs=gdi32.lib:kernel32.lib ^
 [d2sqlite3B:~master] ^
 [d2sqlite3C:~master:without-lib] ^
 [d2sqlite3D:~master:without{:}lib] ^
-"  [d2sqlite3E:~master:without-lib]  "
+"  [d2sqlite3E:~master:without-lib]  " "[hibernated:@hibernated-0.3.2]"
 echo errorlevel=%errorlevel%
 :skip
 ::edub2 test2.exe build app1.d curl.d lib_entry.lib [d2sqlite3:~master:without-lib] --build=release

@@ -202,7 +202,7 @@ void handle_range(string period, ref long[] range_array)
 		if (elems.length == 0)
 			return;
 		writefln("%s[stocks-%d]=%d", period, range_array[0], elems.length);
-		//version(none)
+		version(none)
 		foreach (ref elem; elems)
 		{
 			string uuid = elem.getAttribute(`data-uuid`);
@@ -239,8 +239,8 @@ void handle_one_day(string period)
 
 int main(string[] args)
 {
-	//handle_one_day(`2017-01-01`);
-	const SysTime v_first_date = SysTime(DateTime(2011, 9, 16));
+	//const SysTime v_first_date = SysTime(DateTime(2011, 9, 16));
+	const SysTime v_first_date = SysTime(DateTime(2016, 9, 16));
 	SysTime v_curr_time = Clock.currTime();
 	SysTime v_curr_date = SysTime(DateTime(v_curr_time.year, v_curr_time.month, v_curr_time.day));
 	SysTime v_date = v_first_date;

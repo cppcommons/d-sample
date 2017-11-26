@@ -230,6 +230,23 @@ void rewite_dub_json(JSONValue* jsonObj, ref JSONValue*[] path_array_list, strin
 				//jsonObj.object["targetPath"] = `.`;
 				jsonObj.object["targetPath"] = getcwd();
 			}
+			if ("dependencies" in jsonObj.object)
+			{
+				JSONValue* dep = cast(JSONValue*)("dependencies" in jsonObj.object);
+				//jsonObj.object["targetPath"] = getcwd();
+				foreach (key; (*dep).object.keys())
+				{
+					JSONValue* member = key in (*dep).object;
+					if ((*member).type == JSON_TYPE.OBJECT)
+					{
+						JSONValue* path = cast(JSONValue*)("path" in (*member).object);
+						if (path && (*path).type == JSON_TYPE.STRING)
+						{
+							path_array_list ~= path;
+						}
+					}
+				}
+			}
 		}
 		JSONValue*[] result;
 		foreach (key; jsonObj.object.keys())
@@ -501,7 +518,7 @@ private int handle_exe_output(string ext, string[] args)
 			//source_files ~= "curl.lib";
 		}
 		break;
-	/+
+		/+
 	case "ms64_no_curl":
 		dub_opts ~= "--arch=x86_64";
 		if (ext == ".dll")
@@ -573,7 +590,15 @@ DATA PRELOAD MULTIPLE
 		jsonObj["dependencies"] = parseJSON("{}"); //dependencies_init;
 		foreach (ref pkg; packages)
 		{
-			jsonObj["dependencies"][pkg._name] = pkg._version;
+			if (!pkg._version.empty && pkg._version[0 .. 1] == "@")
+			{
+				jsonObj["dependencies"][pkg._name] = parseJSON("{}");
+				jsonObj["dependencies"][pkg._name][`path`] = pkg._version[1 .. $];
+			}
+			else
+			{
+				jsonObj["dependencies"][pkg._name] = pkg._version;
+			}
 			if (!pkg._sub_config.empty)
 				sub_config_count++;
 		}
