@@ -37,19 +37,27 @@ int main(string[] args)
 	writefln(`count0=%d`, count0);
 
 	Session sess = g_SessionFactory.openSession();
-	//(cast(SessionImpl)sess).conn.setAutoCommit(false);
 	scope (exit)
 		sess.close();
 
-	auto stmt = g_Connection.createStatement();
+	auto stmt0 = g_Connection.createStatement();
+	scope (exit)
+		stmt0.close();
+	stmt0.executeUpdate(`DELETE FROM qiita`);
+	stmt0.executeUpdate(`VACUUM`);
+
+	Connection sess_conn = (cast(SessionImpl)sess).conn;
+	scope (exit)
+		sess_conn.close();
+	auto stmt = sess_conn.createStatement();
 	scope (exit)
 		stmt.close();
-	stmt.executeUpdate(`DELETE FROM qiita`);
-	stmt.executeUpdate(`VACUUM`);
 
-	//Database db1 = ql_get_db_1(`___db1.db3`);
-	//db1.execute("DELETE FROM qiita");
-	//db1.execute("VACUUM");
+	/+
+	Database db1 = Database(`___hibernated.db3`);
+	db1.execute("DELETE FROM qiita");
+	db1.execute("VACUUM");
+	+/
 	//exit(0);
 
 	/+
@@ -92,6 +100,7 @@ int main(string[] args)
 
 		sort!myComp(reverse_array);
 		//db1.begin();
+		stmt.executeUpdate(`BEGIN`);
 		loop_b: foreach (ref rec; reverse_array)
 		{
 			if ((*rec)[`check_time`].get!string > max_check_time)
@@ -101,19 +110,6 @@ int main(string[] args)
 			if (count > 0)
 				f.write(",\n ");
 			count++;
-			//string rendered_text = (*rec)[`rendered_body`].get!string;
-			/+
-			auto document = new Document();
-			document.parseGarbage((*rec)[`rendered_body`].get!string);
-			string rendered_text = document.root.innerText;
-			if (rendered_text is null)
-				rendered_text = ``;
-			+/
-			/+
-			string[] lines = splitLines(rendered_text);
-			lines = lines[0..min(20, lines.length)];
-			rendered_text = lines.join("\n");
-			+/
 			Json outrec = parseJsonString(`{}`);
 			//writeln(rec.toPrettyString);
 			writefln("%08d %s: %s %s", count, post_date, (*rec)[`created_at`], (*rec)[`title`]);
@@ -144,21 +140,15 @@ int main(string[] args)
 			outrec[`_`] = format!`%08d(likes=%d):%s[%s]`(count,
 					(*rec)[`likes_count`].get!long,
 					(*rec)[`created_at`].get!string, (*rec)[`title`].get!string);
-			//outrec[`created_at`] = (*rec)[`created_at`];
-			//outrec[`title`] = (*rec)[`title`];
 			foreach (key, value; (*rec).byKeyValue)
 			{
-				//if (key == `created_at`)
-				//	continue;
-				//if (key == `title`)
-				//	continue;
 				outrec[key] = value;
 			}
 			f.write(outrec.serializeToJsonString);
 			outrec.remove(`_`);
-			/+
+/+
 			Statement statement = db1.prepare(`INSERT INTO qiita (
-	id,
+	uuid,
 	user_id,
 	created_at,
 	updated_at,
@@ -169,7 +159,7 @@ int main(string[] args)
 	post_date,
 	json
 ) VALUES (
-	:id,
+	:uuid,
 	:user_id,
 	:created_at,
 	:updated_at,
@@ -189,7 +179,7 @@ int main(string[] args)
 				tags_string ~= `<` ~ tag[`name`].get!string ~ `>`;
 			}
 			auto qiita = new Qiita();
-			//statement.bind(`:id`, outrec[`id`].get!string);
+			//statement.bind(`:uuid`, outrec[`id`].get!string);
 			qiita.uuid = outrec[`id`].get!string;
 			//statement.bind(`:user_id`, outrec[`user`][`id`].get!string);
 			qiita.user_id = outrec[`user`][`id`].get!string;
@@ -214,14 +204,7 @@ int main(string[] args)
 			sess.save(qiita);
 		}
 		//db1.commit();
-		try
-		{
-			//g_Connection.commit();
-			//(cast(SessionImpl)sess).conn.commit();
-		}
-		catch (SQLException ex)
-		{
-		}
+		stmt.executeUpdate(`COMMIT`);
 	}
 	f.write("]");
 	f.write("\n");

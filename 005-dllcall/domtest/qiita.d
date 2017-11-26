@@ -84,23 +84,6 @@ bool handle_one_day(SysTime v_date)
 	//writefln(`count=%d`, count);
 	if (count)
 	{
-		/+
-		Row row = g_db.execute(format!"SELECT *, rowid rid FROM qiita_posts WHERE post_date == '%s'"(v_period))
-			.front();
-		auto total_count2 = row["total_count"].as!long;
-		auto json2 = row["json"].as!string;
-		Json jsonValue = parseJsonString(cast(string) json2);
-		if (jsonValue.type != Json.Type.Array)
-		{
-			exit(1);
-		}
-		if (jsonValue.length != total_count2)
-		{
-			//exit(1);
-		}
-		//writeln(json2);
-		//writefln(`[%s: complete (%d)]`, v_period, total_count2);
-		+/
 		return true;
 	}
 
@@ -247,19 +230,6 @@ bool handle_one_day_2(SysTime v_date)
 			post.href = elem.getElementsByClassName(`searchResult_itemTitle`)[0].requireSelector("a")
 				.getAttribute("href");
 			post.header = elem.getElementsByClassName(`searchResult_header`)[0].innerText;
-			/+
-			auto re = regex(` posted at ([a-zA-Z]+ [0-9]+, [0-9]+)$`);
-			auto m = matchFirst(post.header, re);
-			if (!m)
-			{
-				post.postDate = ``;
-			}
-			else
-			{
-				auto v_date = parse(m[1]);
-				post.postDate = format!`%04d-%02d-%02d`(v_date.year, v_date.month, v_date.day);
-			}
-			+/
 			post.description = elem.getElementsByClassName(`searchResult_snippet`)[0].innerText;
 			string[] tag_array;
 			foreach (ref tag; elem.getElementsByClassName(`tagList_item`))
@@ -309,8 +279,9 @@ bool handle_one_day_2(SysTime v_date)
 
 int main(string[] args)
 {
-	const SysTime v_first_date = SysTime(DateTime(2011, 9, 16));
+	//const SysTime v_first_date = SysTime(DateTime(2011, 9, 16));
 	//const SysTime v_first_date = SysTime(DateTime(2016, 9, 16));
+	const SysTime v_first_date = SysTime(DateTime(2017, 9, 16));
 	SysTime v_curr_time = Clock.currTime();
 	SysTime v_curr_date = SysTime(DateTime(v_curr_time.year, v_curr_time.month, v_curr_time.day));
 
