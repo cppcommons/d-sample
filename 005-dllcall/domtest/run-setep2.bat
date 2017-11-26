@@ -10,14 +10,7 @@ endlocal
 
 chcp 65001
 
-edub step2-ms64.exe run arch=ms64 ^
+edub step2.exe run arch=dm32 ^
 step2.d ^
 [vibe-d] [dateparser] "[my-hibernated:@hibernated-0.3.2]"
-::[vibe-d] [dateparser] "[hibernated::SQLite]"
-if %errorlevel% neq 0 (exit /b)
-exit /b
-
-edub step2-ms64.exe run arch=ms64 ^
-step2.d ^
-[vibe-d] [dateparser] "[entity::sqlite]"
 if %errorlevel% neq 0 (exit /b)
