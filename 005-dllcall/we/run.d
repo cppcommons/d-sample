@@ -5,7 +5,7 @@ private void exit(int code)
 	std.c.stdlib.exit(code);
 }
 
-alias extern (C) int function(int argc, wchar** argv, DWORD with_console) proc_RunMain;
+alias extern (C) DWORD function(size_t argc, wchar** argv, DWORD with_console) proc_RunMain;
 
 
 import core.sys.windows.windows;
@@ -42,8 +42,8 @@ int main(string[] args)
 		wargs2 ~= toUTF16z(warg);
 	}
 	
-	int rc = addr_RunMain(wargs2.length, cast(wchar **)wargs2.ptr, 3);
-	return rc;
+	DWORD rc = addr_RunMain(wargs2.length, cast(wchar **)wargs2.ptr, 3);
+	return cast(int)rc;
 }
 
 string to_string(char* s)
