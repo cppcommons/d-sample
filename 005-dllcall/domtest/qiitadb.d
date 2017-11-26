@@ -20,6 +20,7 @@ shared static this()
 	)`);
 }
 
+/+
 public Database ql_get_db_1(string fileName)
 {
 	Database db = Database(fileName);
@@ -37,20 +38,9 @@ public Database ql_get_db_1(string fileName)
 		post_date		text not null,
 		json			text not null
 	)`);
-	/+
-	try
-	{
-		db.run(`CREATE INDEX IF NOT EXISTS idx_qiita_user_id on qiita (user_id)`);
-		db.run(`CREATE INDEX IF NOT EXISTS idx_qiita_created_at on qiita (created_at)`);
-		db.run(`CREATE INDEX IF NOT EXISTS idx_qiita_updated_at on qiita (updated_at)`);
-		db.run(`CREATE INDEX IF NOT EXISTS idx_qiita_likes_count on qiita (likes_count)`);
-	}
-	catch (Exception ex)
-	{
-	}
-	+/
 	return db;
 }
++/
 
 public __gshared
 {
@@ -77,11 +67,15 @@ shared static this()
 	g_DataSource = new ConnectionPoolDataSourceImpl(driver, url, params);
 	g_SessionFactory = new SessionFactoryImpl(schema, dialect, g_DataSource);
 	g_Connection = g_DataSource.getConnection();
+	//g_Connection.setAutoCommit(false);
 	g_SessionFactory.getDBMetaData().updateDBSchema(g_Connection, false, true);
 	auto stmt = g_Connection.createStatement();
 	scope (exit)
 		stmt.close();
-	stmt.executeUpdate("CREATE INDEX IF NOT EXISTS idx_customer_zip ON customer(zip);");
+	stmt.executeUpdate(`CREATE INDEX IF NOT EXISTS idx_qiita_user_id on qiita (user_id)`);
+	stmt.executeUpdate(`CREATE INDEX IF NOT EXISTS idx_qiita_created_at on qiita (created_at)`);
+	stmt.executeUpdate(`CREATE INDEX IF NOT EXISTS idx_qiita_updated_at on qiita (updated_at)`);
+	stmt.executeUpdate(`CREATE INDEX IF NOT EXISTS idx_qiita_likes_count on qiita (likes_count)`);
 }
 
 /+
@@ -109,8 +103,7 @@ shared static this()
 
 class Qiita
 {
-	@Id
-	string uuid;
+	@Id string uuid;
 	@NotNull
 	{
 		string user_id;

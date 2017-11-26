@@ -1,6 +1,10 @@
 import qiitalib;
 import qiitadb;
 
+import ddbc;
+import hibernated.core;
+import std.algorithm;
+
 import arsd.dom;
 
 import dateparser;
@@ -31,18 +35,21 @@ int main(string[] args)
 {
 	auto count0 = g_db.execute("SELECT count(*) FROM qiita_posts").oneValue!long;
 	writefln(`count0=%d`, count0);
-	/+
-	try
-	{
-		std.file.remove(`___db1.db3`);
-	}
-	catch (Exception ex)
-	{
-	}
-	+/
-	Database db1 = ql_get_db_1(`___db1.db3`);
-	db1.execute("DELETE FROM qiita");
-	db1.execute("VACUUM");
+
+	Session sess = g_SessionFactory.openSession();
+	//(cast(SessionImpl)sess).conn.setAutoCommit(false);
+	scope (exit)
+		sess.close();
+
+	auto stmt = g_Connection.createStatement();
+	scope (exit)
+		stmt.close();
+	stmt.executeUpdate(`DELETE FROM qiita`);
+	stmt.executeUpdate(`VACUUM`);
+
+	//Database db1 = ql_get_db_1(`___db1.db3`);
+	//db1.execute("DELETE FROM qiita");
+	//db1.execute("VACUUM");
 	//exit(0);
 
 	/+
@@ -84,7 +91,7 @@ int main(string[] args)
 		}
 
 		sort!myComp(reverse_array);
-		db1.begin();
+		//db1.begin();
 		loop_b: foreach (ref rec; reverse_array)
 		{
 			if ((*rec)[`check_time`].get!string > max_check_time)
@@ -149,6 +156,7 @@ int main(string[] args)
 			}
 			f.write(outrec.serializeToJsonString);
 			outrec.remove(`_`);
+			/+
 			Statement statement = db1.prepare(`INSERT INTO qiita (
 	id,
 	user_id,
@@ -172,6 +180,7 @@ int main(string[] args)
 	:post_date,
 	:json
 )`);
++/
 			string tags_string = "";
 			foreach (tag; outrec[`tags`].get!(Json[]))
 			{
@@ -179,45 +188,53 @@ int main(string[] args)
 					tags_string ~= ":";
 				tags_string ~= `<` ~ tag[`name`].get!string ~ `>`;
 			}
-			statement.bind(`:id`, outrec[`id`].get!string);
-			statement.bind(`:user_id`, outrec[`user`][`id`].get!string);
-			statement.bind(`:created_at`, outrec[`created_at`].get!string);
-			statement.bind(`:updated_at`, outrec[`updated_at`].get!string);
-			statement.bind(`:likes_count`, outrec[`likes_count`].get!long);
-			statement.bind(`:title`, outrec[`title`].get!string);
-			statement.bind(`:tags`, tags_string);
-			statement.bind(`:check_time`, outrec[`check_time`].get!string);
-			statement.bind(`:post_date`, post_date);
-			//statement.bind(`:rendered_text`, rendered_text);
-			statement.bind(`:json`, outrec.serializeToJsonString);
-			statement.execute();
-			statement.reset(); // Need to reset the statement after execution.
+			auto qiita = new Qiita();
+			//statement.bind(`:id`, outrec[`id`].get!string);
+			qiita.uuid = outrec[`id`].get!string;
+			//statement.bind(`:user_id`, outrec[`user`][`id`].get!string);
+			qiita.user_id = outrec[`user`][`id`].get!string;
+			//statement.bind(`:created_at`, outrec[`created_at`].get!string);
+			qiita.created_at = outrec[`created_at`].get!string;
+			//statement.bind(`:updated_at`, outrec[`updated_at`].get!string);
+			qiita.updated_at = outrec[`updated_at`].get!string;
+			//statement.bind(`:likes_count`, outrec[`likes_count`].get!long);
+			qiita.likes_count = outrec[`likes_count`].get!long;
+			//statement.bind(`:title`, outrec[`title`].get!string);
+			qiita.title = outrec[`title`].get!string;
+			//statement.bind(`:tags`, tags_string);
+			qiita.tags = tags_string;
+			//statement.bind(`:check_time`, outrec[`check_time`].get!string);
+			qiita.check_time = outrec[`check_time`].get!string;
+			//statement.bind(`:post_date`, post_date);
+			qiita.post_date = post_date;
+			//statement.bind(`:json`, outrec.serializeToJsonString);
+			qiita.json = outrec.serializeToJsonString;
+			//statement.execute();
+			//statement.reset(); // Need to reset the statement after execution.
+			sess.save(qiita);
 		}
-		db1.commit();
+		//db1.commit();
+		try
+		{
+			//g_Connection.commit();
+			//(cast(SessionImpl)sess).conn.commit();
+		}
+		catch (SQLException ex)
+		{
+		}
 	}
 	f.write("]");
 	f.write("\n");
 	f.close();
-	writeln(`idx_qiita_user_id`);
-		db1.run(`CREATE INDEX IF NOT EXISTS idx_qiita_user_id on qiita (user_id)`);
-	writeln(`idx_qiita_created_at`);
-		db1.run(`CREATE INDEX IF NOT EXISTS idx_qiita_created_at on qiita (created_at)`);
-	writeln(`idx_qiita_updated_at`);
-		db1.run(`CREATE INDEX IF NOT EXISTS idx_qiita_updated_at on qiita (updated_at)`);
-	writeln(`idx_qiita_likes_count`);
-		db1.run(`CREATE INDEX IF NOT EXISTS idx_qiita_likes_count on qiita (likes_count)`);
 	/+
-	max_check_time = max_check_time.replace(`T`, `-`).replace(`:`, ``).replace(`+0900`, ``);
-	string file_name = format!`___j_total_%s.json`(max_check_time);
-	try
-	{
-		remove(file_name);
-	}
-	catch (Exception ex)
-	{
-
-	}
-	//rename("___g_total.txt", file_name);
+	writeln(`idx_qiita_user_id`);
+	db1.run(`CREATE INDEX IF NOT EXISTS idx_qiita_user_id on qiita (user_id)`);
+	writeln(`idx_qiita_created_at`);
+	db1.run(`CREATE INDEX IF NOT EXISTS idx_qiita_created_at on qiita (created_at)`);
+	writeln(`idx_qiita_updated_at`);
+	db1.run(`CREATE INDEX IF NOT EXISTS idx_qiita_updated_at on qiita (updated_at)`);
+	writeln(`idx_qiita_likes_count`);
+	db1.run(`CREATE INDEX IF NOT EXISTS idx_qiita_likes_count on qiita (likes_count)`);
 	+/
 	/+
 {
