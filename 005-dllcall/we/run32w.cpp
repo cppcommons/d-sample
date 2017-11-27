@@ -5,56 +5,7 @@
 #include <vector>
 #include <cstdlib>
 
-#if __cplusplus >= 201103L
-inline std::wstring cp_to_wide(const std::string &s, UINT codepage)
-{
-	int in_length = (int)s.length();
-	int out_length = MultiByteToWideChar(codepage, 0, s.c_str(), in_length, 0, 0);
-	std::wstring result(out_length, L'\0');
-	if (out_length)
-		MultiByteToWideChar(codepage, 0, s.c_str(), in_length, &result[0], out_length);
-	return result;
-}
-inline std::string wide_to_cp(const std::wstring &s, UINT codepage)
-{
-	int in_length = (int)s.length();
-	int out_length = WideCharToMultiByte(codepage, 0, s.c_str(), in_length, 0, 0, 0, 0);
-	std::string result(out_length, '\0');
-	if (out_length)
-		WideCharToMultiByte(codepage, 0, s.c_str(), in_length, &result[0], out_length, 0, 0);
-	return result;
-}
-#else /* __cplusplus < 201103L */
-inline std::wstring cp_to_wide(const std::string &s, UINT codepage)
-{
-	int in_length = (int)s.length();
-	int out_length = MultiByteToWideChar(codepage, 0, s.c_str(), in_length, 0, 0);
-	std::vector<wchar_t> buffer(out_length);
-	if (out_length)
-		MultiByteToWideChar(codepage, 0, s.c_str(), in_length, &buffer[0], out_length);
-	std::wstring result(buffer.begin(), buffer.end());
-	return result;
-}
-inline std::string wide_to_cp(const std::wstring &s, UINT codepage)
-{
-	int in_length = (int)s.length();
-	int out_length = WideCharToMultiByte(codepage, 0, s.c_str(), in_length, 0, 0, 0, 0);
-	std::vector<char> buffer(out_length);
-	if (out_length)
-		WideCharToMultiByte(codepage, 0, s.c_str(), in_length, &buffer[0], out_length, 0, 0);
-	std::string result(buffer.begin(), buffer.end());
-	return result;
-}
-#endif
-
-static std::wstring ansi_to_wide(const std::string &s)
-{
-	return cp_to_wide(s, CP_ACP);
-}
-static std::string wide_to_ansi(const std::wstring &s)
-{
-	return wide_to_cp(s, CP_ACP);
-}
+#include "strconv.h"
 
 //#ifndef ATTACH_PARENT_PROCESS
 //#define ATTACH_PARENT_PROCESS (DWORD) - 1
