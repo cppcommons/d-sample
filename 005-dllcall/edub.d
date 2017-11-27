@@ -359,7 +359,8 @@ private int handle_exe_output(string ext, string[] args)
 	}
 	//int[string] dummyAlist;
 	JSONValue jsonObj = parseJSON("{}"); //dummyAlist;
-	jsonObj["name"] = g_context.baseName.toLower;
+	//jsonObj["name"] = g_context.baseName.toLower;
+	jsonObj["name"] = g_context.fileName;
 	jsonObj["targetName"] = g_context.baseName;
 	switch (ext)
 	{
