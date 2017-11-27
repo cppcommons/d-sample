@@ -6,5 +6,5 @@ https://github.com/adamdruppe/arsd/blob/master/dom.d ^
 if %errorlevel% neq 0 (exit /b)
 edub qiitadb.lib build arch=dm32 ^
 qiitadb.d ^
-"[d2sqlite3:  :without-lib]" "[my-hibernated:@hibernated-0.3.2]"
+"[d2sqlite3#  #without-lib]" "[my-hibernated#@hibernated-0.3.2]"
 if %errorlevel% neq 0 (exit /b)

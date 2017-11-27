@@ -398,7 +398,7 @@ private int handle_exe_output(string ext, string[] args)
 
 	_PackageSpec[] packages;
 
-	string uuid = sha1UUID(":").toString;
+	string uuid = sha1UUID("#").toString;
 	uuid = format!`{%s}`(uuid);
 	while (args.length)
 	{
@@ -411,8 +411,9 @@ private int handle_exe_output(string ext, string[] args)
 		}
 		else if (arg.startsWith(`[`))
 		{
-			arg = arg.replace("{:}", uuid);
-			auto re = regex(`^\[([^:]+)(:[^:]*)?(:[^:]*)?\]$`);
+			arg = arg.replace("{#}", uuid);
+			//auto re = regex(`^\[([^:]+)(:[^:]*)?(:[^:]*)?\]$`);
+			auto re = regex(`^\[([^#]+)(#[^#]*)?(#[^#]*)?\]$`);
 			auto m = matchFirst(arg, re);
 			if (m)
 			{
@@ -422,17 +423,15 @@ private int handle_exe_output(string ext, string[] args)
 				string m2 = m[2];
 				string m3 = m[3];
 				_PackageSpec spec;
-				spec._name = m1.replace(uuid, `:`);
-				if (m2.startsWith(`:`))
+				spec._name = m1.replace(uuid, `#`);
+				if (m2.startsWith(`#`))
 					m2 = m2[1 .. $];
 				m2 = m2.strip;
-				if (m2 == `#`)
-					m2 = ``;
-				spec._version = m2.empty ? "~master" : m2.replace(uuid, `:`);
-				if (m3.startsWith(`:`))
+				spec._version = m2.empty ? "~master" : m2.replace(uuid, `#`);
+				if (m3.startsWith(`#`))
 					m3 = m3[1 .. $];
 				m3 = m3.strip;
-				spec._sub_config = m3.empty ? "" : m3.replace(uuid, `:`);
+				spec._sub_config = m3.empty ? "" : m3.replace(uuid, `#`);
 				packages ~= spec;
 				//writeln("match end!");
 			}
