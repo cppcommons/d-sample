@@ -1,0 +1,41 @@
+{
+    "name": "hdtest",
+    "description": "test hiberbated.",
+    "authors": [ "Vadim Lopatin", "Arjan Knepper" ],
+    "targetType": "executable",
+    "targetPath": "bin",
+    "dependencies": {
+        "hibernated": {"version": "~master", "path": "../"}
+    },
+    "buildRequirements": ["allowWarnings"],
+    "configurations": [
+        {
+            "name": "full",
+            "versions": ["USE_MYSQL", "USE_SQLITE", "USE_PGSQL"],
+            "subConfigurations": {
+                "hibernated": "full"
+            }
+        },
+        {
+            "name": "MySQL",
+            "versions": ["USE_MYSQL"],
+            "subConfigurations": {
+                "hibernated": "MySQL"
+            }
+        },
+        {
+            "name": "SQLite",
+            "versions": ["USE_SQLITE"],
+            "subConfigurations": {
+                "hibernated": "SQLite"
+            }
+        },
+        {
+            "name": "PGSQL",
+            "versions": ["USE_PGSQL"],
+            "subConfigurations": {
+                "hibernated": "PGSQL"
+            }
+        }
+    ]
+}
