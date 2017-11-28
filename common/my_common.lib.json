@@ -1,0 +1,14 @@
+{
+    "name": "my_common-lib",
+    "targetName": "my_common",
+    "targetType": "library",
+    "dependencies": {
+        "botan": "~master"
+    },
+    "importPaths": [
+        "."
+    ],
+    "sourceFiles": [
+        "my_common.d"
+    ]
+}
