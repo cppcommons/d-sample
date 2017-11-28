@@ -351,6 +351,7 @@ private int handle_exe_output(string ext, string[] args)
 	case `run`:
 	case `build`:
 	case `init`:
+	case `test`:
 	case `debug`:
 		break;
 	default:
@@ -629,7 +630,7 @@ DATA PRELOAD MULTIPLE
 		return 0;
 	string[] new_args = ["edub.exe", dub_json_path, command];
 	new_args ~= dub_opts;
-	if (run_args)
+	if (command == `run` && run_args.length > 0)
 	{
 		new_args ~= `--`;
 		new_args ~= run_args;
