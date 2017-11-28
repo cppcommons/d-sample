@@ -74,7 +74,9 @@ class C_GitHubHttp
 		auto http = HTTP(url);
 		string username = github_get_username();
 		string password = github_get_password();
+		//http.clearRequestHeaders();
 		http.setAuthentication(username, password);
+		//http.addRequestHeader(`Authorization`, `Bearer 06ade23e3803334f43a0671f2a7c5087305578bd`);
 		http.onReceiveStatusLine = (in HTTP.StatusLine statusLine) {
 			this.statusLine = statusLine;
 		};
@@ -88,6 +90,10 @@ class C_GitHubHttp
 		//this.code = http.perform(No.throwOnError);
 		//return this.code;
 		return http.perform(No.throwOnError);
+	}
+	override string toString() const
+	{
+		return "???";
 	}
 }
 
@@ -103,5 +109,7 @@ int main()
 	int rc = http.get("https://api.github.com/repos/cppcommons/d-sample/contents/vc2017-env.bat");
 	writeln(rc);
 	writeln(http.headers);
+	writeln(http.statusLine);
+	writeln(http);
 	return 0;
 }
