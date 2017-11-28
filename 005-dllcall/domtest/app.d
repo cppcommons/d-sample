@@ -46,14 +46,29 @@ public string retrieveString(string section, string key, string defaultValue = n
 	}
 }
 
-public void encryptString(string section, string key, string value)
+public void encryptString(string password, string section, string key, string value)
 {
-
+	auto state = globalState(); // ensure initialized
+	Unique!AutoSeededRNG rng = new AutoSeededRNG;
+	string ciphertext = CryptoBox.encrypt(cast(ubyte*) value.ptr, value.length, password, *rng);
+	writeln(ciphertext);
+	registerString(section, key, ciphertext);
 }
 
-public string decryptString(string section, string key, string defaultValue = null)
+public string decryptString(string password, string section, string key, string defaultValue = null)
 {
-	return null;
+	string ciphertext = retrieveString(section, key, null);
+	if (ciphertext is null)
+		return defaultValue;
+	auto state = globalState(); // ensure initialized
+	try
+	{
+		return CryptoBox.decrypt(ciphertext, password);
+	}
+	catch (Exception ex)
+	{
+		return defaultValue;
+	}
 }
 
 unittest
@@ -143,4 +158,8 @@ unittest
 	registerString("the section", "the key", "the value");
 	writeln(retrieveString("the section", "the key", "default value"));
 	writeln(retrieveString("the section", "no key", "default value"));
+	encryptString("password", "string section", "string key", "string value");
+	writeln(decryptString("password", "string section", "string key", "default value"));
+	writeln(decryptString("password2", "string section", "string key", "default value2"));
+	writeln(decryptString("password", "string section", "no key", "default value3"));
 }
