@@ -4,6 +4,7 @@ import core.sys.windows.windows;
 import core.sys.windows.winbase;
 import std.windows.registry;
 
+import std.array;
 import std.stdio;
 
 import botan.libstate.global_state;
@@ -22,6 +23,7 @@ immutable(char)[] registryKey = "dlang.dev1";
 
 public void registerString(string section, string key, string value)
 {
+	section = section.replace(`/`, `\`);
 	Key HKCU = Registry.currentUser;
 	Key rootKey = HKCU.createKey(registryKey);
 	Key sectionKey = rootKey.createKey(section);
@@ -30,6 +32,7 @@ public void registerString(string section, string key, string value)
 
 public string retrieveString(string section, string key, string defaultValue = null)
 {
+	section = section.replace(`/`, `\`);
 	Key HKCU = Registry.currentUser;
 	try
 	{
@@ -53,7 +56,7 @@ public void encryptString(string password, string section, string key, string va
 	auto state = globalState(); // ensure initialized
 	Unique!AutoSeededRNG rng = new AutoSeededRNG;
 	string ciphertext = CryptoBox.encrypt(cast(ubyte*) value.ptr, value.length, password, *rng);
-	writeln(ciphertext);
+	//writeln(ciphertext);
 	registerString(section, key, ciphertext);
 }
 
@@ -164,16 +167,4 @@ unittest
 	writeln(decryptString("password", "string section", "string key", "default value"));
 	writeln(decryptString("password2", "string section", "string key", "default value2"));
 	writeln(decryptString("password", "string section", "no key", "default value3"));
-	stdout.write("input: ");
-	stdout.flush();
-	string line;
-	line = stdin.readln();
-	if (line is null)
-	{
-		writeln("null");
-	}
-	else
-	{
-		write(line);
-	}
 }
