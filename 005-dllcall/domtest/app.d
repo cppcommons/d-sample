@@ -52,6 +52,30 @@ string github_get_username()
 	}
 }
 
+string github_get_token()
+{
+	string token = retrieveString("github", "token");
+	if (token !is null)
+		return token;
+	stdout.write("github token: ");
+	stdout.flush();
+	string line;
+	line = stdin.readln();
+	if (line !is null)
+		line = line.strip;
+	if (line is null || line.empty)
+	{
+		stderr.writeln("token is required!");
+		exit(1);
+		return null;
+	}
+	else
+	{
+		registerString("github", "token", line);
+		return line;
+	}
+}
+
 string github_get_password()
 {
 	shared static string enc_pass = "*";
@@ -88,10 +112,11 @@ class C_GitHubHttp
 		this.data.length = 0;
 		auto http = HTTP(url);
 		//http.clearRequestHeaders();
-		string username = github_get_username();
-		string password = github_get_password();
-		http.setAuthentication(username, password);
-		//http.addRequestHeader(`Authorization`, `Bearer 06ade23e3803334f43a0671f2a7c5087305578bd`);
+		//string username = github_get_username();
+		//string password = github_get_password();
+		string token = github_get_token();
+		//http.setAuthentication(username, password);
+		http.addRequestHeader(`Authorization`, format!`token %s`(token));
 		http.onReceiveStatusLine = (in HTTP.StatusLine statusLine) {
 			this.statusLine = statusLine;
 		};
@@ -240,7 +265,7 @@ int main()
 	//writeln(last_commit.toPrettyString);
 	//writeln(last_commit[`sha`].get!string);
 
-/+
+	/+
 	auto tree = new C_GitHubApi;
 	int rc3 = tree.get(format!"https://api.github.com/repos/cppcommons/d-sample/git/trees/%s?recursive=1"(
 			last_commit[`sha`].get!string));
@@ -248,7 +273,8 @@ int main()
 +/
 
 	auto master = new C_GitHubApi;
-	int rc4 = master.get(format!"https://api.github.com/repos/cppcommons/d-sample/branches/%s"(`master`));
+	int rc4 = master.get(
+			format!"https://api.github.com/repos/cppcommons/d-sample/branches/%s"(`master`));
 	//writeln(master.jsonValue.toPrettyString);
 	writeln(master.http.headers[`etag`]);
 	//writeln(master.jsonValue[`commit`][`commit`][`tree`][`sha`].get!string);
@@ -257,11 +283,34 @@ int main()
 	writeln(last_commit[`sha`].get!string);
 
 	auto tree = new C_GitHubApi;
-	int rc3 = tree.get(master.jsonValue[`commit`][`commit`][`tree`][`url`].get!string ~ `?recursive=1`);
+	int rc3 = tree.get(
+			master.jsonValue[`commit`][`commit`][`tree`][`url`].get!string ~ `?recursive=1`);
 	writeln(tree.jsonValue.toPrettyString);
+	writeln(tree.http.headers["x-ratelimit-remaining"]);
 
 	// https://raw.githubusercontent.com/cppcommons/d-sample/^
 	// d14b2a455037be7dfd22f7786a01187a6e25cf6c/vc2017-env.bat
 
+	/+
+	auto http = HTTP();
+	string username = github_get_username();
+	string password = github_get_password();
+	http.setAuthentication(username, password);
+	string post_data = `{
+  "scopes": [
+    "repo"
+  ],
+  "note": "edub command"
+}`;
+	auto response = post(`https://api.github.com/authorizations`, post_data, http);
+	writeln(response);
+	+/
+
+	/+
+	auto http = HTTP();
+	http.addRequestHeader(`Authorization`, `token b8642e618ce422e33e9c1509a0f869f3cfc1d9fc`);
+	auto response = get(format!"https://api.github.com/repos/cppcommons/d-sample/branches/%s"(`master`), http);
+	writeln(`response=`, response);
+	+/
 	return 0;
 }
