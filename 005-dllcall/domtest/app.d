@@ -245,5 +245,14 @@ int main()
 			last_commit[`sha`].get!string));
 	writeln(tree.jsonValue.toPrettyString);
 
+	auto master = new C_GitHubApi;
+	int rc4 = master.get(format!"https://api.github.com/repos/cppcommons/d-sample/branches/%s"(`master`));
+	writeln(master.jsonValue.toPrettyString);
+	writeln(master.http.headers[`etag`]);
+	//writeln(master.jsonValue[`commit`][`commit`][`tree`][`sha`].get!string);
+	//writeln(master.jsonValue[`commit`][`commit`][`tree`][`url`].get!string);
+	writeln(master.jsonValue[`commit`][`sha`].get!string);
+	writeln(last_commit[`sha`].get!string);
+
 	return 0;
 }
