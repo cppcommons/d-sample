@@ -227,7 +227,7 @@ int main()
 	writeln(api.http.statusLine);
 	writeln(api.http);
 	//writeln(api.jsonValue.serializeToJson);
-	writeln(api.jsonValue.toPrettyString);
+	//writeln(api.jsonValue.toPrettyString);
 	auto entryList = api.jsonValue.get!(Json[]);
 	foreach (entry; entryList)
 	{
@@ -240,19 +240,28 @@ int main()
 	//writeln(last_commit.toPrettyString);
 	//writeln(last_commit[`sha`].get!string);
 
+/+
 	auto tree = new C_GitHubApi;
 	int rc3 = tree.get(format!"https://api.github.com/repos/cppcommons/d-sample/git/trees/%s?recursive=1"(
 			last_commit[`sha`].get!string));
 	writeln(tree.jsonValue.toPrettyString);
++/
 
 	auto master = new C_GitHubApi;
 	int rc4 = master.get(format!"https://api.github.com/repos/cppcommons/d-sample/branches/%s"(`master`));
-	writeln(master.jsonValue.toPrettyString);
+	//writeln(master.jsonValue.toPrettyString);
 	writeln(master.http.headers[`etag`]);
 	//writeln(master.jsonValue[`commit`][`commit`][`tree`][`sha`].get!string);
 	//writeln(master.jsonValue[`commit`][`commit`][`tree`][`url`].get!string);
 	writeln(master.jsonValue[`commit`][`sha`].get!string);
 	writeln(last_commit[`sha`].get!string);
+
+	auto tree = new C_GitHubApi;
+	int rc3 = tree.get(master.jsonValue[`commit`][`commit`][`tree`][`url`].get!string ~ `?recursive=1`);
+	writeln(tree.jsonValue.toPrettyString);
+
+	// https://raw.githubusercontent.com/cppcommons/d-sample/^
+	// d14b2a455037be7dfd22f7786a01187a6e25cf6c/vc2017-env.bat
 
 	return 0;
 }
