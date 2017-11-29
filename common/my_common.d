@@ -4,7 +4,10 @@ import core.sys.windows.windows;
 import core.sys.windows.winbase;
 import std.windows.registry;
 
+import core.time;
 import std.array;
+import std.datetime;
+import std.datetime.systime;
 import std.stdio;
 
 import botan.libstate.global_state;
@@ -74,6 +77,77 @@ public string decryptString(string password, string section, string key, string 
 	{
 		return defaultValue;
 	}
+}
+
+public void sleepForWeeks(long n)
+{
+	sleepFor(dur!`weeks`(n));
+}
+
+public void sleepForDays(long n)
+{
+	sleepFor(dur!`days`(n));
+}
+
+public void sleepForHours(long n)
+{
+	sleepFor(dur!`hours`(n));
+}
+
+public void sleepForMinutes(long n)
+{
+	sleepFor(dur!`minutes`(n));
+}
+
+public void sleepForSeconds(long n)
+{
+	sleepFor(dur!`seconds`(n));
+}
+
+public void sleepFor(Duration duration)
+{
+	SysTime startTime = Clock.currTime();
+	SysTime targetTime = startTime + duration;
+	sleepUntil(targetTime);
+}
+
+public void sleepUntil(DateTime targetTime)
+{
+	sleepUntil(SysTime(targetTime));
+}
+
+public void sleepUntil(SysTime targetTime)
+{
+	string systimeToString(SysTime t)
+	{
+		SysTime t_of_sec = SysTime(DateTime(t.year, t.month, t.day, t.hour, t.minute, t.second));
+		return t_of_sec.toISOExtString().replace(`T`, ` `).replace(`-`, `/`);
+	}
+
+	string targetTimeStr = systimeToString(targetTime);
+	size_t maxWidth = 0;
+	for (;;)
+	{
+		SysTime currTime = Clock.currTime();
+		if (currTime >= targetTime)
+			break;
+		Duration leftTime = targetTime - currTime;
+		leftTime = dur!`msecs`(leftTime.total!`msecs`); // 残り時間表示用にミリ秒以下を切り捨て
+		string displayStr = format!`Sleeping: until %s (%s left).`(targetTimeStr, leftTime);
+		if (displayStr.length > maxWidth)
+			maxWidth = displayStr.length;
+		displayStr.reserve(maxWidth);
+		while (displayStr.length < maxWidth)
+			displayStr ~= ` `;
+		stderr.writef("%s\r", displayStr);
+		stderr.flush();
+		Thread.sleep(dur!(`msecs`)(500));
+	}
+	for (int i = 0; i < maxWidth; i++)
+		write(` `);
+	stderr.write("\r");
+	stderr.write("Sleeping: end.\n");
+	stderr.flush();
 }
 
 unittest
