@@ -224,10 +224,11 @@ int main()
 	auto entryList = api.jsonValue.get!(Json[]);
 	foreach (entry; entryList)
 	{
-		if (entry[`name`].get!string == `005-dllcall`)
+		if (entry[`name`].get!string == `000-misc` || entry[`name`].get!string == `005-dllcall`)
 		{
 			writeln(entry.toPrettyString);
 		}
 	}
+	writeln(api.http.headers[`etag`]);
 	return 0;
 }
