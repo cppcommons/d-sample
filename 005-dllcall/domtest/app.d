@@ -211,8 +211,10 @@ class C_GitHubApi
 			if (this.http.statusLine.code == 403)
 			{
 				writeln(cast(string) this.http.data);
-				string data = cast(string) this.http.data;
-				if (data.canFind(`API rate limit exceeded`))
+				//string data = cast(string) this.http.data;
+				//if (data.canFind(`API rate limit exceeded`))
+				if (("x-ratelimit-remaining" in this.http.headers)
+						&& to!long(this.http.headers["x-ratelimit-remaining"]) == 0)
 				{
 					long rateRemaining;
 					SysTime rateResetTime;
@@ -263,6 +265,7 @@ class C_GitHubApi
 			}
 			break _loop_a;
 		}
+
 		return 0;
 	}
 }
