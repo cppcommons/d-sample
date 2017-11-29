@@ -212,9 +212,16 @@ int main()
 	writeln(http.statusLine);
 	writeln(http);
 	+/
+
+	auto commits = new C_GitHubApi;
+	int rc1 = commits.get("https://api.github.com/repos/cppcommons/d-sample/commits");
+	auto last_commit = commits.jsonValue.get!(Json[])[0];
+
 	auto api = new C_GitHubApi;
 	//int rc2 = api.get("https://api.github.com/repos/cppcommons/d-sample/contents/vc2017-env.bat");
-	int rc2 = api.get("https://api.github.com/repos/cppcommons/d-sample/contents");
+	int rc2 = api.get(
+			"https://api.github.com/repos/cppcommons/d-sample/contents?ref="
+			~ last_commit[`sha`].get!string);
 	writeln(rc2);
 	writeln(api.http.headers);
 	writeln(api.http.statusLine);
@@ -230,5 +237,13 @@ int main()
 		}
 	}
 	writeln(api.http.headers[`etag`]);
+	//writeln(last_commit.toPrettyString);
+	//writeln(last_commit[`sha`].get!string);
+
+	auto tree = new C_GitHubApi;
+	int rc3 = tree.get(format!"https://api.github.com/repos/cppcommons/d-sample/git/trees/%s?recursive=1"(
+			last_commit[`sha`].get!string));
+	writeln(tree.jsonValue.toPrettyString);
+
 	return 0;
 }
