@@ -21,7 +21,6 @@ import std.datetime.systime;
 import std.file;
 import std.format;
 
-
 private void exit(int code)
 {
 	import std.c.stdlib;
@@ -163,7 +162,7 @@ class C_GitHubHttp
 		string username = github_get_username();
 		string password = github_get_password();
 		//http.clearRequestHeaders();
-		http.setAuthentication(username, password);
+		//http.setAuthentication(username, password);
 		//http.addRequestHeader(`Authorization`, `Bearer 06ade23e3803334f43a0671f2a7c5087305578bd`);
 		http.onReceiveStatusLine = (in HTTP.StatusLine statusLine) {
 			this.statusLine = statusLine;
@@ -179,6 +178,7 @@ class C_GitHubHttp
 		//return this.code;
 		return http.perform(No.throwOnError);
 	}
+
 	override string toString() const
 	{
 		return "???";
@@ -210,18 +210,19 @@ class C_GitHubApi
 			writefln("this.http.statusLine.code=%d", this.http.statusLine.code);
 			if (this.http.statusLine.code == 403)
 			{
+				writeln(cast(string) this.http.data);
 				string data = cast(string) this.http.data;
-				if (data.canFind(`"rate_limit_exceeded"`))
+				if (data.canFind(`API rate limit exceeded`))
 				{
 					long rateRemaining;
 					SysTime rateResetTime;
-					if ("rate-remaining" in this.http.headers)
-						rateRemaining = to!long(this.http.headers["rate-remaining"]);
+					if ("x-ratelimit-remaining" in this.http.headers)
+						rateRemaining = to!long(this.http.headers["x-ratelimit-remaining"]);
 					long v_rate_reset = 0;
-					if ("rate-reset" in this.http.headers)
-						v_rate_reset = to!long(this.http.headers["rate-reset"]);
+					if ("x-ratelimit-reset" in this.http.headers)
+						v_rate_reset = to!long(this.http.headers["x-ratelimit-reset"]);
 					rateResetTime = SysTime(unixTimeToStdTime(v_rate_reset));
-					writeln(`rate_limit_exceeded error!(4)`);
+					writeln(`rate_limit_exceeded error!: rateResetTime=`, rateResetTime);
 					/+
 					SysTime currentTime = Clock.currTime();
 					writeln(currentTime);
@@ -280,12 +281,16 @@ int main()
 	writeln(http.headers);
 	writeln(http.statusLine);
 	writeln(http);
-	auto api = new C_GitHubApi;
-	int rc2 = api.get("https://api.github.com/repos/cppcommons/d-sample/contents/vc2017-env.bat");
-	writeln(rc2);
-	writeln(api.http.headers);
-	writeln(api.http.statusLine);
-	writeln(api.http);
-	writeln(api.jsonValue.serializeToJson);
-	return 0;
+	for (;;)
+	{
+		auto api = new C_GitHubApi;
+		int rc2 = api.get(
+				"https://api.github.com/repos/cppcommons/d-sample/contents/vc2017-env.bat");
+		writeln(rc2);
+		writeln(api.http.headers);
+		writeln(api.http.statusLine);
+		writeln(api.http);
+		//writeln(api.jsonValue.serializeToJson);
+	}
+	//return 0;
 }
