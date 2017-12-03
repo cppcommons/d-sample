@@ -20,6 +20,7 @@ import std.datetime;
 import std.datetime.systime;
 import std.file;
 import std.format;
+import std.typecons;
 
 private void exit(int code)
 {
@@ -56,7 +57,10 @@ string github_get_token()
 {
 	string token = retrieveString("github", "token");
 	if (token !is null)
+	{
+		writeln(`token=`, token);
 		return token;
+	}
 	stdout.write("github token: ");
 	stdout.flush();
 	string line;
@@ -159,6 +163,12 @@ class C_GitHubApi
 			if (rc != 0)
 				return rc;
 			writefln("this.http.statusLine.code=%d", this.http.statusLine.code);
+			if (this.http.statusLine.code != 200 && this.http.statusLine.code != 403)
+			{
+				writeln(this.http.headers);
+				writeln(cast(string) this.http.data);
+				exit(1);
+			}
 			if (this.http.statusLine.code == 403)
 			{
 				writeln(cast(string) this.http.data);
@@ -312,5 +322,8 @@ int main()
 	auto response = get(format!"https://api.github.com/repos/cppcommons/d-sample/branches/%s"(`master`), http);
 	writeln(`response=`, response);
 	+/
+
+	Nullable!(int, int.min) i = int.min;
+
 	return 0;
 }
